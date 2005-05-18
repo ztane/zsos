@@ -43,9 +43,6 @@ _multiboot_start:
 	movw    %ax, %gs
 	movw    %ax, %ss
 
-#	movl 	$0x41414141, %eax
-#	movl    %eax, 0xC00B8000
-#	hlt
 	.byte   0xea                        # prefix + jmpi-opcode
 	.long   start_code                  # will be set to 0x100000
                                             # for big kernels
