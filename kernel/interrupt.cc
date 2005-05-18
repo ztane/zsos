@@ -134,7 +134,7 @@ static struct _idtr {
 void load_idt(InterruptDescriptor *_base, int num)
 {
 	int limit = num * sizeof(InterruptDescriptor) - 1;	
-	unsigned long base = (unsigned long)_base - 0xC0000000;
+	unsigned long base = (unsigned long)_base;
 
 	idtr.limit_7_0  =  limit       & 0xff;
 	idtr.limit_15_8 = (limit >> 8) & 0xff;
@@ -215,7 +215,15 @@ C_ISR_W_ECODE(invalid_tss)  { out_status(' T I'); }
 C_ISR_W_ECODE(segment_not_present) { out_status(' P N'); }
 C_ISR_W_ECODE(stack_exception)     { out_status(' E S'); }
 C_ISR_W_ECODE(general_prot_fault)  { out_status(' P G'); }
-C_ISR_W_ECODE(page_fault)          { out_status(' F P'); }
+C_ISR_W_ECODE(page_fault)          { 
+	unsigned long addr;
+
+	asm("mov %%cr2, %0"
+	: "=r"(addr) : );
+
+	printk("Page fault when accessing physical address: %x\n", addr);
+	out_status(' F P'); 
+}
 
 C_ISR(floating_point_error) { out_status(' P F'); }
 C_ISR(alignment_check)      { out_status(' C A'); }

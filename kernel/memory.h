@@ -1,7 +1,7 @@
 #ifndef _MEMORY_H 
 #define _MEMORY_H 
 
-typedef struct _gdt_descriptor {
+struct _gdt_descriptor {
 	unsigned char limit_7_0;
 	unsigned char limit_15_8;
 
