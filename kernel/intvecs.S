@@ -1,0 +1,78 @@
+#ifdef HAVE_ASM_USCORE
+# define EXT_C(sym)	_ ## sym
+#else
+# define EXT_C(sym)	sym
+#endif
+
+#define ASMISR(name) __ISR_ ## name ## _asm
+#define ISR(name)    __ISR_ ## name 
+
+#define DEFINE_INTR_GATE(name)	 \
+	.globl ASMISR(name)	;\
+ASMISR(name):			;\
+	pushal			;\
+	call ISR(name)		;\
+	popal			;\
+	iret
+
+/*********************************************************
+ * CODE BEGINS                                           *
+ *********************************************************/
+
+	.text
+
+#define INTR_DIVIDE_BY_ZERO      0
+#define INTR_DEBUG_EXCEPTION     1
+#define INTR_NMI                 2
+#define INTR_BREAKPOINT          3
+#define INTR_OVERFLOW            4
+#define INTR_BOUND_EXCEPTION     5
+#define INTR_INVALID_OPCODE      6
+#define INTR_FPU_NOT_AVAIL   	 7
+#define INTR_DOUBLE_FAULT    	 8
+#define INTR_COP_SEGMENT_OVERRUN 9
+#define INTR_INVALID_TSS     	 10
+#define INTR_SEGMENT_NOT_PRESENT 11
+#define INTR_STACK_EXCEPTION 	 12
+#define INTR_GENERAL_PROT_FAULT  13
+#define INTR_PAGE_FAULT      	 14
+#define INTR_FLP_ERROR       	 16
+#define INTR_ALIGN_CHECK     	 17
+#define INTR_MACHINE_CHECK   	 18
+
+DEFINE_INTR_GATE(divide_by_zero)
+DEFINE_INTR_GATE(debug_exception)
+DEFINE_INTR_GATE(nmi)
+DEFINE_INTR_GATE(breakpoint)
+DEFINE_INTR_GATE(overflow)
+DEFINE_INTR_GATE(bound_exception)
+DEFINE_INTR_GATE(invalid_opcode)
+DEFINE_INTR_GATE(fpu_not_avail)
+DEFINE_INTR_GATE(double_fault)		// w/ error
+DEFINE_INTR_GATE(cop_segment_overrun)	
+DEFINE_INTR_GATE(invalid_tss)		// w/ error
+DEFINE_INTR_GATE(segment_not_present)   // w/ error
+DEFINE_INTR_GATE(stack_exception)       // w/ error
+DEFINE_INTR_GATE(general_prot_fault)    // w/ error
+DEFINE_INTR_GATE(page_fault)            // w/ error
+DEFINE_INTR_GATE(floating_point_error)
+DEFINE_INTR_GATE(alignment_check)
+DEFINE_INTR_GATE(machine_check)
+
+DEFINE_INTR_GATE(IRQ_1)
+DEFINE_INTR_GATE(IRQ_2)
+DEFINE_INTR_GATE(IRQ_3)
+DEFINE_INTR_GATE(IRQ_4)
+DEFINE_INTR_GATE(IRQ_5)
+DEFINE_INTR_GATE(IRQ_6)
+DEFINE_INTR_GATE(IRQ_7)
+DEFINE_INTR_GATE(IRQ_8)
+DEFINE_INTR_GATE(IRQ_9)
+DEFINE_INTR_GATE(IRQ_A)
+DEFINE_INTR_GATE(IRQ_B)
+DEFINE_INTR_GATE(IRQ_C)
+DEFINE_INTR_GATE(IRQ_D)
+DEFINE_INTR_GATE(IRQ_E)
+DEFINE_INTR_GATE(IRQ_F)
+
+

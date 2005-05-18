@@ -1,0 +1,17 @@
+#!/bin/zsh
+
+error=0
+
+for i in *.t
+do
+	echo -n "Running $i...\033[30G"
+	if ./$i > /dev/null 2>&1
+	then
+		echo -e "\033[1;32mOK\033[0m"
+	else
+		echo "\033[1;31mFAIL\033[0m"
+		error=1
+	fi
+done
+
+exit $error

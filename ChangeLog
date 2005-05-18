@@ -1,0 +1,74 @@
+2005-01-09:
+	(Ilja) Started recoding the multiboot structure in C++. Added
+	a new class MultibootInfo, which is used to get multiboot data
+	from the passed structure. It still needs some work, but the
+	basics work fine. Created multiboot.cc for code.
+
+	(Ilja) snprintf now supports the operator '%u' for unsigned
+	ints (properly). Also ostream kout in iostream has support
+	for unsigned ints.
+
+2005-01-08:
+	(Antti) CPU traps and interrupts seem to work fine.
+	All PIC related code has been moved to pic.cc and should 
+	stay there. A new class was written - InterruptDescriptor,
+	which wraps an IDT entry and provides methods for querying
+	and setting all the related values as well as handy constructors
+	suitable for static initializers (as we have done in interrupt.cc)
+
+2005-01-07:
+	(Antti) Asm wrappers for interrupts 0x00-0x2F and some
+	stubs in interrupts.cc.
+
+2005-01-06:
+	(Antti) make install, that copies the newly built 
+	kernel image to the root of first partition on 
+	the loop image.
+
+	(Ilja) Kernel binary is now in elf32-i386 format with load
+	address of 0x100000. The kernel is also in multiboot format
+	and it accepts the multiboot data structure as a parameter.
+
+	(Antti) The kernel is now ready for stuff in C++. Static 
+	initializers (constructors for global objects) and new / 
+	delete all work now.
+
+	(Antti) (in|out)[bwl], far(poke|peek)[bwl], io_wait and
+	unlock_irq inline functions added. interrupt.cc now contains 
+	init_pic and remap_pic(int, int), for remapping	the PIC to
+	different interrupt vectors.
+
+	(Antti) Keyboard and timer interrupts seems to work
+	now, although the code currently seems invariably triple
+	fault at certain point...
+
+2005-01-05:
+	(Antti) createimage tool introduced (creates 50 meg
+	disk image, partition table, one partition in vfat
+	format, activated. Also make mount and make umount
+	to mount this loop image to mnt subdirectory. A stripped
+	down boot floppy with grub in img/grubfloppy.img.gz,
+	that is to be uncompressed to img/grubfloppy.img.
+
+2004-12-28:
+	(Antti) Finally imported the wchar.h :d
+
+2004-12-27:
+	(Antti) Wide char versions of intostr and uintostr
+	(called intowstr and uintowcs) and their shortcuts (called
+	intowcs/intoxwcs and uintowcs/uintoxwcs respectively...)
+
+2004-12-21:
+	(Ilja) Malloc now contains kcalloc and krealloc
+	functions.
+
+2004-12-12:
+	(Ilja) Functions for allocating memory added and
+	modified to use better algorithms.
+
+	(Antti) Functions for setting and getting the
+	values of gdt descriptors.
+
+	(Antti) Makefiles now with -nostdinc
+
+	(Antti) ChangeLog founded

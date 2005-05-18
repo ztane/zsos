@@ -1,0 +1,447 @@
+; PROG.ASM
+
+eli assembloijaan 16 bittisell‰ ...
+jeh toi on aika selke‰ k‰sky kuitenki :)
+[BITS 16]
+[ORG 0]
+ja oletetaan offsetti 0 t‰h‰n :d
+segmentill‰ ei siis v‰li‰?
+no ei koska siis seh‰n on implisiittisesti se mik‰ k‰skylle kuuluu
+ok
+
+nonii sitten ne segmenttideskriptorit... n‰iss‰ menee p‰‰ kipi‰ksi
+eli 32flattitilassa segmentit merkataan t‰llasilla struktuureilla :D:D
+augh mulla meinas tulla jo aneurysma eile ku kattelin n‰it‰ se vaatii
+sellasen 3 tuntii mutta sitten ku sen iffaa ni seon iha helppo :d
+if u say so :) 
+
+eli tuossa on toi low word of the segment length,
+nii siin‰ on 16 bitti‰, sitten on base addressin 16 bitti‰
+sitten basen 8 seuraavaa bitti‰, flageja
+sitten segmentin pituuven 4 suurinta bitti‰ ja basen 8 bitti‰
+
+ts base osote on 32bitti‰, mutta segmentin pituuteen on vaa 20bitti‰,
+osaakko selitt‰‰ miksi? ...miettii... syy on se ett‰ ne segmenttilimitit
+on sivun tarkkuudella (12bitti‰). tuosta huomaa ett‰ globaaleille segmenteille
+ei voi k‰ytt‰‰ ku 4 gigatavua :/ tai no ehk‰ en ti‰ mutta vois tweakata
+7.99 gigatavua maks yht. osotettavaa muistia. ELi gdt ei riit‰ jos 
+joka prosessille pit‰‰ antaa 4gigaa muistavaruutta :d -->>niiiii?????
+heh, koitan sis‰ist‰‰ n‰it‰ max. tehokkaasti. mutta koita sen verran antaa anteeksi
+, koska nyt tutustun ekaa kertaa t‰ll‰ tarkkuudella x86 muistiavaruutee :P
+mutta mutta... kyl n‰m‰ t‰st‰ no m‰‰ tutustuin eilen :D:D
+ n‰‰ oletkin nero :) 
+
+tosiaan noissa accessflageissa sitten sanotaan myˆs
+ett‰ saako lukee ja kirjottaa ja tms... nii sitten prosessori enforseaa
+ett‰ jos koodisegmentiksi lukee sellasen johon saa kirjottaa nii tulee heti
+segv :D ok eli ne on tossa "access" hommelissa.
+siin‰ voi myˆs sanoo ett‰ mik‰ on exec ja mik‰ on nonexec segmentti
+esmes vois laittaa meijj‰n k‰ytttikseen ett‰ siell‰ olis toinen datasegmentti
+joka olis exec :D
+hmm eli, koodisegmentit r-x, stack ja heap rw-?suunnalleen...
+
+STRUC segment_descriptor
+  seg_length0_15:	resw 1		; low word of the segment length
+  base_addr0_15:	resw 1		; low word of base address
+  base_addr16_23:	resb 1		; low byte of high word of base addr.
+  flags:		resb 1		; segment type and misc. flags
+  access:		resb 1		; highest nibble of segment length
+  					; and access flags
+  base_addr24_31:	resb 1		; highest byte of base address
+ENDSTRUC
+
+sitten interrupt descriptor tableen... eli siin‰ kerrotaan
+protnmoden intvektori... 32bittinen lineaarinen osote 16bittisess‰ 
+selektorissa + jotain paskoja lippuja... yht 8 tavua :d
+--> ok. pikkuhiljaa "ehk‰" alkaa sis‰ist‰‰ t‰n segmenttimallin
+eli noita on 256 tuettu i386sssa max...
+
+--> blah en koita ite j‰rkeill‰, siit‰ ei tuu mit‰‰ :)
+no vet‰‰ esmes descriptorin 80h -> omaan syscall vektoriin :d
+ok olin siis oikeilla j‰ljill‰ loppuje lopuks.
+
+noilla flagiella visii s‰‰jet‰‰n et‰t pystyykˆ sit‰ trigaaman softalla
+...mik‰ lienee suht olennaista, jos k‰ytet‰‰ sit‰ syscalleihi
+ja en haluais pystyy trigaamana pagefaultteja k‰sin int-rajapinnalla
+tai sanoon ett‰ n‰ppiksell‰ on tavaraa... aye toi on melko selke‰‰ kauraa
+
+STRUC interrupt_descriptor
+  .offset0_15:		resw	1		; low word of handler offset
+  .selector0_15:	resw	1		; segment selector
+  .zero_byte:		resb	1		; unused in this descriptor format
+  .flags:		resb	1		; flag-byte
+  .offset16_31:		resw	1		; high word of handler offset
+ENDSTRUC
+
+nonii t‰ss‰ on se mit‰ varsinaisesti aletaan assembloimaan...
+eli 9000: ladataan t‰‰, veet‰‰n ax:‰‰n cs, ja alustetaan muut segmentit
+sp = 8000h, on jotain 25kiloo tilaa enneku se alkaa jyrsiin meid‰n koodia...
+siihen vois tieten liattaaa ett‰ seolis esmes ss 8000 ja sp 0ffffh :d
+
+        mov ax, cs
+        mov ds, ax
+        mov es, ax
+	mov ss, ax
+    	mov sp, 8000h
+
+--->> 25k riitt‰nee t‰ss‰ vaiheessa? v‰hemm‰ll‰kin on tultu toimee... :)muttaku 
+seolis iha sama melkee vet‰‰ se sinne 8000h :d
+
+        xor bx, bx
+        mov ah, 3
+        int 10h             ; get cursor position to dh, dl
+
+kuiten, taas kursor possi
+
+        mov ah, 13h         ; Print "===="
+        mov al, 1           ;
+        mov bx, 7h          ;
+        mov cx, end-string  ;
+        mov bp, string      ;
+        int 10h             ;
+
+ja printataan stringi... "Loading Ztanix..." hehe :D
+hih. selke‰. muistuttaa suht paljo linukan syscallia write.
+
+sitten se A20 line :D:d
+eli A20 gate on se n‰ppis kontrollerissa oleva systeemi joka andataan 
+osotelinjan A20 (A20line) kanssa :d :D:D
+ apua :D
+
+eli ku x86sessa ei ollu a20 linjaa vaan vaa 0-19 linjat...
+nii siin‰ se "HMA" eli segmentti FFFF:n offsetit
+10-FFFF wrappautuu segmenttiin 0... ja 286 sitten oletuksena
+tietne joutu toimiin samoin :d ---> ja se ei olisi hyv‰ksi...
+no jos joku softa luottaa siihen... sen takia jokku ibm‰n
+insinˆˆrit keksi ett‰ n‰ppiskontrollerissa on yks ylim‰‰r‰nen
+ohjelmoitava nasta, nimesiv‰t sen A20 Gateksi ja se andataan
+A20:n kanssa... ja normaalisti seon disabloitu :D:D:D:D
+eli A20 on aina nolla :D:D k‰ts‰‰ :D
+
+kipi‰‰ :) ja viel‰ kipeemp‰‰ on ett‰ jos ilman a20sta nakkaa
+protekted moden nii pystyy addressoimaa vaa parittomia megatavuja :D
+koska sei vaikuta muihin osotelinjoihin!!! :DD:D
+SICK :;D
+
+himem.sys enabloi vissiin unrealmoden tai jonku ja nakkaa myˆs
+A20gaten p‰‰lle dossissa... mutta bios ei sit‰ tee ni se pit‰‰
+tehr‰ k‰sin :d:D joko nyt ‰lyytt miks mikkisofta on paska :D:D
+kyl. 
+
+
+A20Address:
+	; Set A20 Address line here
+    	CLI
+        CALL enableA20
+    	STI
+
+        JMP continue
+enableA20:
+        call enableA20o1
+
+        jnz  enableA20done
+        mov  al,   0d1h
+        out  64h,  al
+
+        call enableA20o1
+        jnz  enableA20done
+
+        mov  al,   0dfh
+        out  60h,  al
+
+enableA20o1:
+        mov ecx, 20000h
+
+enableA20o1l:
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+
+        in     al, 64h
+        test   al, 2
+        loopnz enableA20o1l
+enableA20done:
+        ret
+
+eli tossa enabloidaan a20 portittamalla sit‰ NƒPPƒIMIST÷KONTROLLERIA!!!!
+ja nopit on sen takia, ett‰ se ehtis reagoeiia?k
+siin‰ oli jump... muta luulin ettei se toiminu :D:D l‰hinn‰ kiusataan kakhea...
+miks ihmeess‰?
+‰l‰ multa kysy :D
+
+continue:
+;        xor bx, bx
+;        mov ah, 3
+;        int 10h             ; get cursor position to dh, dl
+
+;        mov ah, 13h         ; Print "===="
+;        mov al, 1           ;
+;        mov bx, 7h          ;
+;        mov cx, end-string  ;
+;        mov bp, string      ;
+;        int 10h             ;
+
+sitte ny alkaa hauska juttu. Ladataan nimitt‰in global descriptor table :D:d
+segmentti datasegmentti, offsetti gdt_reg... --> ? --> load global descriptor table?
+tms? jeps...
+
+	 lgdt	[ds:gdt_reg]
+	cli
+clear interrupts...
+
+ny alkaa se hauskin... eli movataan eaxiin control register 0 :D josta en ole viel‰
+kuullutkaan :) no siin‰ on kaikkee paskaa... emm‰‰ itekk‰‰ tii‰...
+
+ 	mov     eax, cr0
+    	or      eax, 1
+        mov     cr0, eax
+
+laitetaan bitti 1 (protected mode) p‰‰lle... ja japusketaa se takasi? jeh...
+olisko? :d jepjep.hmm. mit‰s t‰m‰ seuraava, jmp laalaa, jossa sit db 0x66, 0xea?
+tupakan mittanen tauko, afk 5min ja heti sitten takas ˆˆˆˆˆh....
+
+ok takas.. jah ‰ij‰t alko ihmeell‰ flamettaa eroa GNU/Linux:n ja linuxin v‰lill‰ :)
+ja GNU Hurd jne. heh. ja tuli muute helvetin vahva deja-vu t‰st‰ tilanteesta yht‰kki‰
+takasi-->_-_>->_->---->-->_->--->_---===========>
+
+---> ACK? jep
+hlooo... hitto tuo isleoki on aika...
+
+jeh olen kuulolla :)
+jep...
+eli katoppa jmp intoflat kiusaa taas kakhea :d:d
+eli sill‰ saahaan tuo flushautummaan nuo asiat tms. :D
+gnnnn koitan tajuta :D
+nonii... sitten tuossa
+    	jmp     intoflat
+
+intoflat:
+
+	prefix 66h tarkottaa 32bittist‰ addressoimista eiku 32bittisi‰ rekistereit‰
+	eli kato ny ollaan viel‰ 16 bittisess‰ segmentiss‰ :D:D:D LOL
+	sit‰ segmentti‰ ei oo viel‰ vaihettu... siks teh‰‰n 32 bittinen jumppi
+	(66 ea) osotteeseen 08:09prot, miss‰ 08 on uus koodisegmentin 
+	*selektori* ok
+
+	eli katos, ‰sken oltiin 16bitttisess‰ segmentiss‰ 9000h:0000
+	jota vastaa lineaarinen osote 090000h. Siihen lis‰t‰‰jn viel‰
+	offsetti tohon prottiin, saadaan osote 09ooooh... 
+	ok? ---> jotakuinki ok. siis, mulla tahtoo viel‰ki menn‰ aivot solmuu ton
+	segmentoidun muistin kanssa.. jos pystyt heitt‰‰ linkin, jossa siit‰
+	kerrotaan hieman, niin t‰m‰ olis paljo helpompaa kauraa mulle :)
+	(koitan kokoaja p‰‰ss‰ verrata t‰t‰ esim. TI86 24bit paged memory mallii)
+	ei oo sivutettua :D:D (VIELƒ)
+	eli kato siell‰ gdtss‰ voi sanoo ett‰ onko siell‰ koodisegmentiss‰
+	16 vai 32bittist‰ koodia :D::D:Dd:D:D LOL...
+	ny ollaan 16bittisess‰ koodisegmentiss‰ nii pit‰‰ tehd‰ hyppy 32
+	bittiseen nii seon koodattu tuolleen tavuilla :D:D jekh 
+se	n tajusin jo :). mutta siis. yleisesti tuo muistin segmentointi tahtoo
+	v‰‰nt‰‰ viel‰ ajatukset solmuu no menn‰‰n eteen p‰in...jep
+	flat memorymodel on loppujenlopuksi kuiten hlepompi :D
+	mutta se siirtymienn on avian VITU NVAIKEETA
+	tottakai.
+
+	db      066h, 0eah
+        dw      prot, 09h
+        dw      08h
+
+[BITS 32]
+prot:   ; Set up segments
+	jeps... eli ny ollaa nsiell‰ :D:d bits 32 
+	32 bittinen koodisegmentti ja flat memory model
+	---> nogs. eli cs = 08h
+	ladataan ebx‰‰n 10h, ladataan ds, es, fs ja gs selektorit
+	ok? jeh. jaksakko sanoa viel‰, ett‰ mitenk‰:
+	ds: data segment (selector)?
+	es: ? extra --->
+	fs: fs, gs -> ei kukaan tii‰ mutta f ja g tulee d:n ja e:n j‰lkee :D:D
+	ok pointti on siin‰ ett‰ segmenttirekisterin lataaminen kest‰‰ vitusti
+	koska se tekee ne access checkit samalla...
+	mutta sen l‰pi osottamienn on nopeeta.
+	eli pitemm‰n p‰‰lle s‰‰st‰‰?
+	nii siis NIITƒ EI VOI KƒYTTƒƒ DATAA ilman ett‰ n‰‰ osotat segmentti
+	rekisterin l‰pi... yleens‰ ooperaatiot defaulttaa ds l‰pi
+	ok t‰m‰ selvitti taas paljon :) siks niit‰ lis‰ttiin 2 ett‰
+	jos tarvii useita hanskata nii s‰‰st‰‰ kelloja
+	ah.
+
+        mov ebx, 10h
+        mov ds, bx
+        mov es, bx
+        mov fs, bx
+        mov gs, bx
+
+	nonii kaikki selektorit on asetettu paitsi SS...
+
+	no ny on helppo kirjottaa n‰ytˆlle. N‰yttˆ alkaa lineaarisessa muistissa
+	osotteesta 0b8000h. ladataan se ebx‰‰n ja veet‰‰n sen l‰pi tavaraa :D:D
+	mov ebx, 0b8000h
+	mov byte [ebx], 'H'
+	mov byte [ebx + 2], 'e'
+	mov byte [ebx + 4], 'l'
+	mov byte [ebx + 6], 'l'
+	mov byte [ebx + 8], 'o'
+...> ....> ok? yeh, t‰m‰ on selke‰‰ tavaraa. eritt‰inkin. lineaarinen muistimalli
+mahtuu mulla p‰‰h‰n kuitenki paljo paremmin. sen kanssa kun olen tyˆskennelly aiemmi.
+haha, ‰ij‰ tylytt‰‰ ihmeell‰.
+vitu ‰‰liˆ toi isleo oikeestaan ... 
+liian idealistinen sanoisin. jos idealismi alkaa olee softabisneksess‰ t‰rkeemp‰‰, ku
+ohjelman toimivuus, niin jotain on vialla. :|
+Windowsia on turvallista dissata (sanotaan ny n‰in) GNU/Linux:n rinnalla, koska se on
+oikeasti huonompaa softaa. Ei sen vuoksi, ett‰ se on suljettua koodia.
+nii macossia pit‰‰ jumaloijja :D:D
+heh. no Mac on ok. Ne on saanu aikaa ihan toimivan systeemin, mik‰s siin‰ :)
+jos ois rahaa nii voisin vaikka ostaakki Mac:i
+*BSD:st‰ en sano mit‰‰n, ku en ole koskaa k‰ytt‰ny.
+
+
+eli tuossa aseteteaan ss, veet‰‰n selektori 18 siihen...
+ja lineaarinen osote 90000h - eli 16bit segmentin
+9000h yl‰osa... (-4 tieten)...
+ok. eli alustetaan stack?
+ni... ei h‰ sit‰ tarvi alustaa ::D:D: varisnaisesti
+espiin ei vissii voi vet‰‰ immediatea... ku on laitettu eax ensin...
+nogs, "alustetaan" olis ollu parempi muoto
+jaa..
+        ; Set up stack segment
+        mov ebx, 18h
+        mov ss, bx
+        mov eax, 90000h - 4
+        mov esp, eax
+
+noni... sitten pushataan arvo...
+joka menis argumenttina, movataan ebx:‰‰n lineaarinen osote 91000h
+eli just 4096 tavuu eteen p‰in ja callataan sit‰ :D:D t‰m‰ selv‰.
+katotaanpa ne selektorit ny. sopii.
+
+16:09∑03 <@joneskoo> Isleo: pid‰t vai et ole kokeillut parempia?
+16:09∑12 <@Isleo> joneskoo: olen kokeillut ja pid‰n siit‰.
+16:09∑23 <@Ztane> Isleo: olet siis kokeillu parempiaki :d
+
+----->>>> 
+        push eax
+        mov ebx, 91000h
+        call ebx
+
+hang:                       ; Hang!
+        hlt
+
+;;; GDT DATA
+
+string: db 13, 10, "Loading Ztanix...", 13, 10
+end:
+
+        dd 0
+
+tuossa on se gdt-struktuuri, eli se kertoo taulun koon
+tavuina, sitten sen alkuosotteen, 090400h lineaarinen...
+---> ok.
+gdt_reg: dw gdt_size, 0400h, 09h
+
+times 1024-($-$$) db 0
+eli tasasin n‰‰ 1024-tasalle...
+
+ja sitten ne deskriptorit. Ekaksi t‰llanen 0-deskriptori
+joka on v‰h‰n niinku nullpointteri, senku lataa nii menee vitulleen kiakki :d
+heh. mihin t‰t‰ sit tarvitaa. no evt viel‰... mutta iha hyv‰...
+kato nii noi selectorien arvot siis tulee suoraan tavuihin t‰n taulun sis‰ll‰
+eli t‰‰ on deskriptori 0...
+dummy_dscr:	istruc segment_descriptor
+	at seg_length0_15, dw 0
+   	at base_addr0_15,  dw 0 
+  	at base_addr16_23, db 0     
+	at flags,          db 0 
+  	at access,         db 0  
+  	at base_addr24_31, db 0  
+iend
+
+sitten 8 tavua myˆhemmin deskriptori 8: 
+HLOOO... sdfsndogfssdfsdfsdf sdfluen noita arvoja menem‰‰
+eelli t‰ss‰ on codesegment descriptor...
+joo... eli limitti on ffff + access-arvosta fh
++ sitten pagen tarkkuudella eli koko 4 gigaa.
+base osote on 0h lineaarista muistia
+nyt se tarkottaa ett‰ looginen ja fyysinen muisti ton selektorin
+l‰pi on samoissa osotteissa ilman pagetusta... pagetus tulis ton
+alle :D:D t‰m‰ selv‰.
+code32_dscr: istruc segment_descriptor
+	at seg_length0_15, dw 0ffffh
+   	at base_addr0_15,  dw 0
+  	at base_addr16_23, db 0     
+	at flags,          db 09ah 
+  	at access,         db 0cfh  
+  	at base_addr24_31, db 0  
+iend
+
+sitten datasegmentti - huomaa erona vaan se ett‰ flagit on erit
+eli rw jne... jep :) ja taas t‰st‰ voi addressoijja 4 gigaa
+lineaarista muistia 0sta eteenp‰in :d
+data32_dscr: istruc segment_descriptor
+	at seg_length0_15, dw 0ffffh
+   	at base_addr0_15,  dw 0
+  	at base_addr16_23, db 0     
+	at flags,          db 092h 
+  	at access,         db 0cfh  
+  	at base_addr24_31, db 0  
+iend
+
+ja core, joka laattiin ss:‰‰n... alias datadeskriptorille
+ts samat kontentit jne... mutta *voitas* mapata muualle 
+t‰m‰n k‰yttˆtarkotus ois?laattiin ss:‰‰n...
+ah
+core32_dscr: istruc segment_descriptor
+	at seg_length0_15, dw 0ffffh
+   	at base_addr0_15,  dw 0
+  	at base_addr16_23, db 0     
+	at flags,          db 092h 
+  	at access,         db 0cfh  
+  	at base_addr24_31, db 0  
+iend
+
+sitten 16bittiset kode ja datasegmentit, eli erona on se
+ett‰ noista p‰‰see vet‰‰n vaa ekat 16bitti‰... + defaulttaa
+16bittiseen koodiin ja dataan... :D ok.
+
+code16_dscr: istruc segment_descriptor
+	at seg_length0_15, dw 0ffffh
+   	at base_addr0_15,  dw 0
+  	at base_addr16_23, db 0     
+	at flags,          db 09ah 
+  	at access,         db 0  
+  	at base_addr24_31, db 0  
+iend
+
+data16_dscr: istruc segment_descriptor
+	at seg_length0_15, dw 0ffffh
+   	at base_addr0_15,  dw 0
+  	at base_addr16_23, db 0     
+	at flags,          db 092h 
+  	at access,         db 0  
+  	at base_addr24_31, db 0  
+iend
+
+gdt_size EQU $-dummy_dscr
+
+times 4192-($-$$) db 0
+
+sitten tasataan... UPS...
+tuossa on VIRHE :D:D hyp‰ttiin nimitt‰in about 96 tavua liian 
+aikasi, onneksi 0 = brk grin.eiku mik‰ vittu seoli
+ADD r/m8,reg8                 ; 00 /r                [8086] 
+jep... tuo...
+eli se lis‰‰ rekisteri‰ muistiin :D:D GRIN
+yht‰ tavua :D:d
+nollasivulle :D:D:D LOL :D:D
+anyways...
+ookkon‰‰ viel‰ siell‰ :D
+
+ny :D -> jatka vain.

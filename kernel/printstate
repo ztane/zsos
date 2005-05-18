@@ -1,0 +1,8 @@
+#ifndef PRINTSTATE
+#define PRINTSTATE
+
+#include "interrupt.h"
+
+void print_kernel_state(REGS& r);
+
+#endif

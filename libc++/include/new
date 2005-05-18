@@ -1,0 +1,10 @@
+#ifndef __NEW__INCLUDED__
+#define __NEW__INCLUDED__
+
+inline void* operator new(uint_t, void* p)   throw() { return p; }
+inline void* operator new[](uint_t, void* p) throw() { return p; }
+inline void  operator delete  (void*, void*) throw() { };
+inline void  operator delete[](void*, void*) throw() { };
+
+#endif // __NEW__INCLUDED__
+

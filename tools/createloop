@@ -1,0 +1,39 @@
+#!/bin/sh
+
+filename=$1
+cylinders=$2
+loopdev=/dev/loop7
+
+if [[ "$cylinders" == "" ]]
+then
+	echo "Usage: $0 imagefile cylinders"
+	echo " -- (each cylinder being ~500kB)"
+	exit 1
+fi
+
+if [[ -e "$filename" ]]
+then
+	echo "Imagefile $filename already exists, remove it first!"
+	exit 2
+fi
+
+# create image
+dd if=/dev/zero of=$filename bs=516096c count=$cylinders 2>&1 > /dev/null
+/sbin/losetup $loopdev $filename
+
+echo "Press any key to continue..."
+read
+
+# create new partition table, new partition, primary, first
+# default start, default length, type fat, write and quit :d
+echo -ne "o\nn\np\n1\n\n\nt\n6\na\n1\nw\nq\n" | /sbin/fdisk -u -C$cylinders -S63 -H16 $loopdev
+
+echo "Press any key to continue..."
+read
+
+/sbin/losetup -d $loopdev
+/sbin/losetup -o32256 $loopdev $filename
+
+/usr/sbin/mkfs.vfat $loopdev
+
+/sbin/losetup -d $loopdev

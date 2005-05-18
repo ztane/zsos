@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+error=0
+setopt kshglob
+
+for i in !(CVS)/
+do
+	cd $i
+	if make > /dev/null 2>&1
+	then
+	else
+		echo "Making of $i \033[1;31mFAILED\033[0m"
+		error=1
+	fi
+	cd ..
+done
+
+exit $error
