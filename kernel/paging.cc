@@ -30,7 +30,7 @@ void _enable_paging_and_gdt(void *base, int limit) {
     gdt_pos.base = (unsigned long)base;
 
     asm(
-"	 hlt;movl %%cr0, %%eax;		"
+"	 movl %%cr0, %%eax;		"
 "	 orl  $0x80000000, %%eax;	"
 "	 movl %%eax, %%cr0;		"
 "	 jmp 1f;			"
