@@ -221,7 +221,7 @@ C_ISR_W_ECODE(page_fault)          {
 	asm("mov %%cr2, %0"
 	: "=r"(addr) : );
 
-	printk("Page fault when accessing physical address: %x\n", addr);
+	printk("Page fault when accessing physical address: 0x%08x\n", addr);
 	out_status(' F P'); 
 }
 

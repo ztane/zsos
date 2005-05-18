@@ -37,7 +37,7 @@ void kmain(unsigned int magic, void *addr) {
 	printk(" done.\n");
 
 	call_ctors();
-	printk("<<< Entering C++ code >>>\n");
+	printk("Entering C++ kernel_main...\n");
 	kernel_main(magic, addr);
 
 	return;

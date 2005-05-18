@@ -44,6 +44,26 @@ size_t vga_write(const void *vbuf, size_t len)
 			i++;
 			continue;
 		}
+
+		else if (buf[i] == '\t') 
+		{
+			unsigned long vga_offset_new;
+			vga_offset_new = (vga_offset + 8) & 0xFFFFFFF8;
+			vidmem += 2 * (vga_offset_new - vga_offset);	
+			vga_offset = vga_offset_new;
+
+			i ++;						
+	
+	                if (vga_offset > (VGA_TEXT_WIDTH * VGA_TEXT_HEIGHT - 1))
+	                {
+        	                moveup_vga_buffer();
+                	        vga_offset -= VGA_TEXT_WIDTH;
+                        	vidmem -= VGA_TEXT_WIDTH * 2;
+	                }
+
+			continue;
+		}
+
 		if (vga_offset > (VGA_TEXT_WIDTH * VGA_TEXT_HEIGHT - 1))
         	{
                 	moveup_vga_buffer();

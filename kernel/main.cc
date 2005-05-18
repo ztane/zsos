@@ -10,7 +10,7 @@
 
 void *PHYS_TO_LOG(void *addr) 
 {
-	return (void*)((unsigned int)addr + 0xC0000000);
+	return (void*)((unsigned int)addr);
 }
 
 void print_memmap(MultibootInfo *mbi) 
@@ -19,15 +19,15 @@ void print_memmap(MultibootInfo *mbi)
 		     mmap_length = mbi->get_mmap_length();
 	multiboot_mmap_t *mmap = (multiboot_mmap_t *)(mmap_addr);
 	
-        kout << "mmap provided by loader:" << endl;
+        kout << "\tmmap provided by loader:" << endl;
 	
         for (; (unsigned int)(mmap) < mmap_addr + mmap_length;
                mmap = (multiboot_mmap_t *)((unsigned int)(mmap) + mmap->size + sizeof(mmap->size)))
         {
-		printk("base: 0x%x%x - length: 0x%x%x, type: 0x%x\n",
-                       	mmap->base_addr_high,
+		printk("\tbase: 0x%08x - length: 0x%08x, type: 0x%08x\n",
+             //        	mmap->base_addr_high,
                       	mmap->base_addr_low,
-                       	mmap->length_high,
+             //       	mmap->length_high,
                        	mmap->length_low,
                        	mmap->type);
         }
@@ -40,7 +40,7 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 		static_cast<MultibootInfo *>(PHYS_TO_LOG(mbd)) : NULL;
 	
 	/* there's no hex printing in kout yet */
-	printk("magic: 0x%x, mbd: 0x%x\n", magic, mbd);
+	printk("\tmagic: 0x%x, mbd: 0x%x\n", magic, mbd);
 
 	if (!mbi)
 		return;
@@ -50,15 +50,15 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	 * amount of memory available or it really is 0 :).
 	 */
 	if (mbi->get_flags() & MB_FLAG_MEM)
-		kout << "lower mem: "    << mbi->get_low_mem()
-		     << "k, upper mem: " << mbi->get_high_mem()
-		     << "k" << endl;
+		kout << "\tlower memory: "    << mbi->get_low_mem()
+		     << "kiB, upper memory: " << mbi->get_high_mem()
+		     << "kiB" << endl;
 
 	if (mbi->get_flags() & MB_FLAG_LOADER_NAME)
-		kout << "loader: " << mbi->get_loader_name() << endl;
+		kout << "\tloader: " << mbi->get_loader_name() << endl;
 
 	if (mbi->get_flags() & MB_FLAG_CMDLINE)
-		kout << "cmdline: " << mbi->get_cmdline() << endl;
+		kout << "\tcmdline: " << mbi->get_cmdline() << endl;
 
 	if (mbi->get_flags() & MB_FLAG_MMAP)
 		print_memmap(mbi);
@@ -87,14 +87,14 @@ void kernel_main(unsigned int magic, void *mbd)
 	init_idt();
 	kout << " done" << endl;
 	
-	kout << "Recovering multiboot information:" << endl;
-	extract_multiboot_info(magic, mbd);
-	kout << " done" << endl;
-	
 	kout << "Enabling paging...";
 	initialize_page_tables();
 	kout << " done" << endl;
 
+	kout << "Recovering multiboot information:" << endl;
+	extract_multiboot_info(magic, mbd);
+	kout << "-- -- --" << endl;
+	
 	kout << "Enabling keyboard and timer interrupts...";
 	enable_keyboard();
 	kout << " done" << endl;

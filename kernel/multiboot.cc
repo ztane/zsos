@@ -40,6 +40,6 @@ unsigned int MultibootInfo::get_mmap_length() const
 const char * MultibootInfo::get_loader_name() const
 {
 	return flags & MB_FLAG_LOADER_NAME ? 
-		reinterpret_cast<const char *>(boot_loader_name + 0xC0000000) : NULL;
+		reinterpret_cast<const char *>(boot_loader_name) : NULL;
 }
 
