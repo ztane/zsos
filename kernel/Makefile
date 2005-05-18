@@ -1,6 +1,6 @@
 include ../Makefile.inc
 
-HEADERS=chardev.h memory.h
+HEADERS=chardev.h
 CMODULES=kernel vga_text printk
 CCMODULES=main interrupt pic multiboot printstate paging memory
 ASMMODULES=intvecs
