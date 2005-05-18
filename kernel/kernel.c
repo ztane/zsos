@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "chardev.h"
-// #include "memory.h"
 #include "printk.h"
 
 extern char_device_iface vga;
