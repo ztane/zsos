@@ -1,3 +1,10 @@
+2005-05-27:
+	(Antti) Loads of changes. The kernel now has paging (hooray),
+	it resets paging and gdt using new fancy files. Added symbol
+	END_OF_BOOTLOADER to boot.S so that the temp memory can be freed 
+	later! vsnprintf has now paddings - both space and 0 are usable
+	(0 is even allowed for strings... phew...).
+
 2005-01-09:
 	(Ilja) Started recoding the multiboot structure in C++. Added
 	a new class MultibootInfo, which is used to get multiboot data
