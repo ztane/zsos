@@ -22,7 +22,7 @@ unsigned int MultibootInfo::get_high_mem() const
 const char * MultibootInfo::get_cmdline() const
 {
 	return flags & MB_FLAG_CMDLINE ? 
-		reinterpret_cast<const char *>(cmdline + 0xC0000000) : NULL;
+		reinterpret_cast<const char *>(cmdline) : NULL;
 }
 
 unsigned int MultibootInfo::get_mmap_addr() const

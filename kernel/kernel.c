@@ -6,7 +6,7 @@
 
 extern char_device_iface vga;
 
-static char *heap_mem[4096];
+static char heap_mem[4096];
 
 extern void init_vga_buffer();
 

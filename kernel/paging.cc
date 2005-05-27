@@ -4,7 +4,7 @@
 #define LOG_TO_PHYS(x)     ((void*)((unsigned long)(x) - 0xC0000000)) 
 #define PAGE_SIZE 	   0x1000
 #define ENTRIES_PER_TABLE  0x400
-#define PAGE_TABLE_ENTRIES (6 * ENTRIES_PER_TABLE)
+#define PAGE_TABLE_ENTRIES (ENTRIES_PER_TABLE)
 
 PageTableEntry     page_directory[PAGE_SIZE]
 	__attribute__ ((aligned (PAGE_SIZE)));
