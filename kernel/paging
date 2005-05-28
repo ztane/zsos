@@ -57,6 +57,12 @@ public:
 	void* get_offset() {
 		return (void*)(data & ~0xFFF);
 	}
+
+	void set_offset(unsigned long offset) {
+		data &= ~ 0xFFFFF000;
+		data |= offset & ~0xFFF;
+	}
+
 	void set_offset(void *offset) {
 		data &= ~ 0xFFFFF000;
 		data |= (unsigned long)offset & ~0xFFF;

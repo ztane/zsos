@@ -6,10 +6,14 @@
 #define ENTRIES_PER_TABLE  0x400
 #define PAGE_TABLE_ENTRIES (ENTRIES_PER_TABLE)
 
-PageTableEntry     page_directory[PAGE_SIZE]
-	__attribute__ ((aligned (PAGE_SIZE)));
-PageTableEntry     page_tables[PAGE_TABLE_ENTRIES]
-	__attribute__ ((aligned (PAGE_SIZE)));
+extern char __page_directory[];
+extern char __page_tables[];
+extern char _END_OF_KERNEL;
+extern char _END_OF_BOOTLOADER;
+
+// no initializers!
+PageTableEntry *page_directory = reinterpret_cast<PageTableEntry *>(__page_directory);
+PageTableEntry *page_tables    = reinterpret_cast<PageTableEntry *>(__page_tables);
 
 void _set_cr3(void *base) 
 {
@@ -20,69 +24,71 @@ void _set_cr3(void *base)
 	: "r"(base));
 }
 
-struct _gdt_pos {
-    unsigned short limit __attribute__((packed));
-    unsigned long  base  __attribute__((packed));
-} gdt_pos;
+void _test_segments() 
+{
+    asm("mov $10, %%ax;"
+	"mov %%ax, %%es;" 
+	: : : "%eax");
+}
 
-void _enable_paging_and_gdt(void *base, int limit) {
-    gdt_pos.limit = limit;
-    gdt_pos.base = (unsigned long)base;
-
+void _reenable_paging() {
     asm(
 "	 movl %%cr0, %%eax;		"
 "	 orl  $0x80000000, %%eax;	"
 "	 movl %%eax, %%cr0;		"
 "	 jmp 1f;			"
 "1:;					"
-"        lgdt gdt_pos;			"
-"	 jmp 2f;			"
-"2:;					"
-"        mov $0x10, %%ax;		"	
-"        mov %%ax, %%es;		"	
-"	 ljmp $0x8, $new_cs;		"
-"new_cs:;				"
-"	 mov %%ax, %%ds;		"
-"	 mov %%ax, %%es;		"
-"	 mov %%ax, %%fs;		"
-"	 mov %%ax, %%gs;		"
-"	 mov %%ax, %%ss;		"
 	: 
 	: 
 	: "%eax"); 
         /* segment registers actually haven't changed... */
 }
 
-void get_gdt_location(void* & location, int& limit);
+struct MemoryArea {
+	unsigned long base;
+	unsigned long top;
+};
+
+MemoryArea initially_mapped[] = {
+	{ 0x0, 0x100000 },
+	{ (unsigned long)LOG_TO_PHYS(&_END_OF_BOOTLOADER), 
+		(unsigned long)LOG_TO_PHYS(&_END_OF_KERNEL) },
+	{ 0,   0        },
+};
+
 void initialize_page_tables() 
 {
 	PageFlags flags;
-	void *gdt_location;
-	int gdt_limit;
 	
-	get_gdt_location(gdt_location, gdt_limit);
-
 	flags.set_present(true);
 	flags.set_rw(true);
 
-	for (int i = 0; i < PAGE_TABLE_ENTRIES / ENTRIES_PER_TABLE; i ++) {
-		page_directory[i].set_flags(flags);
-		page_directory[i].set_offset(
-			LOG_TO_PHYS(page_tables + i * ENTRIES_PER_TABLE)
-		);
-		page_directory[i + 0x300].set_flags(flags);
-		page_directory[i + 0x300].set_offset(
-			LOG_TO_PHYS(page_tables + i * ENTRIES_PER_TABLE)
-		);
-	}
+	page_directory[0x300].set_flags(flags);
+	page_directory[0x300].set_offset(
+		LOG_TO_PHYS(page_tables)
+	);
+	page_directory[0x0].set_flags(flags);
+	page_directory[0x0].set_offset(
+		LOG_TO_PHYS(page_tables)
+	);
 
-	char *base_address = 0;
-	for (int i = 0; i < PAGE_TABLE_ENTRIES; i ++) {
-		page_tables[i].set_flags(flags);
-		page_tables[i].set_offset(base_address);
-		base_address += PAGE_SIZE;
+	int idx = 0;
+	while (initially_mapped[idx].base != initially_mapped[idx].top) 
+	{
+		unsigned long base = initially_mapped[idx].base;
+		unsigned long top  = initially_mapped[idx].top;
+		
+		printk("\tMapping memory %08X - %08X\n", base, top);
+		while (base < top) {
+			page_tables[base / 0x1000].set_flags(flags);
+			page_tables[base / 0x1000].set_offset(base);
+			base += 0x1000;
+		}
+		idx ++;
 	}
-
+ 
 	_set_cr3(LOG_TO_PHYS(page_directory));
-	_enable_paging_and_gdt(gdt_location, gdt_limit);
+	_reenable_paging();
 }
+
+

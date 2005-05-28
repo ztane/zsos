@@ -14,7 +14,7 @@
 
 #define PRESENT_AND_RW  3
 #define PAGE_DIR_ENTRY  \
-	(LOG_TO_PHYS(page_table_2nd_level) + PRESENT_AND_RW)
+	(LOG_TO_PHYS(__page_tables) + PRESENT_AND_RW)
 
 #define LOG_TO_PHYS(x)  (x - BOOT_LOG + BOOT_PHYS)
 
@@ -28,7 +28,6 @@
 	.globl	_start
 	.globl  _END_OF_BOOTLOADER
 	.align	4
-	
 _multiboot_header:
 	.long	MB_HEADER_MAGIC
 	.long	MB_HEADER_FLAGS
@@ -39,24 +38,23 @@ _start:
 	movl    %eax, %edx
 
 	movl    $PAGE_DIR_ENTRY, %eax
-	movl    %eax, LOG_TO_PHYS(page_table_dir)
-	movl    %eax, LOG_TO_PHYS(page_table_dir) + 0xC00
+	movl    %eax, LOG_TO_PHYS(__page_directory)
+	movl    %eax, LOG_TO_PHYS(__page_directory) + 0xC00
 
 	movl    $0x400, %ecx
 	movl    $3, %eax
-	movl 	$LOG_TO_PHYS(page_table_2nd_level), %edi
+	movl 	$LOG_TO_PHYS(__page_tables), %edi
 	cld
 
 _loop:
 	stosl
 	addl    $0x1000, %eax
-	dec	%ecx
-	jnz     _loop
+	loop _loop
 
 /**************************/
 /* INITIALIZE PAGE TABLE! */
 /**************************/
-	mov     $LOG_TO_PHYS(page_table_dir), %eax
+	mov     $LOG_TO_PHYS(__page_directory), %eax
 	mov	%eax, %cr3
 
 	mov	%cr0, %eax
@@ -130,15 +128,13 @@ gdt_48:
         .word   gdt_end - gdt - 1               # gdt limit
         .long   gdt		                # gdt base (filled in later)
 
+	.align 4096
 	/* boot.S stack */
 	.comm stack, STACK_SIZE
 
-        .align 4096
-page_table_dir:
-	.fill 4096
-
-        .align 4096
-page_table_2nd_level:
-	.fill 4096
+	.align 4096
+	.comm __page_directory, 4096, 4096
+	.align 4096
+	.comm __page_tables,    4096, 4096
 
 _END_OF_BOOTLOADER:
