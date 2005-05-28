@@ -15,7 +15,7 @@ always :
 
 kernel.bin: lib/libc.a lib/libc++.a kernel/kernel.a kernel/boot.o kernel/kernel.ld
 	$(LD) -T kernel/kernel.ld -e _start -N -dn kernel/boot.o kernel/kernel.a lib/libc.a lib/libc++.a --oformat=elf32-i386 -o kernel.bin
-	$(STRIP) kernel.bin
+#	$(STRIP) kernel.bin
 
 clean :
 	@cd boot   && make clean
