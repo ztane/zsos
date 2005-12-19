@@ -159,7 +159,7 @@ C_ISR(IRQ_1)
 	static int i = 0;
 	i ++;
 	if (i > 100) {
-//		printk("timer tick\n");
+		printk("timer tick\n");
 		i = 0;
 	}
 	enable_ints();	
@@ -177,7 +177,7 @@ C_ISR(IRQ_2)
 	}
 #endif
 
-//	printk("Keyboard interrupt: %d\n", val);
+	printk("Keyboard interrupt: %d\n", val);
 	enable_ints();	
 	unlock_irq(2);
 }

@@ -1,4 +1,5 @@
 #include "memory"
+#include "tasking"
 
 #define N_SEGMENT_DESCRIPTORS 5
 
@@ -13,10 +14,21 @@
 
 SegmentDescriptor GDT[] = {
 	SegmentDescriptor(),
+
 	SegmentDescriptor(0x00000000, 0xFFFFFFFF, 
 		CODE_ACCESS, FLAGS),
+
 	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		DATA_ACCESS, FLAGS),
+
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF, 
+		CODE_ACCESS | DSC_ACCESS_RING_3, FLAGS),
+
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
+		DATA_ACCESS | DSC_ACCESS_RING_3, FLAGS),
+
+	SegmentDescriptor((unsigned int)&TSS_Segment, 104,
+		DSC_ACCESS_PRESENT | DSC_ACCESS_IS_TSS, 0)
 };
 
 void get_gdt_location(void* & location, int& limit)
@@ -25,4 +37,28 @@ void get_gdt_location(void* & location, int& limit)
 	limit = (int)(sizeof(GDT) - 1);
 }
 
+static struct _gdtr {
+        unsigned char limit_7_0;
+        unsigned char limit_15_8;
+        unsigned char base_7_0;
+        unsigned char base_15_8;
+        unsigned char base_23_16;
+        unsigned char base_31_24;
+} gdtr;
 
+void init_gdt()
+{
+        int limit = sizeof(GDT) - 1;
+        unsigned long base = (unsigned long)GDT;
+
+        gdtr.limit_7_0  =  limit       & 0xff;
+        gdtr.limit_15_8 = (limit >> 8) & 0xff;
+
+        gdtr.base_7_0   =  base        & 0xff;
+        gdtr.base_15_8  = (base >> 8)  & 0xff;
+        gdtr.base_23_16 = (base >> 16) & 0xff;
+        gdtr.base_31_24 = (base >> 24) & 0xff;
+
+        /* load global descriptor table to GDTR */
+        __asm__ __volatile__ ("lgdt (%0)" : : "r" ((void *) &gdtr));
+}

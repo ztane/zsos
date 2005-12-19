@@ -60,6 +60,7 @@ void initialize_page_tables()
 {
 	PageFlags flags;
 	
+	flags.set_flags(4);
 	flags.set_present(true);
 	flags.set_rw(true);
 

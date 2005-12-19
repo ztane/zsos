@@ -1,6 +1,13 @@
 #ifndef __MEMORY_INCLUDED__
 #define __MEMORY_INCLUDED__
 
+#define KERNEL_CODE_DESCRIPTOR 0x08
+#define KERNEL_DATA_DESCRIPTOR 0x10
+#define   USER_CODE_DESCRIPTOR 0x18
+#define   USER_DATA_DESCRIPTOR 0x20
+#define         TSS_DESCRIPTOR 0x28
+
+
 #define DSC_FLAG_PAGE_GRAN   0x80
 #define DSC_FLAG_DEFAULT_32  0x40
 
@@ -23,6 +30,8 @@
 #define DSC_ACCESS_READABLE    0x02
 
 #define DSC_ACCESS_ACCESSED    0x01
+#define DSC_ACCESS_IS_TSS      0x01
+
 
 class SegmentDescriptor {
 protected:
@@ -116,5 +125,6 @@ public:
 } __attribute__ ((packed));
 
 SegmentDescriptor *get_descriptor(int number);
+void init_gdt();
 
 #endif

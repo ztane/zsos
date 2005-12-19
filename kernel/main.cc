@@ -7,6 +7,7 @@
 #include "multiboot.h"
 #include "interrupt.h"
 #include "paging"
+#include "tasking"
 
 void *PHYS_TO_LOG(void *addr) 
 {
@@ -66,7 +67,14 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 
 extern void enable_keyboard();
 extern void init_idt();
+extern void init_gdt();
+extern void initialize_tasking();
 
+void user_task() {
+	while (1) {
+	}
+	// __asm__ __volatile__("hlt");
+}
 
 void haltloop() 
 {
@@ -75,16 +83,22 @@ void haltloop()
 	}
 }
 
+Process tesmi("tesmi") __attribute__((aligned(4096)));
+
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Initializing..." << endl;
-	kout << "Remapping PIC...";
-	init_pic();
+	kout << "Setting up GDT...";
+	init_gdt();
+	kout << " done..." << endl;
+
+	kout << "Setting up IDT...";
+	init_idt();
 	kout << " done" << endl;
 
-	kout << "Setting up null IDT...";
-	init_idt();
+	kout << "Remapping PIC...";
+	init_pic();
 	kout << " done" << endl;
 	
 	kout << "Enabling paging...";
@@ -99,13 +113,14 @@ void kernel_main(unsigned int magic, void *mbd)
 	enable_keyboard();
 	kout << " done" << endl;
 
-	kout << "Enabling interrupts...";
-	enable_ints();
+	kout << "Initializing tasking...";
+	initialize_tasking();
 	kout << " done" << endl;
 	
-	*((char*)0x10000000) = 0;
+	kout << "Starting tasking...";
+	tesmi.initialize((void*)user_task);
+	tesmi.dispatch();
 
-	kout << "Entering halt loop." << endl;
 	haltloop();
 
 	return;

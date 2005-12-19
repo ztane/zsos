@@ -2,7 +2,7 @@ include ../Makefile.inc
 
 HEADERS=chardev.h
 CMODULES=kernel vga_text printk
-CCMODULES=main interrupt pic multiboot printstate paging memory
+CCMODULES=main interrupt pic multiboot printstate paging memory tasking
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include $(GCCINCLUDEDIRS) ..
 OBJDIR=obj

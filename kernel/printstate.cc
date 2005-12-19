@@ -4,10 +4,10 @@
 void print_kernel_state(Registers& r)
 {
 	printk("\nRegisters:\n");
-	printk(  "EAX:%x  EBX:%x  ECX:%x  EDX:%x\n",
+	printk(  "EAX:%08x  EBX:%08x  ECX:%08x  EDX:%08x\n",
 		r.eax, r.ebx, r.ecx, r.edx);
-	printk(  "ESP:%x  EBP:%x  ESI:%x  EDI:%x\n",
+	printk(  "ESP:%08x  EBP:%08x  ESI:%08x  EDI:%08x\n",
 		r.esp, r.ebp, r.esi, r.edi);
-	printk(  "CS:%x DS:%x ES:%x FS:%x GS:%x SS:%x\n",
+	printk(  "CS:%04x DS:%04x ES:%04x FS:%04x GS:%04x SS:%04x\n",
 		10, 10, 10, 10, 10, 10);
 }
