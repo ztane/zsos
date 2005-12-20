@@ -10,10 +10,19 @@
 #define DEFINE_INTR_GATE(name)	 \
 	.globl ASMISR(name)	;\
 ASMISR(name):			;\
+	push %ds		;\
+	push %es		;\
+	push %fs		;\
+	push %gs		;\
 	pushal			;\
 	call ISR(name)		;\
 	popal			;\
+    	pop %gs			;\
+        pop %fs			;\
+        pop %es			;\
+        pop %ds			;\
 	iret
+
 
 /*********************************************************
  * CODE BEGINS                                           *
@@ -59,6 +68,7 @@ DEFINE_INTR_GATE(floating_point_error)
 DEFINE_INTR_GATE(alignment_check)
 DEFINE_INTR_GATE(machine_check)
 
+DEFINE_INTR_GATE(IRQ_0)
 DEFINE_INTR_GATE(IRQ_1)
 DEFINE_INTR_GATE(IRQ_2)
 DEFINE_INTR_GATE(IRQ_3)
@@ -74,5 +84,7 @@ DEFINE_INTR_GATE(IRQ_C)
 DEFINE_INTR_GATE(IRQ_D)
 DEFINE_INTR_GATE(IRQ_E)
 DEFINE_INTR_GATE(IRQ_F)
+
+DEFINE_INTR_GATE(SYS_CALL)
 
 

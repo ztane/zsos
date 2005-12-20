@@ -72,8 +72,20 @@ extern void initialize_tasking();
 
 void user_task() {
 	while (1) {
+		__asm__ __volatile__(
+			"mov $0x42, %eax\n\t"
+			"int $0x80\n\t"
+		);
 	}
-	// __asm__ __volatile__("hlt");
+}
+
+void user_task2() {
+	while (1) {
+		__asm__ __volatile__(
+			"mov $0x41, %eax\n\t"
+			"int $0x80\n\t"
+		);
+	}
 }
 
 void haltloop() 
@@ -84,6 +96,7 @@ void haltloop()
 }
 
 Process tesmi("tesmi") __attribute__((aligned(4096)));
+Process tesmi2("tesmi2") __attribute__((aligned(4096)));
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
@@ -119,6 +132,7 @@ void kernel_main(unsigned int magic, void *mbd)
 	
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
+	tesmi2.initialize((void*)user_task2);
 	tesmi.dispatch();
 
 	haltloop();

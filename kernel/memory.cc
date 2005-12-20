@@ -1,5 +1,6 @@
 #include "memory"
 #include "tasking"
+#include "printk.h"
 
 #define N_SEGMENT_DESCRIPTORS 5
 
@@ -27,7 +28,7 @@ SegmentDescriptor GDT[] = {
 	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		DATA_ACCESS | DSC_ACCESS_RING_3, FLAGS),
 
-	SegmentDescriptor((unsigned int)&TSS_Segment, 104,
+	SegmentDescriptor((unsigned long)&TSS_Segment, 103,
 		DSC_ACCESS_PRESENT | DSC_ACCESS_IS_TSS, 0)
 };
 

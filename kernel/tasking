@@ -34,7 +34,10 @@ class Process {
         unsigned int cr3;
 
 	char name[32];
-	unsigned char kernel_stack[4056];
+	unsigned int padding;
+	unsigned char kernel_stack[4096];
+	unsigned int padding2;
+	unsigned char user_stack[4096];
 public:
 	Process(char *name);
 	void initialize(void *entry_point);

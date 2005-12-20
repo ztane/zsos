@@ -5,6 +5,7 @@
 #include "pokepeek.h"
 #include "printk.h"
 #include "printstate"
+#include "tasking"
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -42,6 +43,7 @@ extern "C" {
 	ISR_PROTOS(alignment_check)
 	ISR_PROTOS(machine_check)
 
+	ISR_PROTOS(IRQ_0)
 	ISR_PROTOS(IRQ_1)
 	ISR_PROTOS(IRQ_2)
 	ISR_PROTOS(IRQ_3)
@@ -57,6 +59,8 @@ extern "C" {
 	ISR_PROTOS(IRQ_D)
 	ISR_PROTOS(IRQ_E)
 	ISR_PROTOS(IRQ_F)
+
+	ISR_PROTOS(SYS_CALL)
 
 	void test1();
 	void int_handler();
@@ -105,21 +109,35 @@ ID interrupt_table[256] =
 
 	// 0x20 - 0x2E: IRQs
 
-	ID( I(IRQ_1),		    INTR_GATE 	), // 20
+	ID( I(IRQ_0),		    INTR_GATE 	), // 20
+	ID( I(IRQ_1),		    INTR_GATE 	), 
 	ID( I(IRQ_2),		    INTR_GATE 	),
 	ID( I(IRQ_3),		    INTR_GATE 	),
 	ID( I(IRQ_4),		    INTR_GATE 	),
 	ID( I(IRQ_5),		    INTR_GATE 	),
 	ID( I(IRQ_6),		    INTR_GATE 	),
 	ID( I(IRQ_7),		    INTR_GATE 	),
-	ID( I(IRQ_8),		    INTR_GATE 	),
-	ID( I(IRQ_9),		    INTR_GATE	), // 28
+	ID( I(IRQ_8),		    INTR_GATE 	), // 28
+	ID( I(IRQ_9),		    INTR_GATE	),
 	ID( I(IRQ_A),		    INTR_GATE 	),
 	ID( I(IRQ_B),		    INTR_GATE 	),
 	ID( I(IRQ_C),		    INTR_GATE 	),
 	ID( I(IRQ_D),		    INTR_GATE 	),
 	ID( I(IRQ_E),		    INTR_GATE 	),
 	ID( I(IRQ_F),		    INTR_GATE 	),
+	
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 30
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 40
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 50
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 60
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 70
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+
+	ID( I(SYS_CALL),	    INTR_GATE, INTR_ACCESS_RING_3),
 };
 
 static struct _idtr {
@@ -153,21 +171,28 @@ void init_idt()
 	load_idt(interrupt_table, 256);
 }
 
-// IRQ1 - Timer
-C_ISR(IRQ_1) 
+// IRQ0 - Timer
+C_ISR(IRQ_0) 
 {
 	static int i = 0;
 	i ++;
-	if (i > 100) {
-		printk("timer tick\n");
-		i = 0;
+	if (i % 100 == 0) {
+		if ((i / 100) % 2 == 1) {
+			extern Process tesmi;
+			unlock_irq(1);
+			tesmi.dispatch();
+		}
+		else { 
+			extern Process tesmi2;
+			unlock_irq(1);
+			tesmi2.dispatch();
+		}
 	}
-	enable_ints();	
 	unlock_irq(1);
 }
 
-// IRQ2 - Keyboard
-C_ISR(IRQ_2)
+// IRQ1 - Keyboard
+C_ISR(IRQ_1)
 {
 	int val = inb(0x60);
 
@@ -229,6 +254,7 @@ C_ISR(floating_point_error) { out_status(' P F'); }
 C_ISR(alignment_check)      { out_status(' C A'); }
 C_ISR(machine_check)        { out_status(' C M'); }
 
+C_ISR(IRQ_2) { }
 C_ISR(IRQ_3) { }
 C_ISR(IRQ_4) { }
 C_ISR(IRQ_5) { }
@@ -242,5 +268,3 @@ C_ISR(IRQ_C) { }
 C_ISR(IRQ_D) { }
 C_ISR(IRQ_E) { }
 C_ISR(IRQ_F) { }
-
-

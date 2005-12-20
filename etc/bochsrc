@@ -4,3 +4,5 @@ ata0-master: type=disk, path="img/disk.img", mode=flat, cylinders=100, heads=16,
 floppya: 1_44=img/grubfloppy.img, status=inserted
 boot: a
 megs: 32
+# debugger_log: debugger.out
+# debug: action=report

@@ -1,0 +1,10 @@
+#ifndef SYSCALL_INCLUDED
+#define SYSCALL_INCLUDED
+
+inline int syscall0(int number) {
+	int retv;
+	asm("int $80" : "=a"(retv) : "0"(number));
+	return retv;
+}
+
+#endif
