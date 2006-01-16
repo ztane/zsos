@@ -1,14 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "chardev.h"
+#include "initial_vga.h"
 #include "printk.h"
 
-extern char_device_iface vga;
-
 static char heap_mem[4096];
-
-extern void init_vga_buffer();
 
 extern void (*__CTOR_LIST__)();
 
@@ -29,7 +25,7 @@ static void call_ctors()
 extern void kernel_main(unsigned long, void *);
 
 void kmain(unsigned int magic, void *addr) {
-	/* Tämän pitäis tapahtua ajurin latauksessa!! */
+	/* Tï¿½ï¿½ pitï¿½s tapahtua ajurin latauksessa!! */
 	init_vga_buffer();
 	printk("ZS OS 1.0 Initializing\n");
 	printk("Setting up memory arena...");

@@ -1,7 +1,7 @@
 include ../Makefile.inc
 
-HEADERS=chardev.h
-CMODULES=kernel vga_text printk
+HEADERS=
+CMODULES=kernel initial_vga printk
 CCMODULES=main interrupt pic multiboot printstate paging \
 	memory tasking syscall
 ASMMODULES=intvecs

@@ -95,8 +95,8 @@ void haltloop()
 	}
 }
 
-Process tesmi("tesmi") __attribute__((aligned(4096)));
-Process tesmi2("tesmi2") __attribute__((aligned(4096)));
+Process tesmi("tesmi");
+Process tesmi2("tesmi2");
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)

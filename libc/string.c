@@ -78,3 +78,21 @@ void *memcpy(register void *dest, register const void *src, register size_t n)
 	}
 	return origdest;
 }
+
+void *memmove(register void *dest, register const void *src, register size_t n)
+{
+	/* FIXME: fix this if memcpy starts to use something else
+	   than chars */
+	if (dest <= src || (src + n) <= dest)
+		return memcpy(dest, src, n);
+
+	src  += n - 1;
+	dest += n - 1;
+
+	while (n)
+	{
+		*((char *) dest--) = *((const char *) src--);
+		n--;
+	}
+	return dest + 1;
+}
