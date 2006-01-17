@@ -3,7 +3,7 @@ include ../Makefile.inc
 HEADERS=
 CMODULES=kernel initial_vga printk
 CCMODULES=main interrupt pic multiboot printstate paging \
-	memory tasking syscall
+	memory tasking syscall init_vga
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include $(GCCINCLUDEDIRS) ..
 OBJDIR=obj

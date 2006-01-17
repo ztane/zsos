@@ -8,6 +8,7 @@
 #include "interrupt.h"
 #include "paging"
 #include "tasking"
+#include "init_vga"
 
 void *PHYS_TO_LOG(void *addr) 
 {
@@ -129,7 +130,13 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << "Initializing tasking...";
 	initialize_tasking();
 	kout << " done" << endl;
-	
+
+	CharDev *vgad = new VgaDev();
+	kout << "Testing VgaDev::write(const void *, size_t): ";
+	vgad->write("VgaDev::write working", 21);
+	kout << " ...done" << endl;
+	delete vgad; vgad = 0;
+
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi2.initialize((void*)user_task2);

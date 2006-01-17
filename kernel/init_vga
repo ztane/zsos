@@ -1,0 +1,22 @@
+#ifndef _INIT_VGA_
+#define _INIT_VGA_
+
+#include <stdlib.h>
+#include "chardevice"
+
+class VgaDev : public CharDev
+{
+	public:
+		VgaDev();
+		virtual ~VgaDev();
+
+		virtual size_t read(void *vbuf, size_t len);
+		virtual size_t write(const void *vbuf, size_t len);
+		virtual int open();
+		virtual int close();
+	private:
+};
+
+#endif
+
+
