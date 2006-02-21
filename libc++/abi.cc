@@ -13,7 +13,5 @@ void __cxa_pure_virtual()
 	printk("PANIC!");
 
 	while (1)
-	{
 		__asm__ __volatile__ ("hlt");
-	}
 }

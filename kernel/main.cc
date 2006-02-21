@@ -144,7 +144,7 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi2.initialize((void*)user_task2);
-//	tesmi.dispatch();
+	tesmi.dispatch();
 
 	haltloop();
 
