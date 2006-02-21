@@ -6,8 +6,8 @@
 // All chardev drivers should be inherited from this interface,
 // or from something like this.
 //
-#ifndef _CHARDEVICE_
-#define _CHARDEVICE_
+#ifndef CHARDEVICE_HH
+#define CHARDEVICE_HH
 
 #include <stdlib.h>
 

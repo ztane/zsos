@@ -1,8 +1,8 @@
-#ifndef _INIT_VGA_
-#define _INIT_VGA_
+#ifndef INIT_VGA_HH
+#define INIT_VGA_HH
 
 #include <stdlib.h>
-#include "chardevice"
+#include "chardevice.hh"
 
 class VgaDev : public CharDev
 {

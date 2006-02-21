@@ -4,11 +4,12 @@
 #include <iostream>
 
 #include "printk.h"
-#include "multiboot.h"
+#include "multiboot.hh"
 #include "interrupt.h"
 #include "paging"
 #include "tasking"
-#include "init_vga"
+#include "init_vga.hh"
+#include "ide.hh"
 
 void *PHYS_TO_LOG(void *addr) 
 {
@@ -137,10 +138,13 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << " ...done" << endl;
 	delete vgad; vgad = 0;
 
+	HddDev *hda = new HddDev();
+	delete hda; hda = 0;
+
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi2.initialize((void*)user_task2);
-	tesmi.dispatch();
+//	tesmi.dispatch();
 
 	haltloop();
 

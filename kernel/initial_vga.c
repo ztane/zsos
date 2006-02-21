@@ -80,7 +80,7 @@ static void scroll_buffer()
 {
 	/*
 	for every character in buffer except first row:
-	move back 1 position with color data
+		move back 1 position with color data
 	*/
 	
 	memmove(VGA_TEXT_BASE, VGA_TEXT_BASE + VGA_TEXT_WIDTH * 2, VGA_TEXT_LENGTH - VGA_TEXT_WIDTH * 2);
