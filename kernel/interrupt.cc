@@ -266,5 +266,5 @@ C_ISR(IRQ_A) { }
 C_ISR(IRQ_B) { }
 C_ISR(IRQ_C) { }
 C_ISR(IRQ_D) { }
-C_ISR(IRQ_E) { }
-C_ISR(IRQ_F) { }
+C_ISR(IRQ_E) { printk("ide0: interrupt\n"); }
+C_ISR(IRQ_F) { printk("ide1: interrupt\n"); }

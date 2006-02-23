@@ -74,19 +74,19 @@ extern void initialize_tasking();
 
 void user_task() {
 	while (1) {
-		__asm__ __volatile__(
-			"mov $0x42, %eax\n\t"
-			"int $0x80\n\t"
-		);
+//		__asm__ __volatile__(
+//			"mov $0x42, %eax\n\t"
+//			"int $0x80\n\t"
+//		);
 	}
 }
 
 void user_task2() {
 	while (1) {
-		__asm__ __volatile__(
-			"mov $0x41, %eax\n\t"
-			"int $0x80\n\t"
-		);
+//		__asm__ __volatile__(
+//			"mov $0x41, %eax\n\t"
+//			"int $0x80\n\t"
+//		);
 	}
 }
 
@@ -138,8 +138,9 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << " ...done" << endl;
 	delete vgad; vgad = 0;
 
-	HddDev *hda = new HddDev();
-	delete hda; hda = 0;
+	IdeHddDev *ide0 = new IdeHddDev(0, 0);
+	ide0->issueRead(0, 1);
+	delete ide0; ide0 = 0;
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
