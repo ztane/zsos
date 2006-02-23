@@ -10,7 +10,12 @@ void TSSContents::setup() {
 	memset(&TSS_Segment, 0, sizeof(TSS_Segment));
 	ss0   = KERNEL_DATA_DESCRIPTOR;
 
-        es = ss = ds = fs = gs = USER_DATA_DESCRIPTOR + 3;
+        es = 
+	ss = 
+	ds = 
+	fs = 
+	gs = USER_DATA_DESCRIPTOR + 3;
+
         cs = USER_CODE_DESCRIPTOR + 3;
 
 	eflags = 2;
@@ -26,6 +31,7 @@ Process::Process(char *_name) {
 void Process::initialize(void *entry) {
 	unsigned int *tmp;
 
+	// build kernel stack
 	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
 	kstack = (unsigned int)tmp;
 	tmp --;
@@ -33,12 +39,15 @@ void Process::initialize(void *entry) {
 	*tmp -- = USER_DATA_DESCRIPTOR + 3;
 	*tmp -- = (unsigned int)user_stack + 16380;
         *tmp -- = 0x0202;
+
         *tmp -- = USER_CODE_DESCRIPTOR + 3;
         *tmp -- = (unsigned int) entry; 
+
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // ds
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // es
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // fs
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // gs
+
         *tmp -- = 0;    // ebp
         *tmp -- = 0;    // esp
         *tmp -- = 0;    // edi
