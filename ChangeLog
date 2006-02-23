@@ -1,3 +1,6 @@
+2005-12-21: (Antti) Multitasking sorta works :P Legendary proof of
+	concept with A's and B's...
+
 2005-05-27:
 	(Antti) Loads of changes. The kernel now has paging (hooray),
 	it resets paging and gdt using new fancy files. Added symbol
