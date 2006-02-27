@@ -10,6 +10,7 @@
 #include "tasking"
 #include "init_vga.hh"
 #include "ide.hh"
+#include "scheduler.hh"
 
 void *PHYS_TO_LOG(void *addr) 
 {
@@ -74,19 +75,25 @@ extern void initialize_tasking();
 
 void user_task() {
 	while (1) {
-//		__asm__ __volatile__(
-//			"mov $0x42, %eax\n\t"
-//			"int $0x80\n\t"
-//		);
+		static int i = 0;
+		i ++;
+		if (i % 4096 == 0)
+			__asm__ __volatile__(
+				"mov $0x42, %eax\n\t"
+				"int $0x80\n\t"
+			);
 	}
 }
 
 void user_task2() {
 	while (1) {
-//		__asm__ __volatile__(
-//			"mov $0x41, %eax\n\t"
-//			"int $0x80\n\t"
-//		);
+		static int i = 0;
+		i ++;
+		if (i % 4096 == 0)
+		__asm__ __volatile__(
+			"mov $0x41, %eax\n\t"
+			"int $0x80\n\t"
+		);
 	}
 }
 
@@ -99,6 +106,7 @@ void haltloop()
 
 Process tesmi("tesmi");
 Process tesmi2("tesmi2");
+Scheduler scheduler;
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
@@ -145,6 +153,8 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi2.initialize((void*)user_task2);
+	scheduler.add_process(&tesmi, 0);
+	scheduler.add_process(&tesmi2, 0);
 	tesmi.dispatch();
 
 	haltloop();

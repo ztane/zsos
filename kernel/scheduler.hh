@@ -20,7 +20,7 @@ class Scheduler
 {
 	public:
 		Scheduler();
-		~Scheduler();
+		//~Scheduler();
 		
 		void schedule();
 		void add_process(Process *process, unsigned int priv);

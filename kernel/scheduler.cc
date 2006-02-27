@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "scheduler.hh"
+#include "tasking"
 
 Scheduler::Scheduler()
 {
@@ -14,23 +15,21 @@ Scheduler::Scheduler()
 		tasks[i].prev    = &tasks[i];
 	}
 }
-
+/*
 Scheduler::~Scheduler()
 {
 	kout << "Scheduler: YARR!! They killed me!" << endl;
 }
-
-Scheduler::schedule()
+*/
+void Scheduler::schedule()
 {
 	int idx;
-	Process *p = NULL;
 	process_dir *p_dir = NULL;
 	
 	for (idx = 0; idx < PRIV_LEVELS; idx++)
 	{
 		if (tasks[idx].next->process != NULL)
 		{
-			p     = tasks[idx].next->process;
 			p_dir = tasks[idx].next;
 			
 			tasks[idx].next = tasks[idx].next->next;
@@ -41,15 +40,27 @@ Scheduler::schedule()
 			p_dir->next = &tasks[idx];
 			tasks[idx].prev = p_dir;
 			
-			current = p;
-			p->dispatch();
+			kout << "Scheduler: dispatching..." << endl;
+			
+			current = p_dir->process;
+			current->dispatch();
 		}
 	}
-
-	return;
 }
 
-Scheduler::add_process(Process *p, unsigned int priv)
+void Scheduler::add_process(Process *p, unsigned int priv)
 {
-	return;
+	process_dir *p_dir = (process_dir *) kmalloc(sizeof(process_dir));
+	
+	if (!p_dir)
+	{
+		kout << "Scheduler: add_process: kmalloc returned NULL" << endl;
+		return;
+	}
+	
+	p_dir->process = p;
+	p_dir->prev = &tasks[priv];
+	p_dir->next = tasks[priv].next;
+	tasks[priv].next->prev = p_dir;
+	tasks[priv].next = p_dir;
 }

@@ -6,6 +6,7 @@
 #include "printk.h"
 #include "printstate"
 #include "tasking"
+#include "scheduler.hh"
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -177,7 +178,7 @@ C_ISR(IRQ_0)
 	static int i = 0;
 	i ++;
 	if (i % 100 == 0) {
-		if ((i / 100) % 2 == 1) {
+/*		if ((i / 100) % 2 == 1) {
 			extern Process tesmi;
 			unlock_irq(1);
 			tesmi.dispatch();
@@ -186,7 +187,10 @@ C_ISR(IRQ_0)
 			extern Process tesmi2;
 			unlock_irq(1);
 			tesmi2.dispatch();
-		}
+		}*/
+		extern Scheduler scheduler;
+		unlock_irq(1);
+		scheduler.schedule();
 	}
 	unlock_irq(1);
 }
