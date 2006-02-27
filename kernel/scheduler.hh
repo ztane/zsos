@@ -11,9 +11,8 @@
 // NOTE: turn into a class if requires complex operations!
 typedef struct _process_dir
 {
-	Process *process;
-	struct _process_dir *next;
-	struct _process_dir *prev;
+	Process *first;
+	Process *last;
 } process_dir;
 
 class Scheduler
@@ -23,9 +22,13 @@ class Scheduler
 		//~Scheduler();
 		
 		void schedule();
-		void add_process(Process *process, unsigned int priv);
+		void add_process(Process *process);
+		void remove_process(Process *process);
+		void inc_ticks();
 		
 	private:
+		bool scheduler_running;
+		unsigned long long n_ticks;
 		Process *current;
 		process_dir tasks[PRIV_LEVELS];
 };

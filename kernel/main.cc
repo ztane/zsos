@@ -11,6 +11,7 @@
 #include "init_vga.hh"
 #include "ide.hh"
 #include "scheduler.hh"
+#include "timer"
 
 void *PHYS_TO_LOG(void *addr) 
 {
@@ -132,32 +133,29 @@ void kernel_main(unsigned int magic, void *mbd)
 	extract_multiboot_info(magic, mbd);
 	kout << "-- -- --" << endl;
 	
+	kout << "Initializing tasking...";
+	initialize_tasking();	kout << "Enabling keyboard and timer interrupts...";
+	enable_keyboard();
+	kout << " done" << endl;
+
+
+	kout << " done" << endl;
+
+	kout << "Initializing timer...";
+	initialize_timer();
+	kout << " done" << endl;
+
 	kout << "Enabling keyboard and timer interrupts...";
 	enable_keyboard();
 	kout << " done" << endl;
 
-	kout << "Initializing tasking...";
-	initialize_tasking();
-	kout << " done" << endl;
-
-	CharDev *vgad = new VgaDev();
-	kout << "Testing VgaDev::write(const void *, size_t): ";
-	vgad->write("VgaDev::write working", 21);
-	kout << " ...done" << endl;
-	delete vgad; vgad = 0;
-
-	IdeHddDev *ide0 = new IdeHddDev(0, 0);
-	ide0->issueRead(0, 1);
-	delete ide0; ide0 = 0;
-
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi2.initialize((void*)user_task2);
-	scheduler.add_process(&tesmi, 0);
-	scheduler.add_process(&tesmi2, 0);
-	tesmi.dispatch();
+	scheduler.add_process(&tesmi);
+	scheduler.add_process(&tesmi2);
+	scheduler.schedule();
 
-	haltloop();
-
+	kout << "ERROR - QUITTING KERNEL!!!" << endl;
 	return;
 }

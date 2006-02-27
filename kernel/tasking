@@ -27,7 +27,17 @@ public:
 	void setup();
 } __attribute__((packed));
 
+class Process;
 class Process {
+protected:
+public:
+	enum ProcessState {
+		READY,
+		RUNNING,
+		WAITING
+	};
+
+protected:
 	unsigned int esp;    //actual position of esp
         unsigned int kstack; //stacktop of kernel stack
         unsigned int ustack; //stacktop of user stack
@@ -38,11 +48,52 @@ class Process {
 	unsigned char kernel_stack[4096];
 	unsigned int padding2;
 	unsigned char user_stack[4096];
+
+	ProcessState current_state;
+	int current_priority;
+	Process *next;
+	Process *previous;
+	int timeslice;
+
 public:
 	Process(char *name);
+	
 	void initialize(void *entry_point);
 	void dispatch();
 
+	ProcessState getCurrentState() {
+		return current_state;
+	}
+
+	void setCurrentState(ProcessState new_state) {
+		current_state = new_state;	
+	}
+
+	int getCurrentPriority() {
+		return current_priority;
+	}
+
+	void setCurrentPriority(int priority) {
+		current_priority = priority;
+	}
+
+	Process *getNext() {
+		return next;
+	}
+
+	void setNext(Process *n) {
+		next = n;
+	}
+
+	Process *getPrevious() {
+		return previous;
+	}
+
+	void setPrevious(Process *p) {
+		previous = p;
+	}
+
+	friend class Scheduler;
 };
 
 

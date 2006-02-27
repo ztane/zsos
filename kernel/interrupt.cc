@@ -7,6 +7,7 @@
 #include "printstate"
 #include "tasking"
 #include "scheduler.hh"
+#include "timer"
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -169,6 +170,7 @@ void load_idt(InterruptDescriptor *_base, int num)
 
 void init_idt() 
 {
+
 	load_idt(interrupt_table, 256);
 }
 
@@ -177,19 +179,10 @@ C_ISR(IRQ_0)
 {
 	static int i = 0;
 	i ++;
-	if (i % 100 == 0) {
-/*		if ((i / 100) % 2 == 1) {
-			extern Process tesmi;
-			unlock_irq(1);
-			tesmi.dispatch();
-		}
-		else { 
-			extern Process tesmi2;
-			unlock_irq(1);
-			tesmi2.dispatch();
-		}*/
+	if (i % (TIMER_TICKS_PER_SECOND * 10) == 0) {
 		extern Scheduler scheduler;
 		unlock_irq(1);
+		scheduler.inc_ticks();
 		scheduler.schedule();
 	}
 	unlock_irq(1);
@@ -272,3 +265,5 @@ C_ISR(IRQ_C) { }
 C_ISR(IRQ_D) { }
 C_ISR(IRQ_E) { printk("ide0: interrupt\n"); unlock_irq(14); }
 C_ISR(IRQ_F) { printk("ide1: interrupt\n"); unlock_irq(15); }
+
+volatile int __critical_nest_depth = 0;

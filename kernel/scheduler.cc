@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "interrupt.h"
 #include "scheduler.hh"
 #include "tasking"
 
@@ -8,12 +9,14 @@ Scheduler::Scheduler()
 {
 	kout << "Scheduler: setting up process queues" << endl;
 	
+	scheduler_running = false;
 	for (int i = 0; i < PRIV_LEVELS; i++)
 	{
-		tasks[i].process = NULL;
-		tasks[i].next    = &tasks[i];
-		tasks[i].prev    = &tasks[i];
+		tasks[i].first = NULL;
+		tasks[i].last = NULL;
 	}
+	
+	n_ticks = 0;
 }
 /*
 Scheduler::~Scheduler()
@@ -24,43 +27,91 @@ Scheduler::~Scheduler()
 void Scheduler::schedule()
 {
 	int idx;
-	process_dir *p_dir = NULL;
 	
-	for (idx = 0; idx < PRIV_LEVELS; idx++)
-	{
-		if (tasks[idx].next->process != NULL)
-		{
-			p_dir = tasks[idx].next;
-			
-			tasks[idx].next = tasks[idx].next->next;
-			tasks[idx].next->prev = &tasks[idx];
-			
-			tasks[idx].prev->next = p_dir;
-			p_dir->prev = tasks[idx].prev;
-			p_dir->next = &tasks[idx];
-			tasks[idx].prev = p_dir;
-			
-			kout << "Scheduler: dispatching..." << endl;
-			
-			current = p_dir->process;
-			current->dispatch();
-		}
-	}
-}
-
-void Scheduler::add_process(Process *p, unsigned int priv)
-{
-	process_dir *p_dir = (process_dir *) kmalloc(sizeof(process_dir));
-	
-	if (!p_dir)
-	{
-		kout << "Scheduler: add_process: kmalloc returned NULL" << endl;
+	enter_critical();
+	if (scheduler_running) {
 		return;
 	}
 	
-	p_dir->process = p;
-	p_dir->prev = &tasks[priv];
-	p_dir->next = tasks[priv].next;
-	tasks[priv].next->prev = p_dir;
-	tasks[priv].next = p_dir;
+	scheduler_running = true;
+	
+	while (true) {
+		for (idx = 0; idx < PRIV_LEVELS; idx++)
+		{
+			if (tasks[idx].first != NULL) {
+				Process *p = tasks[idx].first;
+				remove_process(p);
+				
+				current = p;
+				p->current_state = Process::RUNNING;
+				scheduler_running = false;
+				
+				__critical_nest_depth = 0;
+				p->dispatch();
+			}
+		}
+	
+		leave_critical();
+		__asm__ __volatile(
+			"hlt\t\n"
+		::);
+	}
+}
+
+void Scheduler::remove_process(Process *p) {
+	enter_critical();
+	
+	process_dir *entry = &tasks[p->getCurrentPriority()];
+	
+	if (p->next) {
+		p->next->previous = p->previous;
+	} 
+	else {
+		entry->last = p->previous;
+	}
+	
+	if (p->previous) {	
+		p->previous->next = p->next;
+	}
+	else {
+		entry->first = p->next;
+	}
+	p->next = p->previous = NULL;
+	
+	leave_critical();
+}
+
+void Scheduler::inc_ticks() {
+	enter_critical();
+	
+	n_ticks ++;
+	current->timeslice ++;
+	if (current->timeslice > 0) {
+		current->timeslice = 0;
+		add_process(current);
+	}
+	
+	leave_critical();
+}
+
+void Scheduler::add_process(Process *p)
+{
+	enter_critical();
+	
+	int prio;
+	Process *secondlast;
+	prio = p->getCurrentPriority();
+	secondlast = tasks[prio].last;
+	p->next = p->previous = NULL;
+	if (secondlast) {
+		p->previous = secondlast;
+		secondlast->next = p;
+	}
+	else {
+		tasks[prio].first = p;
+	}
+	tasks[prio].last = p;
+	p->current_state = Process::READY;
+	
+	leave_critical();
 }

@@ -26,6 +26,10 @@ void TSSContents::setup() {
 Process::Process(char *_name) {
 	esp = 0;
 	strncpy(name, _name, sizeof(name));
+
+	current_state = READY;
+	current_priority = 47;
+	timeslice = 0;
 }
 
 void Process::initialize(void *entry) {

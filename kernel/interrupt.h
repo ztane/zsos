@@ -147,4 +147,18 @@ void init_pic();
 static __inline__ void disable_ints() { __asm__ __volatile__ ("cli"); }
 static __inline__ void enable_ints()  {	__asm__ __volatile__ ("sti"); }
 
+extern volatile int __critical_nest_depth; 
+static __inline__ void enter_critical() {
+	disable_ints();
+	__critical_nest_depth ++;
+}
+
+static __inline__ void leave_critical() {
+	__critical_nest_depth --;
+	if (__critical_nest_depth <= 0) {
+		__critical_nest_depth = 0;
+		enable_ints();
+	}
+}
+
 #endif
