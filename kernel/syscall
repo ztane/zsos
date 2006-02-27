@@ -1,10 +1,26 @@
 #ifndef SYSCALL_INCLUDED
 #define SYSCALL_INCLUDED
 
-inline int syscall0(int number) {
+#include "printk.h"
+
+inline unsigned int __syscall0(unsigned int number) {
 	int retv;
-	asm("int $80" : "=a"(retv) : "0"(number));
+	__asm__ __volatile__ ("int $0x80" : "=a"(retv) : "0"(number));
 	return retv;
+}
+
+inline unsigned int __syscall1(unsigned int number, unsigned int val1) {
+	int retv;
+	__asm__ __volatile__ ("int $0x80" : "=a"(retv) : "0"(number), "b"(val1));
+	return retv;
+}
+
+inline int write_character(char character) {
+	return __syscall1(0, character);
+}
+
+inline int illegal_syscall() {
+	return __syscall0(1000);
 }
 
 #endif

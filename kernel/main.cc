@@ -3,6 +3,7 @@
 #include <string.h>
 #include <iostream>
 
+#include "syscall"
 #include "printk.h"
 #include "multiboot.hh"
 #include "interrupt.h"
@@ -76,25 +77,14 @@ extern void initialize_tasking();
 
 void user_task() {
 	while (1) {
-		static int i = 0;
-		i ++;
-		if (i % 4096 == 0)
-			__asm__ __volatile__(
-				"mov $0x42, %eax\n\t"
-				"int $0x80\n\t"
-			);
+		write_character('A');
 	}
 }
 
 void user_task2() {
 	while (1) {
-		static int i = 0;
-		i ++;
-		if (i % 4096 == 0)
-		__asm__ __volatile__(
-			"mov $0x41, %eax\n\t"
-			"int $0x80\n\t"
-		);
+		illegal_syscall();
+		write_character('B');
 	}
 }
 
