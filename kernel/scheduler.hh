@@ -25,7 +25,9 @@ class Scheduler
 		void add_process(Process *process);
 		void remove_process(Process *process);
 		void inc_ticks();
-		
+		Process *getCurrentTask() {
+			return current;
+		}
 	private:
 		bool scheduler_running;
 		unsigned long long n_ticks;

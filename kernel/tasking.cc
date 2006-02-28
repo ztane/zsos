@@ -19,6 +19,7 @@ void TSSContents::setup() {
         cs = USER_CODE_DESCRIPTOR + 3;
 
 	eflags = 2;
+	bitmap = 104;
 
 	__asm__ __volatile__ ("mov %%cr3, %0" : "=a" (cr3) : );
 }
@@ -30,6 +31,13 @@ Process::Process(char *_name) {
 	current_state = READY;
 	current_priority = 47;
 	timeslice = 0;
+}
+
+void Process::enable_io() {
+	// set IOPL to 3...
+	unsigned int *tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
+	tmp -= 3;	
+	*tmp |= 3 << 12;
 }
 
 void Process::initialize(void *entry) {

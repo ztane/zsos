@@ -93,6 +93,8 @@ public:
 		previous = p;
 	}
 
+	void enable_io();
+
 	friend class Scheduler;
 };
 

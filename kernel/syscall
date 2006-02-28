@@ -19,6 +19,10 @@ inline int write_character(char character) {
 	return __syscall1(0, character);
 }
 
+inline int become_io_task() {
+	return __syscall0(1);
+}
+
 inline int illegal_syscall() {
 	return __syscall0(1000);
 }
