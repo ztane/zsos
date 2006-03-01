@@ -5,13 +5,13 @@
 
 #include "syscall"
 #include "printk.h"
-#include "multiboot.hh"
+#include "multiboot"
 #include "interrupt.h"
 #include "paging"
 #include "tasking"
-#include "init_vga.hh"
-#include "ide.hh"
-#include "scheduler.hh"
+#include "init_vga"
+#include "ide"
+#include "scheduler"
 #include "timer"
 
 void *PHYS_TO_LOG(void *addr) 

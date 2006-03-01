@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string.h>
-#include "ide.hh"
+#include "ide"
 #include "printk.h"
 #include "interrupt.h"
 #include "port.h"

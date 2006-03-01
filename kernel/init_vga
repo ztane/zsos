@@ -2,7 +2,7 @@
 #define INIT_VGA_HH
 
 #include <stdlib.h>
-#include "chardevice.hh"
+#include "chardevice"
 
 class VgaDev : public CharDev
 {

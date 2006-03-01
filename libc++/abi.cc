@@ -2,16 +2,16 @@
 
 #include <kernel/printk.h>
 
-// This will get called only if the user calls a non-overridden pure
-// virtual function, which has undefined behaviour according to the C++
-// Standard -- hence we terminate.
+// This provides a standard entry point for the compiler to reference in
+// virtual tables to indicate a pure virtual function.
+// Pure virtual functions have undefined behavior according to C++ standard.
+// This function does not specify its behavior, but it is supposed to
+// terminate the offending process.
 
-extern "C" void __cxa_pure_virtual();
-void __cxa_pure_virtual()
+extern "C"
+void __cxa_pure_virtual(void)
 {
-	printk("WARNING: attempt to use pure virtual function!\n");
-	printk("PANIC!");
-
-	while (1)
-		__asm__ __volatile__ ("hlt");
+	printk("FATAL: pure virtual method.\n");
+	// Do something to terminate here.
+	// Even if it's the kernel.
 }

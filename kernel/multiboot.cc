@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "multiboot.hh"
+#include "multiboot"
 
 MultibootInfo::MultibootInfo() { };
 

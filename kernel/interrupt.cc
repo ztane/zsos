@@ -6,7 +6,7 @@
 #include "printk.h"
 #include "printstate"
 #include "tasking"
-#include "scheduler.hh"
+#include "scheduler"
 #include "timer"
 
 #define ASM_ISR(name) 			\

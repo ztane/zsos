@@ -1,7 +1,7 @@
 #include "iostream"
 #include "interrupt.h"
 #include "printk.h"
-#include "scheduler.hh"
+#include "scheduler"
 
 static unsigned int sys_write_character(const Registers& r) {
         printk("%c", r.ebx);
