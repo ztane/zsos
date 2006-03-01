@@ -1,9 +1,11 @@
-#ifndef IDE_HH
-#define IDE_HH
+// -*- C++ -*-
+
+#ifndef IDE_INC
+#define IDE_INC 1
 
 #include <iostream>
-#include <stdlib.h>
-#include "interrupt.h"
+#include <cstdlib>
+#include "interrupt"
 #include "port.h"
 
 // port addresses for 1st Fixed Disk Controller, Command Block

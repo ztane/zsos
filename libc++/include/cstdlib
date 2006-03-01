@@ -1,0 +1,6 @@
+#ifndef __CSTDLIB_
+#define __CSTDLIB_ 1
+
+# include <stdlib.h>
+
+#endif

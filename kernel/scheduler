@@ -1,5 +1,7 @@
-#ifndef SCHEDULER_HH
-#define SCHEDULER_HH
+// -*- C++ -*-
+
+#ifndef SCHEDULER_INC
+#define SCHEDULER_INC 1
 
 #include "tasking"
 

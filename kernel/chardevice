@@ -1,4 +1,4 @@
-//
+// -*- C++ -*-
 // this will be the base class for all character device drivers
 // 
 // CharDev is abstract class
@@ -6,10 +6,11 @@
 // All chardev drivers should be inherited from this interface,
 // or from something like this.
 //
-#ifndef CHARDEVICE_HH
-#define CHARDEVICE_HH
 
-#include <stdlib.h>
+#ifndef CHARDEVICE_INC
+#define CHARDEVICE_INC 1
+
+#include <cstdlib>
 
 class CharDev {
 	public:

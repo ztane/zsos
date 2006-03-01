@@ -1,7 +1,7 @@
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include "interrupt.h"
+#include <cstdio>
+#include <cstdlib>
+#include "interrupt"
 #include "scheduler"
 #include "tasking"
 

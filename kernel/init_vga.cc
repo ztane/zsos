@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include "init_vga"
 
 extern "C" void   init_vga_buffer();

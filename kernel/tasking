@@ -34,7 +34,8 @@ public:
 	enum ProcessState {
 		READY,
 		RUNNING,
-		WAITING
+		WAITING,
+		SUSPENDED
 	};
 
 protected:

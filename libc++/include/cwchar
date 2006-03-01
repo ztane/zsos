@@ -1,0 +1,6 @@
+#ifndef __CWCHAR_
+#define __CWCHAR_ 1
+
+# include <wchar.h>
+
+#endif

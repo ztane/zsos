@@ -1,7 +1,7 @@
 #ifndef PRINTSTATE
 #define PRINTSTATE
 
-#include "interrupt.h"
+#include "interrupt"
 
 void print_kernel_state(REGS& r);
 

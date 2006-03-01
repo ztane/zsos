@@ -1,7 +1,8 @@
+#include <iostream>
+#include <cstring>
+
 #include "tasking"
 #include "memory"
-#include "string.h"
-#include "iostream"
 #include "printk.h"
 
 TSSContents TSS_Segment __attribute__((aligned(4096)));

@@ -1,6 +1,6 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include "config.h"
-#include "interrupt.h"
+#include "interrupt"
 #include "port.h"
 #include "pokepeek.h"
 #include "printk.h"

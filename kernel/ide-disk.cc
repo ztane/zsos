@@ -1,8 +1,8 @@
 #include <iostream>
-#include <string.h>
+#include <cstring>
 #include "ide"
 #include "printk.h"
-#include "interrupt.h"
+#include "interrupt"
 #include "port.h"
 
 #define BUFB_LEN 512

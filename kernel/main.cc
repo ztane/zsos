@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 
 #include "syscall"
 #include "printk.h"
 #include "multiboot"
-#include "interrupt.h"
+#include "interrupt"
 #include "paging"
 #include "tasking"
 #include "init_vga"
