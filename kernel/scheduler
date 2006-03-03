@@ -3,6 +3,7 @@
 #ifndef SCHEDULER_INC
 #define SCHEDULER_INC 1
 
+#include <cstdlib>
 #include "tasking"
 
 //  0 - 15: HISR (Highlevel Interrupt Service Routine)
@@ -32,7 +33,7 @@ class Scheduler
 		}
 	private:
 		bool scheduler_running;
-		unsigned long long n_ticks;
+		uint64_t n_ticks;
 		Process *current;
 		process_dir tasks[PRIV_LEVELS];
 };

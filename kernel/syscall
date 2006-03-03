@@ -1,3 +1,5 @@
+// -*- C++ -*-
+
 #ifndef SYSCALL_INCLUDED
 #define SYSCALL_INCLUDED
 

@@ -1,5 +1,9 @@
+// -*- C++ -*-
+
 #ifndef TASKING_H
 #define TASKING_H
+
+#include <cstdlib>
 
 class TSSContents{
 public:
@@ -27,9 +31,9 @@ public:
 	void setup();
 } __attribute__((packed));
 
-class Process;
+
 class Process {
-protected:
+
 public:
 	enum ProcessState {
 		READY = 0,
@@ -51,11 +55,14 @@ protected:
 	unsigned int padding2;
 	unsigned char user_stack[4096];
 
-	ProcessState current_state;
 	int current_priority;
+	int timeslice;
+	uint32_t process_id;
+
+	ProcessState current_state;
+
 	Process *next;
 	Process *previous;
-	int timeslice;
 
 public:
 	Process(char *name);
@@ -79,6 +86,14 @@ public:
 		current_priority = priority;
 	}
 
+	void setProcessId(uint32_t pid) {
+		process_id = pid;
+	}
+
+	uint32_t getProcessId() {
+		return process_id;
+	}
+
 	Process *getNext() {
 		return next;
 	}
@@ -98,6 +113,7 @@ public:
 	void enable_io();
 
 	friend class Scheduler;
+
 };
 
 

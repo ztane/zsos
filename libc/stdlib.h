@@ -3,8 +3,9 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <inttypes.h>
 
-typedef unsigned long size_t;
+typedef uint32_t size_t;
 
 #ifdef __cplusplus 
 extern "C" { 

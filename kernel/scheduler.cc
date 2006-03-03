@@ -52,7 +52,7 @@ void Scheduler::schedule()
 		}
 	
 		leave_critical();
-		__asm__ __volatile(
+		__asm__ __volatile__ (
 			"hlt\t\n"
 		::);
 	}
