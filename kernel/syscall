@@ -27,4 +27,12 @@ inline int illegal_syscall() {
 	return __syscall0(1000);
 }
 
+#define SYSCALL(name)                                                   \
+        extern "C" void sys_ ## name(Registers r,                       \
+                unsigned int eip, unsigned int cs, unsigned int eflags)
+
+
+#define SYSCALL_RETURN(value)						\
+	do { r.eax = (unsigned long)(value); return; } while(0)
+
 #endif

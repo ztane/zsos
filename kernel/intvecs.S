@@ -85,6 +85,34 @@ DEFINE_INTR_GATE(IRQ_D)
 DEFINE_INTR_GATE(IRQ_E)
 DEFINE_INTR_GATE(IRQ_F)
 
-DEFINE_INTR_GATE(SYS_CALL)
+# DEFINE_INTR_GATE(SYS_CALL)
+
+#include "syscall_table.S"
+#define N_SYSCALLS 		(SYSCALL_TABLE_SIZE / 4)
+
+	.globl __ISR_SYS_CALL_asm
+
+__ISR_SYS_CALL_asm:
+        push %ds                
+        push %es                
+        push %fs                
+        push %gs                
+        pushal
+	
+	cmpl  $(N_SYSCALLS), %eax
+        jae  __BAD_SYSCALL
+	call *SYSCALL_VECTORS(, %eax, 4)
+
+__RET_FROM_SYSCALL:
+        popal                   
+        pop %gs                 
+        pop %fs                 
+        pop %es                 
+        pop %ds                 
+        iret
+
+__BAD_SYSCALL:
+	call sys_BAD
+	jmp  __RET_FROM_SYSCALL
 
 

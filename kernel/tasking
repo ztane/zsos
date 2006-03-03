@@ -32,10 +32,11 @@ class Process {
 protected:
 public:
 	enum ProcessState {
-		READY,
-		RUNNING,
-		WAITING,
-		SUSPENDED
+		READY = 0,
+		RUNNING = 1,
+		BLOCKED = 2,
+		SUSPENDED = 4,
+		BLOCKED_AND_SUSPENDED = 6
 	};
 
 protected:

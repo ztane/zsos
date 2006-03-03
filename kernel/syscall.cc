@@ -3,30 +3,26 @@
 #include "interrupt"
 #include "printk.h"
 #include "scheduler"
+#include "syscall"
 
-static unsigned int sys_write_character(const Registers& r) {
+SYSCALL(write_character) 
+{
         printk("%c", r.ebx);
-	return 0;
+	
+	SYSCALL_RETURN(0);
 }
 
-static unsigned int sys_become_io_task(const Registers& r) {
+SYSCALL(become_io_task) 
+{
 	extern Scheduler scheduler;
 	Process *task = scheduler.getCurrentTask();
 	task->enable_io();
-	return 0;
+
+	SYSCALL_RETURN(0);
 }
 
-// TODO: dispatch multiple in asm!
-extern "C" C_ISR(SYS_CALL) {
-	// write character...
-	if (r.eax == 0) {
-		r.eax = sys_write_character(r);
-		return;
-	}
-	if (r.eax == 1) {
-		r.eax = sys_become_io_task(r);
-		return;
-	}
-	printk("ILLEGAL SYSTEM CALL, #%u\n", r.eax);
+SYSCALL(BAD)
+{
+	kout << "OOPS... illegal syscall #" << r.eax << endl;
+	SYSCALL_RETURN(-1);
 }
-

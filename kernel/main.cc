@@ -77,6 +77,7 @@ extern void initialize_tasking();
 
 void user_task() {
 	while (1) {
+		illegal_syscall();
 		become_io_task();
 		printk("abc\n");
 		write_character('A');
@@ -85,8 +86,8 @@ void user_task() {
 
 void user_task2() {
 	while (1) {
-		printk("abc\n");
 		illegal_syscall();
+		printk("abc\n");
 		write_character('B');
 	}
 }
