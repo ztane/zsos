@@ -2,16 +2,21 @@ include ../Makefile.inc
 
 HEADERS=
 CMODULES=kernel initial_vga printk
-CCMODULES=main interrupt pic multiboot printstate paging \
+CCMODULES=main interrupt pic multiboot printstate paging   \
 	memory tasking syscall init_vga ide-disk scheduler \
-	timer
+	timer						   \
+							   \
+	become_io_task console
+
 ASMMODULES=intvecs
-INCLUDE=../libc ../libc++/include $(GCCINCLUDEDIRS) ..
+INCLUDE=../libc ../libc++/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 LIBDIR=.
-VPATH=.
+VPATH=.:syscalls
 TESTDIR=t
 
+
+ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)
 COBJS=$(CMODULES:%=$(OBJDIR)/%.o)
 CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
 ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
