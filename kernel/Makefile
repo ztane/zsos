@@ -6,7 +6,7 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 	memory tasking syscall init_vga ide-disk scheduler \
 	timer						   \
 							   \
-	become_io_task console
+	become_io_task console processes
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include $(GCCINCLUDEDIRS) .. .
