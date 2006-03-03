@@ -4,6 +4,7 @@
 #define SYSCALL_INCLUDED
 
 #include <interrupt>
+#include <ostypes>
 
 inline unsigned int __syscall0(unsigned int number) {
 	int retv;
@@ -27,6 +28,10 @@ inline int become_io_task() {
 
 inline int illegal_syscall() {
 	return __syscall0(1000);
+}
+
+inline pid_t get_process_id() {
+	return (pid_t)__syscall0(2);
 }
 
 #define SYSCALL(name)                                                   \

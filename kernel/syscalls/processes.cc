@@ -3,8 +3,9 @@
 
 SYSCALL(get_pid) 
 {
-	// return pid...
-	SYSCALL_RETURN(0);
+        extern Scheduler scheduler;
+        Process *task = scheduler.getCurrentTask();
+        SYSCALL_RETURN(task->getProcessId());
 }
 
 SYSCALL(suspend) 

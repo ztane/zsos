@@ -4,6 +4,7 @@
 #define TASKING_H
 
 #include <cstdlib>
+#include <ostypes>
 
 class TSSContents{
 public:
@@ -57,7 +58,7 @@ protected:
 
 	int current_priority;
 	int timeslice;
-	uint32_t process_id;
+	pid_t process_id;
 
 	ProcessState current_state;
 
