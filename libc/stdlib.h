@@ -16,8 +16,6 @@ int snprintf(char *str, size_t n, const char *fmt, ...);
 
 #ifdef __cplusplus 
 }; 
-#endif 
-
-#include <malloc.h>
+#endif
 
 #endif

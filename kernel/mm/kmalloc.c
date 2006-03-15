@@ -1,10 +1,13 @@
 #include <stdlib.h>
-#include <malloc.h>
 #include <string.h>
+#include "kmalloc.h"
 
+/**
+ * TODO: Heap in general should be PAGE aligned (4k in x86)
+ */
 #define FREEMEM_LISTS 29
 #define FREEMEM_MIN   (sizeof(freeblock_t) - sizeof(usedblock_t))
-#define HEAP_PADDING  (sizeof(void *))
+#define HEAP_PADDING  (sizeof(intptr_t))
 
 typedef union _memory_block *memblock_ptr;
 
@@ -32,15 +35,14 @@ static freeblock_t freemem_bp[FREEMEM_LISTS]; /* list of free blocks */
  * for <= 0x80000000 returns 28 and
  * for        >= 0x8 returns 0
  */
-static int _get_first_bit_set(size_t value)
+static inline int _get_first_bit_set(size_t value)
 {
-        unsigned int test = 0x80000000;
-        int bitpos = FREEMEM_LISTS - 1;
+	unsigned int test = 0x80000000;
+	int bitpos = FREEMEM_LISTS - 1;
 
         for ( ; test && bitpos; bitpos --, test >>= 1)
                 if (value & test)
                         break;
-
 	return bitpos;
 }
 

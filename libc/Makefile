@@ -1,7 +1,7 @@
 include ../Makefile.inc
 
 HEADERS=stdio.h stdlib.h
-OBJFILES=snprintf.o string.o intoa.o malloc.o
+OBJFILES=snprintf.o string.o intoa.o
 OBJDIR=obj
 LIBDIR=../lib
 VPATH=.
