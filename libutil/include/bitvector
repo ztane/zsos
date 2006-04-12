@@ -1,0 +1,72 @@
+#ifndef __BITVECTOR_INCLUDED__
+#define __BITVECTOR_INCLUDED__
+
+#include "string.h"
+
+class BitVector {
+	char bits[1];
+public:
+	BitVector(unsigned long size) {
+		clear_bits(0, size);
+	}
+	
+	bool get_bit(int bit) {
+		int byte = bit >> 3;
+		bit = 1 << (bit & 7);
+		return (bits[byte] & bit) != 0;
+	}
+	
+	void set_bit(int bit) {
+		int byte = bit >> 3;
+                bit = 1 << (bit & 7);
+		bits[byte] |= bit;
+	}
+
+	void clear_bit(int bit) {
+		int byte = bit >> 3;
+                bit = 1 << (bit & 7);
+		bits[byte] &= ~bit;
+	}
+	
+	void set_bits(int start, size_t length) {
+		int midbytes;
+		while (start & 7 && length > 0) {
+			set_bit(start);
+			start ++;
+			length --;
+		}
+		midbytes = length >> 3;
+		if (midbytes > 0)
+			memset(bits + (start >> 3), 0xFF, midbytes);
+		
+		start += length & ~ 7;
+		length &= 7;
+		while (length > 0) {
+			set_bit(start);
+			start ++;
+			length --;
+		}
+	}
+
+	void clear_bits(int start, size_t length) {
+                int midbytes;
+                while (start & 7 && length > 0) {
+                        clear_bit(start);
+                        start ++;
+                        length --;
+                }
+                midbytes = length >> 3;
+                if (midbytes > 0)
+                        memset(bits + (start >> 3), 0x0, midbytes);
+
+                start += length & ~ 7;
+                length &= 7;
+                while (length > 0) {
+                        clear_bit(start);
+                        start ++;
+                        length --;
+                }		
+	}
+};
+
+#endif
