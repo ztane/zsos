@@ -2,6 +2,7 @@
 #define __FREEPAGELIST_INCLUDED__
 
 #include "kernel/arch/constants"
+#include <bitvector>
 
 class FreePageList {
     unsigned long lastAvailablePage;

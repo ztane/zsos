@@ -10,7 +10,7 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 	become_io_task console processes
 
 ASMMODULES=intvecs
-INCLUDE=../libc ../libc++/include $(GCCINCLUDEDIRS) .. .
+INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 LIBDIR=.
 VPATH=.:mm:syscalls
