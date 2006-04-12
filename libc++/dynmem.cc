@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <kernel/mm/kmalloc.h>
 
 // overload the operator "new"
 void *operator new(size_t size)
