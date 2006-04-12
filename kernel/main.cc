@@ -13,6 +13,7 @@
 #include "ide"
 #include "scheduler"
 #include "timer"
+#include "mm/freepagelist"
 
 void *PHYS_TO_LOG(void *addr) 
 {
@@ -101,6 +102,8 @@ Process tesmi("tesmi");
 Process tesmi2("tesmi2");
 Scheduler scheduler;
 
+extern "C" void _END_OF_KERNEL();
+
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
@@ -125,12 +128,12 @@ void kernel_main(unsigned int magic, void *mbd)
 	extract_multiboot_info(magic, mbd);
 	kout << "-- -- --" << endl;
 	
+	kout << "Initializing free page tables...";
+	free_page_list.initialize(4096, (void*)_END_OF_KERNEL);
+	kout << "done." << endl;
+
 	kout << "Initializing tasking...";
-	initialize_tasking();	kout << "Enabling keyboard and timer interrupts...";
-	enable_keyboard();
-	kout << " done" << endl;
-
-
+	initialize_tasking();
 	kout << " done" << endl;
 
 	kout << "Initializing timer...";

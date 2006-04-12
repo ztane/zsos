@@ -8,7 +8,11 @@ class FreePageList {
     unsigned long lastAvailablePage;
     BitVector *freePages;
 public:
-    FreePageList(unsigned long nPages, void* firstFreeMemory);
+    FreePageList();
+    void initialize(unsigned long nPages, void* firstFreeMemory);
 };
+
+extern FreePageList free_page_list;
+
 
 #endif
