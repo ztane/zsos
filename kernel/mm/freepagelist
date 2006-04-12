@@ -1,0 +1,13 @@
+#ifndef __FREEPAGELIST_INCLUDED__
+#define __FREEPAGELIST_INCLUDED__
+
+#include "kernel/arch/constants"
+
+class FreePageList {
+    unsigned long lastAvailablePage;
+    BitVector *freePages;
+public:
+    FreePageList(unsigned long nPages, void* firstFreeMemory);
+};
+
+#endif
