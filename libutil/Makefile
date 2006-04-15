@@ -1,7 +1,7 @@
 include ../Makefile.inc
 
 HEADERS=
-CCMODULES=bitvector
+CCMODULES=bitvector allocator
 INCLUDE=../libc++ include ../libc $(GCCINCLUDEDIRS)
 OBJDIR=obj
 LIBDIR=../lib

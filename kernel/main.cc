@@ -40,6 +40,8 @@ void print_memmap(MultibootInfo *mbi)
         }
 }
 
+MultibootInfo *multiboot_info = NULL;
+
 void extract_multiboot_info(unsigned int magic, void *mbd) 
 {
 	/* black magic? no! */
@@ -49,26 +51,31 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	/* there's no hex printing in kout yet */
 	printk("\tmagic: 0x%x, mbd: 0x%x\n", magic, mbd);
 
-	if (!mbi)
+	if (!mbi) {
 		return;
-	
+	}
+
+	multiboot_info = new (boot_dynmem_alloc) MultibootInfo
+		(*mbi, boot_dynmem_alloc);
+
 	/* NOTE! if MultibootInfo::get_[low|high]_mem() returns
 	 * 0 it means that the boot loader didn't provide the
 	 * amount of memory available or it really is 0 :).
 	 */
-	if (mbi->get_flags() & MB_FLAG_MEM)
+	if (multiboot_info->get_flags() & MB_FLAG_MEM)
 		kout << "\tlower memory: "    << mbi->get_low_mem()
 		     << "kiB, upper memory: " << mbi->get_high_mem()
 		     << "kiB" << endl;
 
-	if (mbi->get_flags() & MB_FLAG_LOADER_NAME)
+	if (multiboot_info->get_flags() & MB_FLAG_LOADER_NAME)
 		kout << "\tloader: " << mbi->get_loader_name() << endl;
 
-	if (mbi->get_flags() & MB_FLAG_CMDLINE)
+	if (multiboot_info->get_flags() & MB_FLAG_CMDLINE)
 		kout << "\tcmdline: " << mbi->get_cmdline() << endl;
 
-	if (mbi->get_flags() & MB_FLAG_MMAP)
-		print_memmap(mbi);
+// NOT RECOVERED COMPLETELY.
+//	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
+//		print_memmap(mbi);
 }
 
 extern void enable_keyboard();
@@ -127,10 +134,12 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << "Recovering multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
 	kout << "-- -- --" << endl;
+
+	haltloop();
 	
-	kout << "Initializing free page tables...";
-	free_page_list.initialize(4096, (void*)_END_OF_KERNEL);
-	kout << "done." << endl;
+//	kout << "Initializing free page tables...";
+//	free_page_list.initialize(4096, (void*)_END_OF_KERNEL);
+//	kout << "done." << endl;
 
 	kout << "Initializing tasking...";
 	initialize_tasking();
