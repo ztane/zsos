@@ -15,6 +15,13 @@
 #include "timer"
 #include "mm/freepagelist"
 
+void haltloop() 
+{
+	while(1) {
+		__asm__ __volatile__("hlt");
+	}
+}
+
 void *PHYS_TO_LOG(void *addr) 
 {
 	return (void*)((unsigned int)addr);
@@ -22,60 +29,52 @@ void *PHYS_TO_LOG(void *addr)
 
 void print_memmap(MultibootInfo *mbi) 
 {
-	unsigned int mmap_addr   = mbi->get_mmap_addr(),
-		     mmap_length = mbi->get_mmap_length();
-	multiboot_mmap_t *mmap = (multiboot_mmap_t *)(mmap_addr);
+	int ct = mbi->number_of_mmap_entries();
 	
-        kout << "\tmmap provided by loader:" << endl;
-	
-        for (; (unsigned int)(mmap) < mmap_addr + mmap_length;
-               mmap = (multiboot_mmap_t *)((unsigned int)(mmap) + mmap->size + sizeof(mmap->size)))
-        {
-		printk("\tbase: 0x%08x - length: 0x%08x, type: 0x%08x\n",
-             //        	mmap->base_addr_high,
-                      	mmap->base_addr_low,
-             //       	mmap->length_high,
-                       	mmap->length_low,
-                       	mmap->type);
-        }
+	for (int i = 0; i < ct; i++) 
+	{
+		const MultibootMMapInfo& inf =
+			mbi->mmap_entry(i);
+		
+		
+		printk("\tbase: 0x%08x - length: 0x%08x\n",
+                      	inf.get_base(),
+                       	inf.get_length());
+	}
 }
 
 MultibootInfo *multiboot_info = NULL;
 
 void extract_multiboot_info(unsigned int magic, void *mbd) 
 {
-	/* black magic? no! */
-	MultibootInfo *mbi = magic == MB_MAGIC_VALUE ? 
-		static_cast<MultibootInfo *>(PHYS_TO_LOG(mbd)) : NULL;
-	
 	/* there's no hex printing in kout yet */
 	printk("\tmagic: 0x%x, mbd: 0x%x\n", magic, mbd);
 
-	if (!mbi) {
-		return;
+	if (MB_MAGIC_VALUE != magic || mbd == 0) {
+		kout << "ERROR - NO MULTIBOOT INFO PRESENT!!!" << endl;
+		haltloop();
 	}
 
 	multiboot_info = new (boot_dynmem_alloc) MultibootInfo
-		(*mbi, boot_dynmem_alloc);
+		(mbd, boot_dynmem_alloc);
 
 	/* NOTE! if MultibootInfo::get_[low|high]_mem() returns
 	 * 0 it means that the boot loader didn't provide the
 	 * amount of memory available or it really is 0 :).
 	 */
 	if (multiboot_info->get_flags() & MB_FLAG_MEM)
-		kout << "\tlower memory: "    << mbi->get_low_mem()
-		     << "kiB, upper memory: " << mbi->get_high_mem()
+		kout << "\tlower memory: "    << multiboot_info->get_low_mem()
+		     << "kiB, upper memory: " << multiboot_info->get_high_mem()
 		     << "kiB" << endl;
 
 	if (multiboot_info->get_flags() & MB_FLAG_LOADER_NAME)
-		kout << "\tloader: " << mbi->get_loader_name() << endl;
+		kout << "\tloader: " << multiboot_info->get_loader_name() << endl;
 
 	if (multiboot_info->get_flags() & MB_FLAG_CMDLINE)
-		kout << "\tcmdline: " << mbi->get_cmdline() << endl;
+		kout << "\tcmdline: " << multiboot_info->get_cmdline() << endl;
 
-// NOT RECOVERED COMPLETELY.
-//	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
-//		print_memmap(mbi);
+	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
+		print_memmap(multiboot_info);
 }
 
 extern void enable_keyboard();
@@ -98,18 +97,9 @@ void user_task2() {
 	}
 }
 
-void haltloop() 
-{
-	while(1) {
-		__asm__ __volatile__("hlt");
-	}
-}
-
 Process tesmi("tesmi");
 Process tesmi2("tesmi2");
 Scheduler scheduler;
-
-extern "C" void _END_OF_KERNEL();
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
@@ -133,6 +123,7 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Recovering multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
+	printk("%x\n", mbd);
 	kout << "-- -- --" << endl;
 
 	haltloop();

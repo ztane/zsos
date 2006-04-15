@@ -1,8 +1,48 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
+#include <printk.h>
 
 #include "multiboot"
+
+#define MB_MMAP_TYPE_AVAIL  0x00000001
+
+typedef struct _multiboot_mmap {
+	unsigned long size;
+	unsigned long base_addr_low;
+	unsigned long base_addr_high;
+	unsigned long length_low;	
+	unsigned long length_high;
+	unsigned long type;
+} multiboot_mmap_t;
+
+struct multiboot_info_t {
+	unsigned long flags;
+	unsigned long mem_lower;
+	unsigned long mem_upper;
+	unsigned long boot_device;
+	const char* cmdline;
+	unsigned long mods_count;
+	unsigned long mods_addr;
+	union {
+		multiboot_aout_t aout;
+		multiboot_elf_t elf;
+	} boot_table;
+	unsigned long mmap_length;
+	unsigned long mmap_addr;
+	unsigned long drives_length;
+	unsigned long drives_addr;
+	unsigned long config_table;
+	const char* boot_loader_name;
+	unsigned long apm_table;
+	unsigned long vbe_control_info;
+	unsigned long vbe_mode_info;
+	unsigned short vbe_mode;
+	unsigned short vbe_interface_seg;
+	unsigned short vbe_interface_off;
+	unsigned short vbe_interface_len;
+};
 
 
 MultibootInfo::MultibootInfo() { };
@@ -36,45 +76,68 @@ const char * MultibootInfo::get_cmdline() const
 		reinterpret_cast<const char *>(cmdline) : NULL;
 }
 
-unsigned int MultibootInfo::get_mmap_addr() const
-{
-	return flags & MB_FLAG_MMAP ?
-		mmap_addr : 0;
-}
-
-unsigned int MultibootInfo::get_mmap_length() const
-{
-	return flags & MB_FLAG_MMAP ?
-		mmap_length : 0;
-}
-
 const char * MultibootInfo::get_loader_name() const
 {
 	return flags & MB_FLAG_LOADER_NAME ? 
 		reinterpret_cast<const char *>(boot_loader_name) : NULL;
 }
 
-MultibootInfo::MultibootInfo(const MultibootInfo& from, Allocator& allocator)
+MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 {
-	this->flags     = from.flags;
-        this->mem_lower = from.mem_lower;
-        this->mem_upper = from.mem_upper;
+	const multiboot_info_t& from = *(const multiboot_info_t *)construct_from;
+
+	flags     = from.flags;
+        mem_lower = from.mem_lower;
+        mem_upper = from.mem_upper;
 
         // todo: add others:
 
         if (flags & MB_FLAG_CMDLINE) {
-        	this->cmdline = dup_string(from.get_cmdline(), allocator);
+        	cmdline = dup_string(from.cmdline, allocator);
         }
         else {
-                this->cmdline = 0;
+                cmdline = 0;
         }
 
         if (flags & MB_FLAG_LOADER_NAME) {
-               this->boot_loader_name = dup_string(from.get_loader_name(), allocator);
+                boot_loader_name = dup_string(from.boot_loader_name, allocator);
         }
         else {
-               this->boot_loader_name = 0;
+                boot_loader_name = 0;
         }
- }
 
+	mmap	    = 0;
+	mmap_length = 0;
 
+	if (flags & MB_FLAG_MMAP) {
+		char *mmap_old  = (char *)from.mmap_addr;
+		char *mmap_save = mmap_old;
+		char *mmap_end  = mmap_old + from.mmap_length;
+
+	        for (; mmap_old < mmap_end;
+        	       mmap_old = mmap_old + ((multiboot_mmap_t*)mmap_old)->size + 
+		       sizeof(((multiboot_mmap_t*)mmap_old)->size))
+	        {
+			if (((multiboot_mmap_t*)mmap_old)->type == MB_MMAP_TYPE_AVAIL) 
+			{
+				mmap_length ++;
+			}
+	        }
+
+		mmap = new (allocator) MultibootMMapInfo[mmap_length];
+
+		mmap_old = mmap_save;
+	        for (size_t i = 0; i < mmap_length;
+        	       mmap_old = mmap_old + ((multiboot_mmap_t*)mmap_old)->size + 
+		       sizeof(((multiboot_mmap_t*)mmap_old)->size))
+	        {
+			if (((multiboot_mmap_t*)mmap_old)->type == MB_MMAP_TYPE_AVAIL) 
+			{
+				mmap[i].start  = ((multiboot_mmap_t*)mmap_old)->base_addr_low;
+				mmap[i].length = ((multiboot_mmap_t*)mmap_old)->length_low;
+
+				i ++;
+			}
+	        }
+	}
+}

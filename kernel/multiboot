@@ -22,108 +22,37 @@
 
 #define MB_MMAP_TYPE_AVAIL  0x00000001
 
-typedef struct _multiboot_header {
-	unsigned long magic;
-	unsigned long flags;
-	unsigned long checksum;
-	unsigned long header_addr;
-	unsigned long load_addr;
-	unsigned long load_end_addr;
-	unsigned long bss_end_addr;
-	unsigned long entry_addr;
-	unsigned long mode_type;
-	unsigned long width;
-	unsigned long height;
-	unsigned long depth;
-} multiboot_header_t;
-
-typedef struct _multiboot_mod_t {
-	unsigned long mod_start;
-	unsigned long mod_end;
-	unsigned long string;
-	unsigned long reserved;
-} multiboot_mod_t;
-
-typedef struct _multiboot_aout {
+struct multiboot_aout_t {
 	unsigned long tabsize;
 	unsigned long strsize;
 	unsigned long addr;
 	unsigned long reserved;
-} multiboot_aout_t;
+};
 
-typedef struct _multiboot_elf {
+struct multiboot_elf_t {
 	unsigned long num;
 	unsigned long size;
 	unsigned long addr;
 	unsigned long shndx;
-} multiboot_elf_t;
+};
 
-/* NOTE! mmap structure addresses point to base_addr_low,
- * not to size when given through multiboot_info_t. Be
- * shure to correct this before you try to use them!
- */
-typedef struct _multiboot_mmap {
-	unsigned long size;
-	unsigned long base_addr_low;
-	unsigned long base_addr_high;
-	unsigned long length_low;	
-	unsigned long length_high;
-	unsigned long type;
-} multiboot_mmap_t;
+class MultibootInfo;
 
-/* NOTE! last element in struct is drive_ports (unseen) and
- * its size is undefined. Drive_ports is an array of I/O ports
- * used for the drive in BIOS code. It consists of zero or more
- * unsigned two-bytes integers, and is terminated with zero.
- * Use the size field to travel through the list.
- */
-typedef struct _multiboot_drives {
-	unsigned long size;
-	unsigned char drive_number;
-	unsigned char drive_mode;
-	unsigned short drive_cylinders;
-	unsigned char drive_heads;
-	unsigned char drive_sectors;
-} multiboot_drives_t;
-	
-typedef struct _multiboot_apm {
-	unsigned short version;
-	unsigned short cseg;
-	unsigned long offset;
-	unsigned short cseg_16;
-	unsigned short dseg;
-	unsigned short flags;
-	unsigned short cseg_len;
-	unsigned short cseg_16_len;
-	unsigned short dseg_len;
-} multiboot_apm_t;
+class MultibootMMapInfo {
+	unsigned long start;
+	unsigned long length;
 
-typedef struct _multiboot_info_t {
-	unsigned long flags;
-	unsigned long mem_lower;
-	unsigned long mem_upper;
-	unsigned long boot_device;
-	const char* cmdline;
-	unsigned long mods_count;
-	unsigned long mods_addr;
-	union {
-		multiboot_aout_t aout;
-		multiboot_elf_t elf;
-	} boot_table;
-	unsigned long mmap_length;
-	unsigned long mmap_addr;
-	unsigned long drives_length;
-	unsigned long drives_addr;
-	unsigned long config_table;
-	unsigned long boot_loader_name;
-	unsigned long apm_table;
-	unsigned long vbe_control_info;
-	unsigned long vbe_mode_info;
-	unsigned short vbe_mode;
-	unsigned short vbe_interface_seg;
-	unsigned short vbe_interface_off;
-	unsigned short vbe_interface_len;
-} multiboot_info_t;
+public:
+	const unsigned long get_base() const {
+		return start;
+	}
+
+	const unsigned long get_length() const {
+		return length;
+	}
+
+	friend class MultibootInfo;
+};
 
 class MultibootInfo {
 private:
@@ -138,8 +67,10 @@ private:
 		multiboot_aout_t aout;
 		multiboot_elf_t elf;
 	} boot_table;
-	unsigned long mmap_length;
-	unsigned long mmap_addr;
+
+	MultibootMMapInfo *mmap;
+	size_t             mmap_length;
+
 	unsigned long drives_length;
 	unsigned long drives_addr;
 	unsigned long config_table;
@@ -154,15 +85,24 @@ private:
 
 public:
 	MultibootInfo();
-	MultibootInfo(const MultibootInfo& from, Allocator& allocator);
+	MultibootInfo(const void *from, Allocator& allocator);
 
 	unsigned int	get_flags()		const;
 	unsigned int	get_low_mem()		const;
 	unsigned int	get_high_mem()		const;
+
 	const char *	get_cmdline()		const;
-	unsigned int	get_mmap_addr()		const;
-	unsigned int	get_mmap_length()	const;
 	const char *	get_loader_name()	const;
+
+	const MultibootMMapInfo& mmap_entry(int slot)     const
+	{
+		return mmap[slot];
+	}
+
+	size_t number_of_mmap_entries() const 
+	{
+		return mmap_length;	
+	}
 };
 
 #endif
