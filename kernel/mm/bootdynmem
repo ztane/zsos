@@ -1,0 +1,36 @@
+#ifndef __BOOTDYNMEM_INCLUDED__
+#define __BOOTDYNMEM_INCLUDED__
+
+#include <stdlib.h>
+#include <allocator>
+
+class BootDynMemAllocator : public Allocator {
+	int   bytes_left;
+	char *next_free;
+public:
+	BootDynMemAllocator(void *start, int max_bytes) {
+		next_free  = (char*)start;
+		bytes_left = max_bytes;
+	}
+
+	void *allocate(size_t size) {
+		void *ptr = next_free;
+		bytes_left -= size;
+		next_free += size;
+		
+		if (bytes_left < 0) {
+			// todo: proper panic
+			*((int*)0) = 0;
+		}
+
+		return (void*)ptr;
+	}
+
+	void release(void *ptr) {
+		*((int*)0) = 0;
+	}
+};
+
+extern BootDynMemAllocator boot_dynmem_alloc;
+
+#endif

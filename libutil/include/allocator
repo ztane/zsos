@@ -1,0 +1,15 @@
+#ifndef __ALLOCATOR_INCLUDED__
+#define __ALLOCATOR_INCLUDED__
+
+#include <stdlib.h>
+
+class Allocator {
+public:
+	virtual void *allocate(size_t size) = 0;
+	virtual void release(void *ptr)     = 0;
+};
+
+void *operator new(size_t size, Allocator& alloc);
+void *operator new[] (size_t size, Allocator& alloc);
+
+#endif
