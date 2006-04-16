@@ -82,6 +82,11 @@ const char * MultibootInfo::get_loader_name() const
 		reinterpret_cast<const char *>(boot_loader_name) : NULL;
 }
 
+unsigned int MultibootInfo::get_max_ram_address() const
+{
+	return max_ram_address;
+}
+
 MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 {
 	const multiboot_info_t& from = *(const multiboot_info_t *)construct_from;
@@ -89,6 +94,8 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 	flags     = from.flags;
         mem_lower = from.mem_lower;
         mem_upper = from.mem_upper;
+
+	max_ram_address = 0;
 
         // todo: add others:
 
@@ -135,6 +142,11 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 			{
 				mmap[i].start  = ((multiboot_mmap_t*)mmap_old)->base_addr_low;
 				mmap[i].length = ((multiboot_mmap_t*)mmap_old)->length_low;
+				
+				// avoid overflow when 4GB RAM :)
+				unsigned long new_max = mmap[i].start + (mmap[i].length - 1);
+				if (max_ram_address < new_max)
+					max_ram_address = new_max;
 
 				i ++;
 			}

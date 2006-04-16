@@ -83,6 +83,7 @@ private:
 	unsigned short vbe_interface_off;
 	unsigned short vbe_interface_len;
 
+	unsigned long  max_ram_address;
 public:
 	MultibootInfo();
 	MultibootInfo(const void *from, Allocator& allocator);
@@ -103,6 +104,8 @@ public:
 	{
 		return mmap_length;	
 	}
+
+	unsigned int MultibootInfo::get_max_ram_address() const;
 };
 
 #endif

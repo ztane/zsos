@@ -1,7 +1,7 @@
 include ../Makefile.inc
 
 HEADERS=
-CCMODULES=dynmem iostream abi
+CCMODULES=dynmem iostream
 INCLUDE=../libc include .. $(GCCINCLUDEDIRS)
 OBJDIR=obj
 LIBDIR=../lib
