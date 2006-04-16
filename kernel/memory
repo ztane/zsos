@@ -130,4 +130,37 @@ public:
 SegmentDescriptor *get_descriptor(int number);
 void init_gdt();
 
+class PhysAddr {
+private:
+	void *ptr;
+public:
+	PhysAddr() {
+		ptr = 0;
+	}
+
+	static const PhysAddr create(void *ptr) {
+		PhysAddr rv;
+		rv.set(ptr);
+		return rv;
+	}
+
+	static const PhysAddr create(unsigned long addr) {
+		PhysAddr rv;
+		rv.set(addr);
+		return rv;
+	}
+
+	void set(unsigned long addr) {
+		ptr = (void*)addr;
+	}
+
+	void set(void *ptr) {
+		this->ptr = ptr;
+	}
+
+	unsigned long get_value() const {
+		return (unsigned long)ptr;
+	}
+};
+
 #endif

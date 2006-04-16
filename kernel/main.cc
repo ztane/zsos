@@ -14,17 +14,13 @@
 #include "scheduler"
 #include "timer"
 #include "mm/freepagelist"
+#include <panic>
 
 void haltloop() 
 {
 	while(1) {
 		__asm__ __volatile__("hlt");
 	}
-}
-
-void *PHYS_TO_LOG(void *addr) 
-{
-	return (void*)((unsigned int)addr);
 }
 
 void print_memmap(MultibootInfo *mbi) 
@@ -75,6 +71,8 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 
 	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
 		print_memmap(multiboot_info);
+
+	kout << "--  --  --" << endl;
 }
 
 extern void enable_keyboard();
@@ -104,7 +102,6 @@ Scheduler scheduler;
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
-	kout << "Initializing..." << endl;
 	kout << "Setting up GDT...";
 	init_gdt();
 	kout << " done..." << endl;
@@ -117,17 +114,13 @@ void kernel_main(unsigned int magic, void *mbd)
 	init_pic();
 	kout << " done" << endl;
 	
-	kout << "Enabling paging...";
+	kout << "Enabling initial paging..." << endl;
 	initialize_page_tables();
-	kout << " done" << endl;
+	kout << "Paging enabled." << endl;
 
 	kout << "Recovering multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
-	printk("%x\n", mbd);
-	kout << "-- -- --" << endl;
 
-	haltloop();
-	
 //	kout << "Initializing free page tables...";
 //	free_page_list.initialize(4096, (void*)_END_OF_KERNEL);
 //	kout << "done." << endl;
@@ -151,6 +144,5 @@ void kernel_main(unsigned int magic, void *mbd)
 	scheduler.add_process(&tesmi2);
 	scheduler.schedule();
 
-	kout << "ERROR - QUITTING KERNEL!!!" << endl;
-	return;
+	kernel_panic("Fell out from scheduling loop!\n");
 }

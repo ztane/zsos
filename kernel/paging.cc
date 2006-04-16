@@ -8,8 +8,8 @@
 
 extern char __page_directory[];
 extern char __page_tables[];
-extern char _END_OF_KERNEL;
 extern char _END_OF_BOOTLOADER;
+extern char _BOOT_HEAP_END;
 
 // no initializers!
 PageTableEntry *page_directory = reinterpret_cast<PageTableEntry *>(__page_directory);
@@ -52,7 +52,7 @@ struct MemoryArea {
 MemoryArea initially_mapped[] = {
 	{ 0x0, 0x100000 },
 	{ (unsigned long)LOG_TO_PHYS(&_END_OF_BOOTLOADER), 
-		(unsigned long)LOG_TO_PHYS(&_END_OF_KERNEL) },
+		(unsigned long)LOG_TO_PHYS(&_BOOT_HEAP_END) },
 	{ 0,   0        },
 };
 

@@ -5,8 +5,6 @@
 #include "initial_vga.h"
 #include "printk.h"
 
-static char heap_mem[4096];
-
 extern void (*__CTOR_LIST__)();
 
 static void call_ctors() 
@@ -26,12 +24,10 @@ static void call_ctors()
 extern void kernel_main(unsigned long, void *);
 
 void kmain(unsigned int magic, void *addr) {
-	/* T�� pit�s tapahtua ajurin latauksessa!! */
+	/* should be done in driver initialization */
 	init_vga_buffer();
 	printk("ZS OS 1.0 Initializing\n");
-	printk("Setting up memory arena...");
-	kmalloc_init(heap_mem, sizeof(heap_mem));
-	printk(" done.\n");
+	printk("----------------------\n");
 
 	call_ctors();
 	printk("Entering C++ kernel_main...\n");

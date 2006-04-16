@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "kmalloc.h"
+#include <panic>
 
 /**
  * TODO: Heap in general should be PAGE aligned (4k in x86)
@@ -28,6 +29,8 @@ typedef union _memory_block {
 	usedblock_t  used;
 	freeblock_t  free;
 } memory_block_t;
+
+static int kmalloc_initialized = 0;
 
 static freeblock_t freemem_bp[FREEMEM_LISTS]; /* list of free blocks */
 
@@ -163,6 +166,9 @@ void *kmalloc(size_t size)
 {
 	if (!size)
 		return NULL;
+
+	if (! kmalloc_initialized)
+		kernel_panic("FATAL: kmalloc not yet initialized\n");
 
 	/* correct padding */
 	size = size % HEAP_PADDING ?
@@ -447,5 +453,6 @@ int kmalloc_init(void *ptr, size_t size)
 	bp2->free.prev_free->free.next_free = bp2;
 	bp2->free.next_free->free.prev_free = bp2;
 
+	kmalloc_initialized = 1;
 	return 0;
 }

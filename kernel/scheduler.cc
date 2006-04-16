@@ -7,8 +7,6 @@
 
 Scheduler::Scheduler()
 {
-	kout << "Scheduler: setting up process queues" << endl;
-	
 	scheduler_running = false;
 	for (int i = 0; i < PRIV_LEVELS; i++)
 	{
