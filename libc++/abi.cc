@@ -1,6 +1,6 @@
 // FIXME: Change this file's name to better mirror its contents.
 
-#include <kernel/printk.h>
+#include <kernel/panic>
 
 // This provides a standard entry point for the compiler to reference in
 // virtual tables to indicate a pure virtual function.
@@ -11,7 +11,5 @@
 extern "C"
 void __cxa_pure_virtual(void)
 {
-	printk("FATAL: pure virtual method.\n");
-	// Do something to terminate here.
-	// Even if it's the kernel.
+	kernel_panic("FATAL: pure virtual method.");
 }
