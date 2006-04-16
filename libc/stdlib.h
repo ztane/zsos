@@ -5,8 +5,6 @@
 #include <stddef.h>
 #include <inttypes.h>
 
-typedef uint32_t size_t;
-
 #ifdef __cplusplus 
 extern "C" { 
 #endif
