@@ -71,6 +71,9 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 
 	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
 		print_memmap(multiboot_info);
+	
+	printk("\tMax usable ram address: 0x%08x\n", 
+		multiboot_info->get_max_ram_address());
 
 	kout << "--  --  --" << endl;
 }
