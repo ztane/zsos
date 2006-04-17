@@ -1,0 +1,40 @@
+#ifndef __CPUID_INCLUDED__
+#define __CPUID_INCLUDED__
+
+#include <inttypes.h>
+
+class CPUIdentity {
+private:
+	int family;
+	int type;
+	int model;
+	int stepping;
+	uint32_t max_cpuid_func;
+	union {
+		struct {
+			// definitely stupid ordering!!
+			uint32_t _ebx;
+			uint32_t _edx;
+			uint32_t _ecx;
+			char     terminator;
+		} _vendor_id_vals;
+		char vendor_string[13];
+	};
+public:
+	CPUIdentity();
+	void identify();
+	const char *get_vendor() const {
+		return vendor_string;
+	}
+
+	int get_type()     const { return type; }
+	int get_family()   const { return family; }
+	int get_model()    const { return model; }
+	int get_stepping() const { return stepping; }
+	
+	friend void __get_cpuid(CPUIdentity& ident);
+};
+
+extern CPUIdentity cpu_identity;
+
+#endif // __CPUID_INCLUDED__

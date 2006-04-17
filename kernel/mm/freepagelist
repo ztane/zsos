@@ -6,10 +6,10 @@
 
 class FreePageList {
     unsigned long lastAvailablePage;
-    BitVector *freePages;
+    BitVector *free_pages;
 public:
     FreePageList();
-    void initialize(unsigned long nPages, void* firstFreeMemory);
+    void initialize(const MultibootInfo& bootInfo, Allocator& allocator);
 };
 
 extern FreePageList free_page_list;

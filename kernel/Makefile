@@ -3,9 +3,10 @@ include ../Makefile.inc
 HEADERS=
 CMODULES=kernel initial_vga printk \
 	kmalloc
+
 CCMODULES=main interrupt pic multiboot printstate paging   \
 	memory tasking syscall init_vga ide-disk scheduler \
-	timer freepagelist bootdynmem panic abi		   \
+	timer freepagelist bootdynmem panic abi	cpuid	   \
 							   \
 	become_io_task console processes
 
@@ -16,7 +17,6 @@ LIBDIR=.
 VPATH=.:mm:syscalls
 TESTDIR=t
 
-
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)
 COBJS=$(CMODULES:%=$(OBJDIR)/%.o)
 CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
@@ -24,6 +24,10 @@ ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(COBJS) $(CCOBJS) $(ASMOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
 ARFLAGS=r
+
+# include $(CMODULES:=.d)
+#
+# include $(CCMODULES:=.d)
 
 all: boot.o $(LIBDIR)/kernel.a
 

@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 #include <allocator>
+#include <kernel/panic>
+#include <printk.h>
 
 class BootDynMemAllocator : public Allocator {
 	int   bytes_left;
@@ -15,19 +17,22 @@ public:
 
 	void *allocate(size_t size) {
 		void *ptr = next_free;
+
+		// align 8 (as per libc malloc)
+		size +=  7;
+		size &= ~7;
+
 		bytes_left -= size;
-		next_free += size;
+		next_free  += size;
 		
 		if (bytes_left < 0) {
-			// todo: proper panic
-			*((int*)0) = 0;
+			kernel_panic("Initial boot memory pool exhausted.");
 		}
 
 		return (void*)ptr;
 	}
 
 	void release(void *ptr) {
-		*((int*)0) = 0;
 	}
 };
 

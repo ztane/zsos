@@ -39,6 +39,6 @@ SECTIONS {
      _END_OF_KERNEL = .;
      . = ALIGN(4096);
      _BOOT_HEAP_START = .;
-     . = . + 65536;
+     . = . + 262144;
      _BOOT_HEAP_END   = .;
 }

@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <kernel/cpuid>
 
 #include "syscall"
 #include "printk.h"
@@ -98,6 +99,17 @@ void user_task2() {
 	}
 }
 
+void detect_cpu() {
+	cpu_identity.identify();
+	
+	kout << "\tCPU0:" << endl;
+	kout << "\t-----" << endl;
+	kout << "\tVendor:\t\t" << cpu_identity.get_vendor()   << endl;
+	kout << "\tFamily:\t\t" << cpu_identity.get_family()   << endl;
+	kout << "\tModel:\t\t"  << cpu_identity.get_model()    << endl;
+	kout << "\tStepping:\t" << cpu_identity.get_stepping() << endl;
+}
+
 Process tesmi("tesmi");
 Process tesmi2("tesmi2");
 Scheduler scheduler;
@@ -105,6 +117,9 @@ Scheduler scheduler;
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
+	kout << "Detecting CPU:" << endl;
+	detect_cpu();
+	
 	kout << "Setting up GDT...";
 	init_gdt();
 	kout << " done..." << endl;
@@ -121,12 +136,12 @@ void kernel_main(unsigned int magic, void *mbd)
 	initialize_page_tables();
 	kout << "Paging enabled." << endl;
 
-	kout << "Recovering multiboot information:" << endl;
+	kout << "Multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
 
-//	kout << "Initializing free page tables...";
-//	free_page_list.initialize(4096, (void*)_END_OF_KERNEL);
-//	kout << "done." << endl;
+	kout << "Initializing free page tables...";
+	free_page_list.initialize(*multiboot_info, boot_dynmem_alloc);
+	kout << "done." << endl;
 
 	kout << "Initializing tasking...";
 	initialize_tasking();

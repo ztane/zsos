@@ -1,15 +1,24 @@
 #ifndef __BITVECTOR_INCLUDED__
 #define __BITVECTOR_INCLUDED__
 
-#include "string.h"
+#include "allocator"
+#include <string.h>
 
 class BitVector {
-	char bits[1];
+	size_t     size;
+	char       *bits;
+	Allocator& alloc;
 public:
-	BitVector(unsigned long size) {
+	BitVector(unsigned long size, Allocator& alloc) : alloc(alloc) {
+		bits = new (alloc) char[(size + 7) >> 3];
+		this->size = size;
 		clear_bits(0, size);
 	}
-	
+
+	~BitVector() {
+		alloc.release(bits);
+	}
+
 	bool get_bit(int bit) {
 		int byte = bit >> 3;
 		bit = 1 << (bit & 7);
