@@ -9,7 +9,10 @@ private:
 	int type;
 	int model;
 	int stepping;
+	int vendor;
+
 	uint32_t max_cpuid_func;
+	uint32_t flags;
 	union {
 		struct {
 			// definitely stupid ordering!!
@@ -27,11 +30,14 @@ public:
 		return vendor_string;
 	}
 
+	uint32_t get_flags() const { return flags; }
 	int get_type()     const { return type; }
 	int get_family()   const { return family; }
 	int get_model()    const { return model; }
 	int get_stepping() const { return stepping; }
 	
+	static const char *get_flag_name(int);
+
 	friend void __get_cpuid(CPUIdentity& ident);
 };
 

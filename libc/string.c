@@ -23,6 +23,18 @@ char *strncpy(register char *dest, register const char *src, register size_t n)
         return origdest;
 }
 
+int strncmp(const char *s1, const char *s2, size_t n)
+{
+	int diff = 0;
+	
+	// if either one is equal to zero, then diff fails...
+	while (n -- > 0 && (*s1 != 0 || *s2 != 0) && ! diff) {
+		diff = *(s1++) - *(s2++);
+	}
+
+	return diff;
+}
+
 size_t strlen(register const char *s)
 {
         register size_t rv = 0;
@@ -30,7 +42,7 @@ size_t strlen(register const char *s)
         return rv;
 }
 
-void *_memsetd(void *s, unsigned int f, unsigned int n) 
+void *_memsetd(void *s, unsigned int f, size_t n) 
 {
         if (n == 0)
                 goto end;
@@ -42,7 +54,7 @@ end:
 	return s;
 }
 
-void *memset(void *s, int c, unsigned int n) 
+void *memset(void *s, int c, size_t n) 
 {
 	while (((unsigned long)s & 3) && n) {
 		*(char *)s++ = c;

@@ -108,6 +108,26 @@ void detect_cpu() {
 	kout << "\tFamily:\t\t" << cpu_identity.get_family()   << endl;
 	kout << "\tModel:\t\t"  << cpu_identity.get_model()    << endl;
 	kout << "\tStepping:\t" << cpu_identity.get_stepping() << endl;
+	kout << "\tFeatures:\t";
+	
+	uint32_t flags = cpu_identity.get_flags();
+	int flag_no = 0;
+	int pretty_ct = 0;
+
+	while (flags != 0) {
+		if (flags & 1) {
+			kout << CPUIdentity::get_flag_name(flag_no) << "\t";
+			pretty_ct ++;
+			if ((pretty_ct & 3) == 0) {
+				kout << endl << "\t\t\t";
+			}
+		}
+
+		flag_no ++;
+		flags >>= 1;
+	}
+
+	kout << endl;
 }
 
 Process tesmi("tesmi");
@@ -119,7 +139,7 @@ void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Detecting CPU:" << endl;
 	detect_cpu();
-	
+
 	kout << "Setting up GDT...";
 	init_gdt();
 	kout << " done..." << endl;

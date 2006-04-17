@@ -1,14 +1,34 @@
 #include <cpuid>
 #include <printk.h>
 #include <iostream>
+#include <string.h>
+
+const char *flag_names[32] = {
+	"fpu",	"vme",	"de",	"pse",
+	"tsc",	"msr",	"pae",	"mce",
+	"cxchg8","apic","<unk>","sep",
+	"mtrr",	"pge",	"mca",	"cmov",
+	"pat",	"pse36","psn",	"clfl",
+	"<unk>","dtes",	"acpi",	"mmx",
+	"fxsr",	"sse",	"sse2",	"ss",
+	"htt",	"tm1",	"ia-64","pbe",
+};
 
 CPUIdentity cpu_identity;
 
 CPUIdentity::CPUIdentity() {
 	family = model = type = stepping = 0;
 	_vendor_id_vals._ebx = 0;
-	
+	vendor = 0;
+	flags = 0;
 	max_cpuid_func = 0;	
+}
+
+const char* CPUIdentity::get_flag_name(int number) {
+	if (number < 0 || number > 31)
+		return "<unk>";
+
+	return flag_names[number];
 }
 
 static int is_386() {
@@ -67,11 +87,24 @@ void __get_cpuid(CPUIdentity& ident)
 	ident._vendor_id_vals._ecx = _ecx;
 	ident._vendor_id_vals.terminator = 0;
 
+	kout << ident.vendor_string << endl;
+
+	if (strncmp(ident.vendor_string, "AuthenticAMD", 13) == 0)
+	{
+		ident.vendor = 2;
+	}
+	else if (strncmp(ident.vendor_string, "GenuineIntel", 13) == 0) 
+	{
+		ident.vendor = 1;
+	}
+
+	kout << ident.vendor_string << endl;
+		
 	if (ident.max_cpuid_func >= 1) {
 		__asm__ __volatile__ (
 			"mov $1, %0;"
 			"cpuid;"
-			: "=a"(_eax), "=b"(_ebx), "=c"(_ecx), "=d"(_edx));
+			:"=a"(_eax),"=b"(_ebx),"=c"(_ecx),"=d"(_edx));
 		
 		ident.family = (_eax & 0xF00) >> 8;
 
@@ -91,6 +124,8 @@ void __get_cpuid(CPUIdentity& ident)
 		}
 
 		ident.stepping = (_eax & 0xF);
+
+		ident.flags = _edx;
 	}
 }
 
@@ -104,6 +139,5 @@ void CPUIdentity::identify() {
 		return;
 	}
 
-	kout << "Has cpuid..." << endl;	
 	__get_cpuid(cpu_identity);
 }
