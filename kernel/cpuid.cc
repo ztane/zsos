@@ -22,6 +22,7 @@ CPUIdentity::CPUIdentity() {
 	vendor = 0;
 	flags = 0;
 	max_cpuid_func = 0;	
+	*processor_name = 0;
 }
 
 const char* CPUIdentity::get_flag_name(int number) {
@@ -126,6 +127,40 @@ void __get_cpuid(CPUIdentity& ident)
 		ident.stepping = (_eax & 0xF);
 
 		ident.flags = _edx;
+	}
+
+
+	struct {
+		uint32_t a;
+		uint32_t b;
+		uint32_t c;
+		uint32_t d;
+	} tmp;
+
+        __asm__ __volatile__ (
+		"mov $0x80000000, %0;"
+                "cpuid;"
+                :"=a"(tmp.a),"=b"(tmp.b),"=c"(tmp.c),"=d"(tmp.d));
+	
+	// dummy check...
+	if (tmp.b = ident._vendor_id_vals._ebx) 
+	{
+		if (tmp.a >= 0x80000004) 
+		{
+			uint32_t *proc_name = (uint32_t*)ident.processor_name;
+			for (uint32_t i = 0x80000002; i >= 0x80000004; i--)
+			{
+			        __asm__ __volatile__ (
+        	        	"cpuid;"
+	        	        :"=a"(tmp.a),"=b"(tmp.b),"=c"(tmp.c),"=d"(tmp.d) : "a"(i));
+				printk("%08x\n", tmp.a);
+				*(proc_name ++) = tmp.a;
+				*(proc_name ++) = tmp.b;
+				*(proc_name ++) = tmp.c;
+				*(proc_name ++) = tmp.d;
+			}
+			ident.processor_name[48] = 0;
+		}
 	}
 }
 

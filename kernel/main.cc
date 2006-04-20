@@ -105,6 +105,7 @@ void detect_cpu() {
 	kout << "\tCPU0:" << endl;
 	kout << "\t-----" << endl;
 	kout << "\tVendor:\t\t" << cpu_identity.get_vendor()   << endl;
+	kout << "\tName:\t\t" << cpu_identity.get_processor_name()   << endl;
 	kout << "\tFamily:\t\t" << cpu_identity.get_family()   << endl;
 	kout << "\tModel:\t\t"  << cpu_identity.get_model()    << endl;
 	kout << "\tStepping:\t" << cpu_identity.get_stepping() << endl;
@@ -139,6 +140,11 @@ void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Detecting CPU:" << endl;
 	detect_cpu();
+
+	if (! cpu_identity.get_flags() & CPUIdentity::FLAG_PSE) 
+	{
+		kernel_panic("The CPU does not support 4 MiB pages!");
+	}
 
 	kout << "Setting up GDT...";
 	init_gdt();
