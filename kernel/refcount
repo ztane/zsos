@@ -20,12 +20,14 @@ public:
 		++ *this;
 	}
 
-	template <class T> inline void release(T& r) 
+	inline bool operator --() 
 	{
-		if (dec_and_test()) {
-			r.release();
-		}
-	} 
+		return !dec_and_test();
+	}
+
+	inline bool release() {
+		return -- *this;
+	}
 };
 
 #endif 
