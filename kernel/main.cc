@@ -3,6 +3,8 @@
 #include <cstring>
 #include <iostream>
 #include <kernel/cpuid>
+#include <kernel/atomic>
+#include <kernel/refcount>
 
 #include "syscall"
 #include "printk.h"

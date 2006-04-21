@@ -1,0 +1,31 @@
+#ifndef __REFCOUNT_INCLUDED__
+#define __REFCOUNT_INCLUDED__
+
+#include <kernel/atomic>
+
+class RefCount : private Atomic {
+public:
+	RefCount() : Atomic(0) {		
+	}
+
+	inline void operator ++() {
+		Atomic::operator ++();
+	}
+
+	inline void operator ++(int) {
+		++ *this;
+	} 
+
+	inline void acquire() {
+		++ *this;
+	}
+
+	template <class T> inline void release(T& r) 
+	{
+		if (dec_and_test()) {
+			r.release();
+		}
+	} 
+};
+
+#endif 
