@@ -15,24 +15,28 @@ extern char _BOOT_HEAP_END;
 PageTableEntry *page_directory = reinterpret_cast<PageTableEntry *>(__page_directory);
 PageTableEntry *page_tables    = reinterpret_cast<PageTableEntry *>(__page_tables);
 
-void _set_cr3(void *base) 
+static void _set_cr3(void *base) 
 {
-    asm("movl %0, %%cr3;"
+    __asm__ __volatile__(
+	"movl %0, %%cr3;"
 	"jmp 0f;"
         "0: nop"
 	: 
 	: "r"(base));
 }
 
-void _test_segments() 
+static void _enable_pse()
 {
-    asm("mov $10, %%ax;"
-	"mov %%ax, %%es;" 
-	: : : "%eax");
+	__asm__ __volatile__ (
+		"movl %%cr4, %%eax;"
+		"orl $0x10, %%eax;"
+		"movl %%eax, %%cr4;"
+		: : :"%eax"
+	);
 }
 
-void _reenable_paging() {
-    asm(
+static void _reenable_paging() {
+	__asm__ __volatile__ (
 "	 movl %%cr0, %%eax;		"
 "	 orl  $0x80000000, %%eax;	"
 "	 movl %%eax, %%cr0;		"
@@ -60,36 +64,31 @@ void initialize_page_tables()
 {
 	PageFlags flags;
 	
+	_enable_pse();
+	
 	flags.set_flags(4);
 	flags.set_present(true);
 	flags.set_rw(true);
+	flags.set_4MiB(true);
 
-	page_directory[0x300].set_flags(flags);
-	page_directory[0x300].set_offset(
-		LOG_TO_PHYS(page_tables)
-	);
+	// temporarily map to 0 as well.
 	page_directory[0x0].set_flags(flags);
-	page_directory[0x0].set_offset(
-		LOG_TO_PHYS(page_tables)
-	);
-
-	int idx = 0;
-	while (initially_mapped[idx].base != initially_mapped[idx].top) 
-	{
-		unsigned long base = initially_mapped[idx].base;
-		unsigned long top  = initially_mapped[idx].top;
-		
-		printk("\tMapping memory %08X - %08X\n", base, top);
-		while (base < top) {
-			page_tables[base / 0x1000].set_flags(flags);
-			page_tables[base / 0x1000].set_offset(base);
-			base += 0x1000;
-		}
-		idx ++;
-	}
+	page_directory[0x0].set_offset((void*)0);
  
+	// map fisrt 1 GiB of physmem starting from 3 GiB,
+	// using 4 MiB pages
+	char *ptr = 0;
+	for (int i = 0x300; i < 0x400; i ++, ptr += 0x400000) {
+		page_directory[i].set_flags(flags);
+		page_directory[i].set_offset(ptr);
+	}
+
 	_set_cr3(LOG_TO_PHYS(page_directory));
 	_reenable_paging();
 }
 
-
+void disable_null_page() 
+{
+	page_directory[0x0].clear();
+	_reenable_paging();
+}

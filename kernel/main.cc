@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+
 #include <kernel/cpuid>
 #include <kernel/atomic>
 #include <kernel/refcount>
@@ -166,6 +167,10 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
+
+	kout << "Disabling boot-time double paging...";
+	disable_null_page();
+	kout << "done." << endl; 
 
 	kout << "Initializing free page tables...";
 	free_page_list.initialize(*multiboot_info, boot_dynmem_alloc);

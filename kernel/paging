@@ -21,17 +21,27 @@ public:
 		flags &= ~ 1;
 		flags |= present ? 1 : 0;
 	}
+
 	void set_rw(bool present) {
 		flags &= ~ 2;
 		flags |= present ? 2 : 0;
 	}
 
-	bool is_present() {
+	void set_4MiB(bool is) {
+		flags &= ~ 0x80;
+		flags |=      is ? 0x80 : 0;
+	}
+	
+	bool is_present() const {
 		return flags & 1;
 	}
 
-	bool is_rw() {
+	bool is_rw() const {
 		return flags & 2;
+	}
+
+	bool is_4MiB() const {
+		return flags & 0x80;
 	}
 };
 
@@ -69,8 +79,13 @@ public:
 		data &= ~ 0xFFFFF000;
 		data |= (unsigned long)offset & ~0xFFF;
 	}
+
+	void clear() {
+		data = 0;
+	}
 };
 
 void initialize_page_tables();
+void disable_null_page();
 
 #endif
