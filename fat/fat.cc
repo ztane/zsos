@@ -39,7 +39,6 @@ bool FatInfo::initialize(void *_data)
 	bool fat16_32 = false;
 	uint8_t *data = (uint8_t*)_data;
 
-	printf("%04x %04x", U16(OMAGIC), MAGIC);
 	if (U16(OMAGIC) != MAGIC)
 		return false;
 
@@ -54,21 +53,20 @@ bool FatInfo::initialize(void *_data)
 			return false;
 	}
 
-	int tmp = secs_per_cluster = U8(OSPC);
-
-	if (tmp == 0)
-		return false;
-
-	while (tmp) {
-		if (tmp == 1) 
+	secs_per_cluster = U8(OSPC);
+	switch (secs_per_cluster) {
+		case 1:
+		case 2:
+		case 4:
+		case 8:
+		case 16:
+		case 32:
+		case 64:
+		case 128:
 			break;
-
-		else if (tmp & 1)
+		default:
 			return false;
-
-		tmp >>= 1;
 	}
-		printf("Here");
 
 	total_reserved_sectors = U16(ONRESERVED);
 	
