@@ -17,6 +17,8 @@ class FatInfo {
 	uint32_t num_heads;
 	uint32_t hidden_sectors;
 	uint32_t n_clusters;
+
+	int fat_size;
 	
 	char oem_name[9];
 

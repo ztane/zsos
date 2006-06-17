@@ -100,6 +100,14 @@ bool FatInfo::initialize(void *_data)
 		num_root_entries / DIRENTRY_SIZE;
 	
 	n_clusters /= secs_per_cluster;
+
+	if (n_clusters < FAT12LIMIT)
+		fat_size = 12;
+	else if (n_clusters < FAT16LIMIT)
+		fat_size = 16;
+	else
+		fat_size = 32;
+
 	return true;
 }
 
@@ -116,6 +124,7 @@ void FatInfo::print_info() {
 	cout << "Heads:            " << num_heads << endl;
 	cout << "Hidden sectors:   " << hidden_sectors << endl;
 	cout << "Num clusters:     " << n_clusters << endl;
+	cout << "File system type: FAT" << fat_size << endl;
 }
 
 int main() {
