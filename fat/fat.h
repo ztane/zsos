@@ -2,6 +2,35 @@
 #define __FAT_H__
 
 #include <inttypes.h>
+#include <stdio.h>
+
+class BlockDevice {
+	FILE *fp;
+	int filedes;
+	uint32_t total_size;
+	uint32_t total_secs;
+	uint32_t sec_size;
+public:
+	BlockDevice(char *filename);
+
+	uint32_t getSectorSize()   const {
+		return sec_size;
+	}
+
+	uint32_t getTotalSectors() const {
+		return total_secs;
+	}
+
+	void setSectorSize(uint32_t ns) {
+		sec_size = ns;
+	}
+
+	void setTotalSectors(uint32_t ns) {
+		total_secs = ns;
+	}
+
+	bool read(void *buffer, uint32_t offset, uint32_t number);
+};
 
 class FatInfo {
 	uint32_t bytes_per_sector;
@@ -26,7 +55,7 @@ public:
 	FatInfo() {
 	}
 	
-	bool initialize(void *data);
+	bool initialize(BlockDevice& dev);
 	void print_info();
 };
 

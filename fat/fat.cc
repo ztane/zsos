@@ -1,6 +1,8 @@
 #include "fat.h"
 #include <stdio.h>
 #include <iostream>
+#include <linux/fs.h>
+#include <sys/ioctl.h>
 
 using namespace std;
 
@@ -34,11 +36,22 @@ using namespace std;
 
 #define DIRENTRY_SIZE 32
 
-bool FatInfo::initialize(void *_data)
+void *allocateMemory(size_t size) {
+	return malloc(size);
+}
+
+void freeMemory(void *ptr) {
+	free(ptr);
+}
+
+bool FatInfo::initialize(BlockDevice& dev)
 {
 	bool fat16_32 = false;
-	uint8_t *data = (uint8_t*)_data;
+	uint8_t *data = (uint8_t*)allocateMemory(512);
 
+	fprintf(stderr, "muistit permit?\n");	
+	dev.read(data, 0, 1);
+	
 	if (U16(OMAGIC) != MAGIC)
 		return false;
 
@@ -50,8 +63,12 @@ bool FatInfo::initialize(void *_data)
 		case 4096:
 			break;
 		default:
+			fprintf(stderr, "bytes per sector not a power of 2\n");
+			freeMemory(data);
 			return false;
 	}
+
+	dev.setSectorSize(bytes_per_sector);
 
 	secs_per_cluster = U8(OSPC);
 	switch (secs_per_cluster) {
@@ -65,6 +82,8 @@ bool FatInfo::initialize(void *_data)
 		case 128:
 			break;
 		default:
+			fprintf(stderr, "secs per cluster not a power of 2\n");
+			freeMemory(data);
 			return false;
 	}
 
@@ -78,7 +97,13 @@ bool FatInfo::initialize(void *_data)
 		fat16_32 = true;
 		total_sectors = U32(ONTOTSECS2);
 	}
-	
+
+	if (total_sectors > dev.getTotalSectors()) {
+		fprintf(stderr, "Total sectors on BPB > size of partition\n");
+		freeMemory(data);
+		return false;
+	}	
+
 	media_type = U8(OMEDIATYPE);
 	sectors_per_fat = U16(ONSPFAT);
 	if (sectors_per_fat == 0) {
@@ -108,6 +133,7 @@ bool FatInfo::initialize(void *_data)
 	else
 		fat_size = 32;
 
+	freeMemory(data);
 	return true;
 }
 
@@ -127,22 +153,45 @@ void FatInfo::print_info() {
 	cout << "File system type: FAT" << fat_size << endl;
 }
 
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+
+BlockDevice::BlockDevice(char *filename)
+{
+	struct stat s;
+	fp = fopen(filename, "r");
+	if (! fp)
+		return;
+
+	filedes = fileno(fp);
+
+	uint32_t nblocks;
+	ioctl(filedes, BLKGETSIZE, &nblocks);
+
+	setSectorSize(512);
+	setTotalSectors(nblocks);
+}
+
+bool BlockDevice::read(void *buffer, uint32_t _offset, uint32_t number)
+{
+	off_t offset = _offset * sec_size;
+
+	fseek(fp, offset, SEEK_SET);
+	uint32_t rc = fread(buffer, sec_size, number, fp);
+	return rc == number;
+}
+
+
+
 int main() {
 	FILE *fp;
 	FatInfo f;	
 	
 	char sector[1024];
-
-	fp = fopen("/dev/sda7", "r");
-	if (! fp) {
-		fprintf(stderr, "perms? partition exists?\n"); 	
-		exit(1);
-	}	
-
-	fread(sector, 512, 1, fp);
-	fclose(fp);
-	
-	
-	f.initialize(sector);
+	BlockDevice dev("/dev/sda7");
+	f.initialize(dev);
 	f.print_info();
 }
