@@ -188,8 +188,6 @@ void kernel_main(unsigned int magic, void *mbd)
 	enable_keyboard();
 	kout << " done" << endl;
 
-	haltloop();
-
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi2.initialize((void*)user_task2);
