@@ -125,7 +125,7 @@ bool FatInfo::initialize(BlockDevice& dev)
 		num_root_entries / DIRENTRY_SIZE;
 	
 	n_clusters /= secs_per_cluster;
-
+	
 	if (n_clusters < FAT12LIMIT)
 		fat_size = 12;
 	else if (n_clusters < FAT16LIMIT)
@@ -133,6 +133,20 @@ bool FatInfo::initialize(BlockDevice& dev)
 	else
 		fat_size = 32;
 
+	int tmp = secs_per_cluster * bytes_per_sector;
+	if (tmp == 0) {
+		freeMemory(data);
+		return false; 
+	}
+
+	cluster_bits = 0;
+	cluster_offset_mask = tmp - 1;
+
+	while (! (tmp & 1)) {
+		tmp >>= 1;
+		cluster_bits ++;		
+	} 
+	
 	freeMemory(data);
 	return true;
 }
@@ -151,13 +165,15 @@ void FatInfo::print_info() {
 	cout << "Hidden sectors:   " << hidden_sectors << endl;
 	cout << "Num clusters:     " << n_clusters << endl;
 	cout << "File system type: FAT" << fat_size << endl;
+	cout << endl << endl;
+	printf("Cluster offset bits: %d - cluster offset mask %08X", 
+		cluster_bits, cluster_offset_mask);
 }
 
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
 
 BlockDevice::BlockDevice(char *filename)
 {
@@ -184,6 +200,58 @@ bool BlockDevice::read(void *buffer, uint32_t _offset, uint32_t number)
 	return rc == number;
 }
 
+size_t FatFileSystem::read(cluster_t& current_cluster, 
+	fat_off_t& position, size_t n_bytes, void *buffer)
+{
+	fat_off_t off      = position & info.cluster_offset_mask;
+	fat_off_t end_diff = off + n_bytes - 1;
+	
+	cluster_t cluster_diff = end_diff >> info.cluster_bits;
+	
+		
+}
+
+FatFile::FatFile(FatFileSystem& system, cluster_t start) :
+	filesys(system), file_start(start), current_cluster(start)
+{
+        cache_start = cache_end = position = 0;
+	file_size = 1 << 20;
+}
+
+size_t FatFile::read(size_t n_bytes, void *buffer)
+{
+	return filesys.read(current_cluster, position, n_bytes, buffer);	
+}
+
+size_t FatFile::setpos(size_t pos) 
+{
+	if (position > file_size) {
+		return (size_t)-1;
+	} 
+	
+	//if (filesys.is_in_same_cluster(pos, position)) 
+	//{
+	//	position = pos;
+	//	return position;
+	//}
+
+	cluster_t new_c;
+	if (pos > position) {
+		new_c = filesys.cluster_seek_fwd(current_cluster, position, pos);
+	}
+	else {
+		new_c = filesys.cluster_seek_fwd(file_start, 0, pos);
+	}
+
+	if (new_c == (cluster_t)-1) {
+		return (size_t)-1;
+	}
+	
+	current_cluster = new_c;
+	position = pos;
+	return position;
+}
+
 
 
 int main() {
@@ -195,3 +263,4 @@ int main() {
 	f.initialize(dev);
 	f.print_info();
 }
+
