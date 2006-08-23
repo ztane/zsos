@@ -1,7 +1,7 @@
 #ifndef __REFCOUNT_INCLUDED__
 #define __REFCOUNT_INCLUDED__
 
-#include <kernel/atomic>
+#include <kernel/atomic.hh>
 
 class RefCount : private Atomic {
 public:

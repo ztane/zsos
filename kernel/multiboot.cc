@@ -4,7 +4,7 @@
 #include <iostream>
 #include <printk.h>
 
-#include "multiboot"
+#include "multiboot.hh"
 
 #define MB_MMAP_TYPE_AVAIL  0x00000001
 

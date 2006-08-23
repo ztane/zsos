@@ -4,7 +4,7 @@
 #define SCHEDULER_INC 1
 
 #include <cstdlib>
-#include "tasking"
+#include "tasking.hh"
 
 //  0 - 15: HISR (Highlevel Interrupt Service Routine)
 // 16 - 31: Realtime tasks

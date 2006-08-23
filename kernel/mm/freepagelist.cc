@@ -1,7 +1,7 @@
 #include <new>
-#include <multiboot>
+#include <multiboot.hh>
 #include <allocator>
-#include <mm/freepagelist>
+#include <mm/freepagelist.hh>
 
 
 FreePageList free_page_list;

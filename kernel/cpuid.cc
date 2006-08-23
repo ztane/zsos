@@ -1,7 +1,7 @@
-#include <cpuid>
+#include <cpuid.hh>
 #include <printk.h>
 #include <iostream>
-#include <string.h>
+#include <cstring>
 
 const char *flag_names[32] = {
 	"fpu",	"vme",	"de",	"pse",

@@ -1,7 +1,7 @@
 #ifndef __FREEPAGELIST_INCLUDED__
 #define __FREEPAGELIST_INCLUDED__
 
-#include "kernel/arch/constants"
+#include "kernel/arch/constants.hh"
 #include <bitvector>
 
 class FreePageList {

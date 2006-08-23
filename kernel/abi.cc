@@ -1,6 +1,6 @@
 // FIXME: Change this file's name to better mirror its contents.
 
-#include <kernel/panic>
+#include <kernel/panic.hh>
 
 // This provides a standard entry point for the compiler to reference in
 // virtual tables to indicate a pure virtual function.

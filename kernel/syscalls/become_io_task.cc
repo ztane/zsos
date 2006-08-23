@@ -1,6 +1,6 @@
-#include <interrupt>
-#include <scheduler>
-#include <syscall>
+#include <interrupt.hh>
+#include <scheduler.hh>
+#include <syscall.hh>
 
 SYSCALL(become_io_task)
 {

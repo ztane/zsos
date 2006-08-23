@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <kernel/mm/kmalloc.h>
-#include <kernel/panic>
+#include <kernel/panic.hh>
 #include <libutil/include/allocator>
 
 static Allocator *default_allocator = 0;

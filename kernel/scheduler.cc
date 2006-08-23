@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
-#include "interrupt"
-#include "scheduler"
-#include "tasking"
+#include "interrupt.hh"
+#include "scheduler.hh"
+#include "tasking.hh"
 
 Scheduler::Scheduler()
 {
@@ -24,7 +24,7 @@ Scheduler::~Scheduler()
 */
 void Scheduler::schedule()
 {
-	int idx;
+	int i;
 	
 	enter_critical();
 	if (scheduler_running) {
@@ -34,10 +34,10 @@ void Scheduler::schedule()
 	scheduler_running = true;
 	
 	while (true) {
-		for (idx = 0; idx < PRIV_LEVELS; idx++)
+		for (i = 0; i < PRIV_LEVELS; i++)
 		{
-			if (tasks[idx].first != NULL) {
-				Process *p = tasks[idx].first;
+			if (tasks[i].first != NULL) {
+				Process *p = tasks[i].first;
 				remove_process(p);
 				
 				current = p;

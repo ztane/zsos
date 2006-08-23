@@ -1,5 +1,5 @@
 #include <printk.h>
-#include <syscall>
+#include <syscall.hh>
 
 SYSCALL(write_character)
 {

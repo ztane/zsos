@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cstring>
-#include "ide"
+#include "ide.hh"
 #include "printk.h"
-#include "interrupt"
+#include "interrupt.hh"
 #include "port.h"
 
 #define BUFB_LEN 512
@@ -63,7 +63,7 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 	// 0x50 : (bit 6) drive is ready, (bit 4) seek complete
 	// 0x01 : (bit 0) previous command ended in an error
 	while (! (inb(registers.status) & (0x50 | 0x01)))
-		;
+		io_wait();
 	if (inb(registers.status) & 0x01)
 	{
 		kout << "ide" << controller << ": error" << endl;
@@ -72,12 +72,13 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 
 	// drive ready! issue Identify Drive (0xEC) command
 	outb(registers.command, 0xEC);
+
 	// wait till we have data in buffer
 	// 0x58 : (bit 6) drive is ready, (bit 4) seek complete,
 	//        (bit 3) sector buffer requires servicing
 	// 0x01 : (bit 0) previous command ended in an error
 	while (! (inb(registers.status) & (0x58 | 0x01)))
-		;
+		io_wait();
 	// error handling here!
 	if (inb(registers.status) & 0x01)
 	{
@@ -126,8 +127,23 @@ IdeHddDev::~IdeHddDev()
 
 }
 
-void IdeHddDev::issueRead(int baddr, size_t bcount)
+int IdeHddDev::issueRead(uint32_t baddr, size_t bcount)
 {
+	// no mind in doing anything if driver has not
+	// been initialized correctly
+	if (device < 0)
+	{
+		kout << "IdeHddDev::issueRead: error uninitialized driver" << endl;
+		return -1;
+	}
+
+	// reading 0 blocks is.. illogical
+	if (bcount < 1)
+	{
+		kout << "IdeHddDev::issueRead: error attempt to read 0 blocks" << endl;
+		return -1;
+	}
+
 //  1. Wait for drive to clear BUSY.
 //  2. Load required parameters in the Command Block Registers.
 //  3. Activate the Interrupt Enable (nIEN) bit.
@@ -142,12 +158,15 @@ void IdeHddDev::issueRead(int baddr, size_t bcount)
 	int head     = (baddr / geometry.sectors_track) % geometry.heads;
 	int cylinder = (baddr / geometry.sectors_track) / geometry.heads;
 
+	// inform others that we are doing serious stuff
+	enter_critical();
+
 	// select correct drive
 	outb(registers.drive_head, (0x0A | device) << 4);
 
 	// 1. Wait for drive to clear BUSY.
 	while (inb(registers.status) & 0x80)
-		;
+		io_wait();
 
 	// NOTE: CHS method
 	// 2. Load required parameters in the Command Block Registers.
@@ -157,13 +176,17 @@ void IdeHddDev::issueRead(int baddr, size_t bcount)
 	outb(registers.sec_number, sector);
 	outb(registers.sec_count, bcount);
 
-	// 3. Activate the Interrupt Enable (nIEN) bit.
-
 	// 4. Wait for drive to set DRDY.
 	while (! (inb(registers.status) & 0x40))
-		;
+		io_wait();
 
 	// 5. Write the command code to the Command Register.
 	// 0x20: Read sectors with retry
 	outb(registers.command, 0x20);
+
+	// we are good to go
+	leave_critical();
+
+	// 0 means EXIT_SUCCESS
+	return 0;
 }

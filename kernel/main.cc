@@ -3,22 +3,22 @@
 #include <cstring>
 #include <iostream>
 
-#include <kernel/cpuid>
-#include <kernel/atomic>
-#include <kernel/refcount>
+#include <kernel/cpuid.hh>
+#include <kernel/atomic.hh>
+#include <kernel/refcount.hh>
 
-#include "syscall"
+#include "syscall.hh"
 #include "printk.h"
-#include "multiboot"
-#include "interrupt"
-#include "paging"
-#include "tasking"
-#include "init_vga"
-#include "ide"
-#include "scheduler"
-#include "timer"
-#include "mm/freepagelist"
-#include <panic>
+#include "multiboot.hh"
+#include "interrupt.hh"
+#include "paging.hh"
+#include "tasking.hh"
+#include "init_vga.hh"
+#include "ide.hh"
+#include "scheduler.hh"
+#include "timer.hh"
+#include "mm/freepagelist.hh"
+#include <panic.hh>
 
 void haltloop() 
 {

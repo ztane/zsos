@@ -3,7 +3,7 @@
 #ifndef MULTIBOOT_INC
 #define MULTIBOOT_INC 1
 
-#include <mm/bootdynmem>
+#include <mm/bootdynmem.hh>
 
 #define MB_MAGIC_VALUE 0x2BADB002
 

@@ -1,13 +1,13 @@
 #include <cstdlib>
 #include "config.h"
-#include "interrupt"
+#include "interrupt.hh"
 #include "port.h"
 #include "pokepeek.h"
 #include "printk.h"
-#include "printstate"
-#include "tasking"
-#include "scheduler"
-#include "timer"
+#include "printstate.hh"
+#include "tasking.hh"
+#include "scheduler.hh"
+#include "timer.hh"
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -263,7 +263,14 @@ C_ISR(IRQ_A) { }
 C_ISR(IRQ_B) { }
 C_ISR(IRQ_C) { }
 C_ISR(IRQ_D) { }
-C_ISR(IRQ_E) { printk("ide0: interrupt\n"); unlock_irq(14); }
+C_ISR(IRQ_E) { 
+#ifdef DEBUG
+	printk("ide0: interrupt\n");
+#endif
+	// read request from mbox/mqueue
+	// inform request owner that we are done
+	unlock_irq(14);
+}
 C_ISR(IRQ_F) { printk("ide1: interrupt\n"); unlock_irq(15); }
 
 volatile int __critical_nest_depth = 0;

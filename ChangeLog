@@ -1,3 +1,6 @@
+2006-08-23: Ilja Everila <saarni@kapsi.fi>
+	- Renamed headers under kernel/ to *.hh. It's nicer for editors
+
 2006-03-15: (Ilja) moved rudimentary kmalloc code from libc to
 	kernel/mm, since that's what it is: part of the kernel's
 	memory management.

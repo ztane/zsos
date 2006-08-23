@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "interrupt"
+#include "interrupt.hh"
 #include "printk.h"
-#include "scheduler"
-#include "syscall"
+#include "scheduler.hh"
+#include "syscall.hh"
 
 SYSCALL(BAD)
 {

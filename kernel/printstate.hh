@@ -3,7 +3,7 @@
 #ifndef PRINTSTATE
 #define PRINTSTATE
 
-#include "interrupt"
+#include "interrupt.hh"
 
 void print_kernel_state(REGS& r);
 

@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include "init_vga"
+#include "init_vga.hh"
 
 extern "C" void   init_vga_buffer();
 extern "C" size_t vga_buf_write(const void *, size_t);

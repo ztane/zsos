@@ -1,5 +1,5 @@
-#include <syscall>
-#include <scheduler>
+#include <syscall.hh>
+#include <scheduler.hh>
 
 SYSCALL(get_pid) 
 {

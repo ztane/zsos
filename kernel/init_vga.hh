@@ -1,10 +1,10 @@
 // -*- C++ -*-
 
-#ifndef INIT_VGA_HH
-#define INIT_VGA_HH
+#ifndef INIT_VGA
+#define INIT_VGA 1
 
 #include <cstdlib>
-#include "chardevice"
+#include "chardevice.hh"
 
 class VgaDev : public CharDev
 {

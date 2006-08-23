@@ -5,8 +5,9 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "interrupt"
+#include "interrupt.hh"
 #include "port.h"
+#include "blockdevice.hh"
 
 // port addresses for 1st Fixed Disk Controller, Command Block
 const unsigned short IDE0_REG_BASE	= 0x01F0;
@@ -45,13 +46,13 @@ const unsigned short IDE1_DEV_CTRL_REG		= 0x0376;	// write-only
 const unsigned short IDE1_DRV_ADDR_REG		= 0x0377;	// read-only OBSOLETE
 
 // HardDiskDevice
-class IdeHddDev
+class IdeHddDev : public BlockDev
 {
 	public:
 		IdeHddDev(int controller, int device);
 		virtual ~IdeHddDev();
 
-		void issueRead(int block_address, size_t block_count);
+		int issueRead(uint32_t block_address, size_t block_count);
 
 	private:
 		// negative values mark a defunct / not in use device

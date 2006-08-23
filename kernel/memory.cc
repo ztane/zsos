@@ -1,5 +1,5 @@
-#include "memory"
-#include "tasking"
+#include "memory.hh"
+#include "tasking.hh"
 #include "printk.h"
 
 #define N_SEGMENT_DESCRIPTORS 5

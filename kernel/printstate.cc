@@ -1,4 +1,4 @@
-#include "printstate"
+#include "printstate.hh"
 #include "printk.h"
 
 void print_kernel_state(Registers& r)

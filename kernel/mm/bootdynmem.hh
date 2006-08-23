@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <allocator>
-#include <kernel/panic>
+#include <kernel/panic.hh>
 #include <printk.h>
 
 class BootDynMemAllocator : public Allocator {

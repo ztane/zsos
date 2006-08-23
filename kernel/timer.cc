@@ -1,4 +1,4 @@
-#include "timer"
+#include "timer.hh"
 #include "port.h"
 #include "printk.h"
 

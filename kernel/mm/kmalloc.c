@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "kmalloc.h"
-#include <panic>
+#include <panic.hh>
 
 /**
  * TODO: Heap in general should be PAGE aligned (4k in x86)
@@ -302,7 +302,7 @@ krealloc_allocnew:
 
 	if (!rval)
 		return NULL;
-
+	// FIXME: use memmove here, new and old block might overlap
 	memcpy(rval, orig_val, orig_size);
 	kfree(orig_val);
 	return rval;

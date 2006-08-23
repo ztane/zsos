@@ -1,4 +1,4 @@
-#include "paging"
+#include "paging.hh"
 #include "printk.h"
 
 #define LOG_TO_PHYS(x)     ((void*)((unsigned long)(x) - 0xC0000000)) 

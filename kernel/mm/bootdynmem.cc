@@ -1,4 +1,4 @@
-#include "bootdynmem"
+#include "bootdynmem.hh"
 
 // defined in linker script!
 extern char _BOOT_HEAP_START;

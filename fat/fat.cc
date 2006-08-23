@@ -259,7 +259,7 @@ int main() {
 	FatInfo f;	
 	
 	char sector[1024];
-	BlockDevice dev("/dev/sda7");
+	BlockDevice dev("/dev/sdb3");
 	f.initialize(dev);
 	f.print_info();
 }

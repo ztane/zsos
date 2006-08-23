@@ -3,8 +3,8 @@
 #ifndef SYSCALL_INCLUDED
 #define SYSCALL_INCLUDED
 
-#include <interrupt>
 #include <ostypes>
+#include "interrupt.hh"
 
 inline unsigned int __syscall0(unsigned int number) {
 	int retv;
