@@ -28,7 +28,7 @@ public:
 	inline void operator=(int32_t val) {
 		__asm__ __volatile__(
 			____LOCK "movl %1, %0"
-			:"=m"(value):"m"(val)
+			:"=m"(value):"r"(val)
 		);
 	}
 
@@ -39,13 +39,31 @@ public:
 	inline void operator += (int32_t val) {
 		__asm__ __volatile__(
 			____LOCK "addl %1, %0"
-			:"=m"(value):"m"(val), "m"(value));
+			:"=m"(value):"r"(val), "m"(value));
 	}	
 
 	inline void operator -= (int32_t val) {
 		__asm__ __volatile__(
 			____LOCK "subl %1, %0"
-			:"=m"(value):"m"(val), "m"(value));
+			:"=m"(value):"r"(val), "m"(value));
+	}
+
+	inline void operator &= (int32_t val) {
+		__asm__ __volatile__(
+			____LOCK "andl %1, %0"
+			:"=m"(value):"r"(val), "m"(value));
+	}
+
+	inline void operator |= (int32_t val) {
+		__asm__ __volatile__(
+			____LOCK "orl %1, %0"
+			:"=m"(value):"r"(val), "m"(value));
+	}
+
+	inline void operator ^= (int32_t val) {
+		__asm__ __volatile__(
+			____LOCK "xorl %1, %0"
+			:"=m"(value):"r"(val), "m"(value));
 	}
 
 	inline void operator ++() {

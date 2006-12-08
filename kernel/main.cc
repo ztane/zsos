@@ -6,6 +6,7 @@
 #include <kernel/cpuid.hh>
 #include <kernel/atomic.hh>
 #include <kernel/refcount.hh>
+#include <kernel/mm/pageframe.hh>
 
 #include "syscall.hh"
 #include "printk.h"
@@ -17,7 +18,6 @@
 #include "ide.hh"
 #include "scheduler.hh"
 #include "timer.hh"
-#include "mm/freepagelist.hh"
 #include <panic.hh>
 
 void haltloop() 
@@ -90,15 +90,15 @@ extern void initialize_tasking();
 void user_task() {
 	while (1) {
 		become_io_task();
-		kout << get_process_id() << endl;
-		printk("abc\n");
-		write_character('A');
+//		kout << get_process_id() << endl;
+//		printk("abc\n");
+//		write_character('A');
 	}
 }
 
 void user_task2() {
 	while (1) {
-		write_character('B');
+//		write_character('B');
 	}
 }
 
@@ -138,6 +138,8 @@ Process tesmi("tesmi");
 Process tesmi2("tesmi2");
 Scheduler scheduler;
 
+void initialize_page_frame_table(const MultibootInfo& boot_info, Allocator& allocator);
+
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
@@ -172,9 +174,10 @@ void kernel_main(unsigned int magic, void *mbd)
 	disable_null_page();
 	kout << "done." << endl; 
 
-	kout << "Initializing free page tables...";
-	free_page_list.initialize(*multiboot_info, boot_dynmem_alloc);
-	kout << "done." << endl;
+	kout << "Initializing page frame structures... ";
+	initialize_page_frame_table(*multiboot_info, boot_dynmem_alloc);
+	kout << global_page_frame_table.get_last_page();
+	kout << "pages." << endl;
 
 	kout << "Initializing tasking...";
 	initialize_tasking();
