@@ -22,7 +22,7 @@ void TSSContents::setup() {
 	eflags = 2;
 	bitmap = 104;
 
-	__asm__ __volatile__ ("mov %%cr3, %0" : "=a" (cr3) : );
+	__asm__ __volatile__ ("mov %%cr3, %0" : "=a"(cr3) : );
 }
 
 Process::Process(char *_name) {
@@ -88,8 +88,7 @@ void Process::dispatch() {
 
 void initialize_tasking() {
 	TSS_Segment.setup();
-
-	unsigned short tss_desc = TSS_DESCRIPTOR;
-	__asm__ __volatile__ ("ltr (%0)" : : "r" (&tss_desc));
+	uint16_t tss_desc = TSS_DESCRIPTOR;
+	__asm__ __volatile__ ("ltr %0" : : "r"(tss_desc));
 }
 
