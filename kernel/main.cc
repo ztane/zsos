@@ -174,10 +174,10 @@ void kernel_main(unsigned int magic, void *mbd)
 	disable_null_page();
 	kout << "done." << endl; 
 
-	kout << "Initializing page frame structures... ";
+	kout << "Initializing page frame structures: " << endl;
 	initialize_page_frame_table(*multiboot_info, boot_dynmem_alloc);
 	kout << global_page_frame_table.get_last_page();
-	kout << "pages." << endl;
+	kout << " pages of RAM." << endl;
 
 	kout << "Initializing tasking...";
 	initialize_tasking();
