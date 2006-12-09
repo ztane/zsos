@@ -143,7 +143,7 @@ void __get_cpuid(CPUIdentity& ident)
                 :"=a"(tmp.a),"=b"(tmp.b),"=c"(tmp.c),"=d"(tmp.d));
 	
 	// dummy check...
-	if (tmp.b = ident._vendor_id_vals._ebx) 
+	if (tmp.b == ident._vendor_id_vals._ebx) 
 	{
 		if (tmp.a >= 0x80000004) 
 		{
