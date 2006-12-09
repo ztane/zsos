@@ -5,6 +5,8 @@
 
 class Allocator {
 public:
+	virtual ~Allocator() { };
+
 	virtual void *allocate(size_t size) = 0;
 	virtual void release(void *ptr)     = 0;
 };

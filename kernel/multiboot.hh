@@ -105,7 +105,7 @@ public:
 		return mmap_length;	
 	}
 
-	unsigned int MultibootInfo::get_max_ram_address() const;
+	unsigned int get_max_ram_address() const;
 };
 
 #endif

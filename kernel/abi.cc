@@ -13,3 +13,11 @@ void __cxa_pure_virtual(void)
 {
 	kernel_panic("FATAL: pure virtual method.");
 }
+
+extern "C"
+int __cxa_atexit(void (*fp)(void *), void *vp1, void *vp2)
+{
+	return 0;
+}
+
+void *__dso_handle = &__dso_handle;
