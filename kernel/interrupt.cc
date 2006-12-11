@@ -243,8 +243,11 @@ C_ISR_W_ECODE(page_fault)          {
 	asm("mov %%cr2, %0"
 	: "=r"(addr) : );
 
-	printk("Page fault when accessing physical address: 0x%08x\n", addr);
-	out_status(' F P'); 
+	// sanity check...
+
+        extern Scheduler scheduler;
+        Process *task = scheduler.getCurrentTask();
+	task->handlePageFault(addr);
 }
 
 C_ISR(floating_point_error) { out_status(' P F'); }

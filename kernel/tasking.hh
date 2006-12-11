@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <ostypes>
+#include <iostream>
 
 class TSSContents{
 public:
@@ -112,6 +113,11 @@ public:
 	}
 
 	void enable_io();
+
+	bool handlePageFault(uint32_t address) {
+		kout << "Process " << process_id << " had a pfault at " << address << endl;
+		return true;
+	}
 
 	friend class Scheduler;
 

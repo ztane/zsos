@@ -99,6 +99,7 @@ void user_task() {
 void user_task2() {
 	while (1) {
 //		write_character('B');
+		*((char*)0xA000) = 5;
 	}
 }
 
@@ -193,7 +194,9 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
+	tesmi.setProcessId(1);
 	tesmi2.initialize((void*)user_task2);
+	tesmi2.setProcessId(2);
 	scheduler.add_process(&tesmi);
 	scheduler.add_process(&tesmi2);
 	scheduler.schedule();

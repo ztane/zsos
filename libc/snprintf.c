@@ -54,6 +54,7 @@ int vsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 				break;
 		}
 		
+		int xoff = 0;
                 switch(cmd) {
 	                case 's':
         	       		s = va_arg(ap, char *);
@@ -80,10 +81,15 @@ int vsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 	                        break;
 
 			/* NOTICE: upper case always! */
+			case 'p':
+				buf[0] = '0';
+				buf[1] = 'x';
+				xoff = 2;
+				// fallthrough
 	                case 'x':           
 	                case 'X':           
         	                u = va_arg(ap, unsigned int);
-				uintoxa(buf, sizeof(buf), u);
+				uintoxa(buf + xoff, sizeof(buf), u);
 	                        break;
 
         	        case 'c':        

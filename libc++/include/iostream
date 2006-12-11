@@ -1,12 +1,60 @@
 #ifndef __IOSTREAM__INCLUDED__
 #define __IOSTREAM__INCLUDED__
 
-class ostream 
+class ios_base {
+public:
+	enum fmtflags {
+		dec = 1,
+		oct = 2, 
+		hex = 4,
+		showbase = 8,
+	};
+
+protected:
+	fmtflags flgs;
+
+public:
+	ios_base() {
+		flgs = (fmtflags)(dec | showbase);
+	}
+
+	fmtflags setf(fmtflags fmtl) {
+		return flags((fmtflags)(fmtl | flgs));
+	}
+
+	fmtflags setf(fmtflags fmtl, fmtflags mask) {
+		return flags((fmtflags)((fmtl & mask) | (flags() & ~mask)));
+	}
+
+	fmtflags flags() const {
+		return flgs;
+	}
+
+	fmtflags flags(fmtflags fmtl) {
+		return flgs = fmtl;
+	}
+
+	void unsetf(fmtflags fgs) {
+		flgs = fmtflags(flgs & ~fgs);
+	}
+};
+
+class ostream : public ios_base
 {
 public:
 	ostream& operator<<(char const *parm);
+
+	ostream& operator<<(signed char parm);
+	ostream& operator<<(unsigned char parm);
+
+	ostream& operator<<(short int parm);
+	ostream& operator<<(unsigned short int parm);
 	ostream& operator<<(int parm);
 	ostream& operator<<(unsigned int parm);
+	ostream& operator<<(long int parm);
+	ostream& operator<<(unsigned long int parm);
+
+	ostream& operator<<(void const *parm);
 };
 
 extern ostream kout;
