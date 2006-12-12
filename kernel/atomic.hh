@@ -6,7 +6,7 @@
 
 class Atomic {
 private:
-	int32_t value;
+	volatile int32_t value;
 public:
 	inline Atomic() {
 		value = 0;
@@ -20,7 +20,7 @@ public:
 		int32_t rv;
 		__asm__ __volatile__(
 			____LOCK "movl %1, %0"
-			:"=m"(rv):"m"(value)
+			:"=r"(rv):"m"(value)
 		);
 		return rv;
 	}
