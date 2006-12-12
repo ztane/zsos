@@ -8,7 +8,7 @@ extern char _BOOT_HEAP_END;
 extern char g_code;
 
 
-void initialize_page_frame_table(
+void initializePageFrameTable(
 		const MultibootInfo& boot_info, 
 		Allocator& alloc
 	)
@@ -32,10 +32,10 @@ void initialize_page_frame_table(
 		kout << "Mapping as ram: " << length << " pages ";
 		kout << " at " << start << "." << endl;
 		
-		global_page_frame_table.set_flags_range(
+		global_page_frame_table.setFlagsRange(
 			start, length, PageFrame::IS_RAM);
 
-		global_page_frame_table.clear_flags_range(
+		global_page_frame_table.clearFlagsRange(
 			start, length, PageFrame::LOCKED);
         }
 
@@ -44,10 +44,10 @@ void initialize_page_frame_table(
 	pageaddr_t klength = kend - kstart + 1;
 	kout << "Reserving " << klength << " pages at " << kstart << " for kernel." << endl;
 
-	global_page_frame_table.set_flags_range(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
+	global_page_frame_table.setFlagsRange(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
 }
 
-void PageFrameTable::acquire_range(pageaddr_t start, size_t length) 
+void PageFrameTable::acquireRange(pageaddr_t start, size_t length) 
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
@@ -55,7 +55,7 @@ void PageFrameTable::acquire_range(pageaddr_t start, size_t length)
 	}
 }
 
-void PageFrameTable::release_range(pageaddr_t start, size_t length) 
+void PageFrameTable::releaseRange(pageaddr_t start, size_t length) 
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
@@ -63,7 +63,7 @@ void PageFrameTable::release_range(pageaddr_t start, size_t length)
 	}	
 }
 
-void PageFrameTable::set_flags_range(pageaddr_t start, size_t length, int32_t flag) 
+void PageFrameTable::setFlagsRange(pageaddr_t start, size_t length, int32_t flag) 
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
@@ -71,7 +71,7 @@ void PageFrameTable::set_flags_range(pageaddr_t start, size_t length, int32_t fl
 	}	
 }
 
-void PageFrameTable::clear_flags_range(pageaddr_t start, size_t length, int32_t flag) 
+void PageFrameTable::clearFlagsRange(pageaddr_t start, size_t length, int32_t flag) 
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {

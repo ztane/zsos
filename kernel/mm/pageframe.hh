@@ -3,10 +3,12 @@
 
 #include <cstdlib>
 #include <allocator>
-#include "kernel/atomic.hh"
-#include "kernel/refcount.hh"
+#include <kernel/atomic.hh>	
+#include <kernel/refcount.hh>
 
 typedef size_t pageaddr_t;
+
+class MemoryArea;
 
 class PageFrame {
 private:
@@ -46,6 +48,7 @@ public:
 	}
 
 	friend class PageFrameTable;
+	friend class MemoryArea;
 };
 
 class PageFrameTable {
@@ -63,7 +66,7 @@ public:
 		page_frames = new (alloc) PageFrame[max_addr + 1];
 	}
 
-	inline PageFrame& get_frame_entry(pageaddr_t a) {
+	inline PageFrame& getFrameEntry(pageaddr_t a) {
 		if (a <= max_page) {
 			return page_frames[a];
 		}
@@ -72,14 +75,16 @@ public:
 		return page_frames[0];
 	}
 	
-	inline pageaddr_t get_last_page() {
+	inline pageaddr_t getLastPage() {
 		return max_page;
 	}
 
-	void set_flags_range(pageaddr_t start, size_t npages, int32_t flag);
-	void clear_flags_range(pageaddr_t start, size_t npages, int32_t flag);
-	void acquire_range(pageaddr_t start, size_t npages);
-	void release_range(pageaddr_t start, size_t npages);
+	void setFlagsRange(pageaddr_t start, size_t npages, int32_t flag);
+	void clearFlagsRange(pageaddr_t start, size_t npages, int32_t flag);
+	void acquireRange(pageaddr_t start, size_t npages);
+	void releaseRange(pageaddr_t start, size_t npages);
+
+	friend class MemoryArea;
 };
 
 extern PageFrameTable global_page_frame_table;

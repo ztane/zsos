@@ -6,7 +6,7 @@
 #include <kernel/cpuid.hh>
 #include <kernel/atomic.hh>
 #include <kernel/refcount.hh>
-#include <kernel/mm/pageframe.hh>
+#include <kernel/mm/memarea.hh>
 
 #include "syscall.hh"
 #include "printk.h"
@@ -139,7 +139,7 @@ Process tesmi("tesmi");
 Process tesmi2("tesmi2");
 Scheduler scheduler;
 
-void initialize_page_frame_table(const MultibootInfo& boot_info, Allocator& allocator);
+void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
@@ -176,9 +176,24 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << "done." << endl; 
 
 	kout << "Initializing page frame structures: " << endl;
-	initialize_page_frame_table(*multiboot_info, boot_dynmem_alloc);
-	kout << global_page_frame_table.get_last_page();
+	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
+	kout << global_page_frame_table.getLastPage();
 	kout << " pages of RAM." << endl;
+
+	PageAllocation a;
+	NormalMemory.allocatePages(10, a);
+	kout << "Allocated: " << a.getAddress() << " " << a.getLength() << endl;
+
+	PageAllocation a2;
+	NormalMemory.allocatePages(10, a2);
+	kout << "Allocated: " << a2.getAddress() << " " << a2.getLength() << endl;
+
+	NormalMemory.releasePages(a);
+
+	NormalMemory.allocatePages(7, a);
+	kout << "Allocated: " << a.getAddress() << " " << a.getLength() << endl;
+	NormalMemory.allocatePages(7, a);
+	kout << "Allocated: " << a.getAddress() << " " << a.getLength() << endl;
 
 	kout << "Initializing tasking...";
 	initialize_tasking();
