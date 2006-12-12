@@ -8,6 +8,10 @@ public:
 	RefCount() : Atomic(0) {		
 	}
 
+	inline operator int32_t() {
+		return Atomic::operator int32_t();
+	}
+
 	inline void operator ++() {
 		Atomic::operator ++();
 	}
