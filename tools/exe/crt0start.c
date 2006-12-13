@@ -1,12 +1,6 @@
 extern void (*__CTOR_LIST__)();
 extern int main(int argc, char *argv[]);
 
-void __CRT_startup() {
-	char *argv[] = { "exe", 0 };
-	main(1, argv);
-	// exit 1?
-}
-
 static void call_ctors()
 {
     void (**fptr)() = (&__CTOR_LIST__) + 1;
@@ -15,5 +9,24 @@ static void call_ctors()
     {
         (*fptr++)();
     }
+}
+
+#include <sys/syscall.h>
+#include <unistd.h>
+
+int errno;
+
+_syscall3(ssize_t, write, int, p1, const void*, p2
+		, size_t, p3);
+
+static _syscall1(void, exit, int, err);
+
+
+void __CRT_startup() {
+	char *argv[] = { "exe", 0 };
+	call_ctors();
+	write(1, "hello\n", 6);
+	main(1, argv);
+	exit(1);
 }
 

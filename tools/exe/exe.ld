@@ -1,3 +1,6 @@
+/* use elf format to test ;))) */
+/* OUTPUT_FORMAT("elf32-i386") */
+
 OUTPUT_FORMAT("binary")
 ENTRY(__CRT_startup)
 
