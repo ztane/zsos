@@ -1,3 +1,6 @@
+#include <sys/syscall.h>
+#include <unistd.h>
+
 extern void (*__CTOR_LIST__)();
 extern int main(int argc, char *argv[]);
 
@@ -10,9 +13,6 @@ static void call_ctors()
         (*fptr++)();
     }
 }
-
-#include <sys/syscall.h>
-#include <unistd.h>
 
 int errno;
 
