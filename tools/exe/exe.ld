@@ -39,6 +39,8 @@ SECTIONS {
 	LONG(__SECTION_BSS);
 	LONG(bsslen);
 
+	LONG(__CRT_startup);
+
 	. = ALIGN(4096);
 	__HEADER_END = .;
      }

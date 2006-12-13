@@ -1,4 +1,5 @@
 #!/bin/sh
 
-gcc -c joo.c
-ld -T exe.ld joo.o
+gcc -c crt0start.c
+gcc -c joo.cc
+./linkexe joo.o -o example.zsx 
