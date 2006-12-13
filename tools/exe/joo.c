@@ -1,3 +1,4 @@
+int x;
 volatile int argc = 5;
 char *argv[] = { "a", "b", "c", "d", "e" };
 
