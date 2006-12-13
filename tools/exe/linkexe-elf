@@ -1,0 +1,2 @@
+#!/bin/sh
+ld -T exe.ld --oformat=elf32-i386 crt0start.o $*
