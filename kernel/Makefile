@@ -25,15 +25,12 @@ CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
 ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(COBJS) $(CCOBJS) $(ASMOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
-ARFLAGS=rc
-DEPS=$(CMODULES:%=dep/%.dep) $(CCMODULES:%=dep/%.dep)
-
 
 all: boot.o $(LIBDIR)/kernel.a
 
 -include $(DEPS)
 
-cleandep:
+depclean:
 	@echo "Cleaning dependencies" 
 	@rm -f $(DEPS)
 
@@ -42,7 +39,6 @@ boot.o: boot.S
 
 $(LIBDIR)/kernel.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
-	$(RANLIB) $@
 
 $(COBJS): $(OBJDIR)/%.o: %.c
 	$(CC) -o $@ -c  $< -O2 $(INCLUDES) $(CFLAGS) -fno-strict-aliasing

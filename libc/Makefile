@@ -11,7 +11,7 @@ INCLUDE=../libc $(GCCINCLUDEDIRS)
 INCLUDES=$(INCLUDE:%=-I%)
 OBJS=$(OBJFILES:%=$(OBJDIR)/%)
 TESTS=$(OBJFILES:%.o=$(TESTDIR)/%.t)
-ARFLAGS=rc
+ARFLAGS=rcs
 
 all: $(LIBDIR)/libc.a
 
@@ -23,7 +23,6 @@ test:
 
 $(LIBDIR)/libc.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
-	$(RANLIB) $@
 
 $(OBJS): $(HEADERS) Makefile
 $(OBJS): $(OBJDIR)/%.o: %.c

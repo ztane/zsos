@@ -11,13 +11,11 @@ TESTDIR=t
 CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(CCOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
-ARFLAGS=rc
 
 all: $(LIBDIR)/libc++.a
 
 $(LIBDIR)/libc++.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
-	$(RANLIB) $@
 
 $(CCOBJS): $(HEADERS) Makefile
 $(CCOBJS): $(OBJDIR)/%.o: %.cc
