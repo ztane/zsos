@@ -67,9 +67,6 @@ public:
 			{
 				PageFrame& f = table.page_frames[s + l];
 
-				kout << (s + l) << ": " << f.flags << ":" <<
-					(int)f.refs << endl;
-
 				if (! (f.flags & PageFrame::IS_RAM)
 						|| f.refs > 0)
 					break;

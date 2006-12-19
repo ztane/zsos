@@ -180,21 +180,6 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << global_page_frame_table.getLastPage();
 	kout << " pages of RAM." << endl;
 
-	PageAllocation a;
-	NormalMemory.allocatePages(10, a);
-	kout << "Allocated: " << a.getAddress() << " " << a.getLength() << endl;
-
-	PageAllocation a2;
-	NormalMemory.allocatePages(10, a2);
-	kout << "Allocated: " << a2.getAddress() << " " << a2.getLength() << endl;
-
-	NormalMemory.releasePages(a);
-
-	NormalMemory.allocatePages(7, a);
-	kout << "Allocated: " << a.getAddress() << " " << a.getLength() << endl;
-	NormalMemory.allocatePages(7, a);
-	kout << "Allocated: " << a.getAddress() << " " << a.getLength() << endl;
-
 	kout << "Initializing tasking...";
 	initialize_tasking();
 	kout << " done" << endl;

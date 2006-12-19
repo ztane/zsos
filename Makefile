@@ -61,7 +61,7 @@ mount-grub: img/grubfloppy.img
 img/grubfloppy.img: img/grubfloppy.img.gz
 	@gzcat img/grubfloppy.img.gz > img/grubfloppy.img
 
-run: install img/grubfloppy.img
+run: always install img/grubfloppy.img
 	@bochs -qf etc/bochsrc
 
 install:

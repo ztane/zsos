@@ -30,9 +30,9 @@ MAKEDEPS = -E $(CPPFLAGS) $(INCLUDES) $< \
 
 
 .dep/%.dep: %.c
-	@echo "  * (DEP)    $<"
+	@echo "  * DEP    $<"
 	@gcc $(MAKEDEPS)
 
 .dep/%.dep: %.cc
-	@echo "  * (DEP)    $<"
+	@echo "  * DEP    $<"
 	@g++ $(MAKEDEPS)

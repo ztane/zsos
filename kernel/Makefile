@@ -16,7 +16,7 @@ INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 DEPDIR=dep
 LIBDIR=.
-VPATH=.:mm:syscalls:dep
+VPATH=.:mm:syscalls
 TESTDIR=t
 
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)
