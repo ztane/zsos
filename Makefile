@@ -30,13 +30,20 @@ kernel.bin: lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/boot.o 
 	$(LD) -T kernel/kernel.ld -e _start -N -dn kernel/boot.o kernel/kernel.a lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
 #	$(STRIP) kernel.bin
 
-clean :
+clean:
 	$(MAKE) -C boot clean
 	$(MAKE) -C libc clean
 	$(MAKE) -C libc++ clean
 	$(MAKE) -C libutil clean
 	$(MAKE) -C kernel clean
 	@rm -f init.o kernel.bin floppy.bin
+
+depclean:
+	$(MAKE) -C boot depclean
+	$(MAKE) -C libc depclean
+	$(MAKE) -C libc++ depclean
+	$(MAKE) -C libutil depclean
+	$(MAKE) -C kernel depclean
 
 diskimage: 
 	@sudo sh tools/createloop img/disk.img 100
