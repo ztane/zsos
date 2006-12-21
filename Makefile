@@ -9,21 +9,33 @@ GRUBMOUNT = sudo mount -tvfat -oloop,uid=`id -u`,gid=`id -g` img/grubfloppy.img 
 all : always kernel.bin
 
 always : 
-	@cd libc    && make
-	@cd libc++  && make
-	@cd libutil && make
-	@cd kernel  && make
+	@echo kernel:
+	@echo ======	
+	$(MAKE) -C kernel
+
+	@echo libc:
+	@echo =====	
+	$(MAKE) -C libc
+
+	@echo libc++:
+	@echo =======	
+	$(MAKE) -C libc++
+
+	@echo libutil:
+	@echo ========	
+	$(MAKE) -C libutil
+	@echo "================================="
 
 kernel.bin: lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/boot.o kernel/kernel.ld
 	$(LD) -T kernel/kernel.ld -e _start -N -dn kernel/boot.o kernel/kernel.a lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
 #	$(STRIP) kernel.bin
 
 clean :
-	@cd boot     && make clean
-	@cd kernel   && make clean
-	@cd libc     && make clean clean-tests
-	@cd libutil  && make clean
-	@cd libc++   && make clean
+	$(MAKE) -C boot clean
+	$(MAKE) -C libc clean
+	$(MAKE) -C libc++ clean
+	$(MAKE) -C libutil clean
+	$(MAKE) -C kernel clean
 	@rm -f init.o kernel.bin floppy.bin
 
 diskimage: 

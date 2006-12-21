@@ -1,8 +1,10 @@
-CC      = /usr/bin/gcc
-CXX     = /usr/bin/g++
-RANLIB  = /usr/bin/ranlib
-LD      = /usr/bin/ld
-STRIP   = /usr/bin/strip
+CC      = @echo "  * GCC    $<" && /usr/bin/gcc
+CXX     = @echo "  * G++    $<" && /usr/bin/g++
+RANLIB  = @echo "  * RANLIB $<" && /usr/bin/ranlib
+LD      = @echo "  * LD     $<" && /usr/bin/ld
+STRIP   = @echo "  * STRIP  $<" && /usr/bin/strip
+AR      = @echo "  * AR     $<" && /usr/bin/ar
+MAKE    = @make -s
 
 CFLAGS  = -Wall -Werror -fno-builtin -nostdinc -Wno-multichar -O3
 CCFLAGS = -fno-rtti -fno-exceptions -nostdlib

@@ -11,7 +11,7 @@ TESTDIR=t
 CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(CCOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
-ARFLAGS=r
+ARFLAGS=rc
 
 all: $(LIBDIR)/libc++.a
 

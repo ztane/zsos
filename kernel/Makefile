@@ -25,7 +25,7 @@ CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
 ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(COBJS) $(CCOBJS) $(ASMOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
-ARFLAGS=r
+ARFLAGS=rc
 DEPS=$(CMODULES:%=dep/%.dep) $(CCMODULES:%=dep/%.dep)
 
 
@@ -51,12 +51,10 @@ $(CCOBJS): $(OBJDIR)/%.o: %.cc
 	$(CXX) -o $@ -c $< -O2 $(INCLUDES) $(CFLAGS) $(CCFLAGS)
 
 $(ASMOBJS): $(OBJDIR)/%.o: %.S
-	$(CXX) -o $@ -c $< -O2 $(INCLUDES)
+	$(CC) -o $@ -c $< -O2 $(INCLUDES)
 
 .PHONY: clean
 
 clean :
-	rm -f $(LIBDIR)/kernel.a
-	rm -f $(OBJS)
-	rm -f boot.o
+	rm -f $(LIBDIR)/kernel.a $(OBJS) boot.o
 
