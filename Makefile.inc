@@ -9,12 +9,14 @@ CCFLAGS = -fno-rtti -fno-exceptions -nostdlib
 
 GCCINCLUDEDIRS := $(shell gcc-config -L)/include
 
-%.d: %.c
-	$(SHELL) -ec '$(CC) -M $(CPPFLAGS) $(INCLUDES) $< \
-		| sed '\''s/\($*\)\.o[ :]*/\1.o $@ : /g'\'' > $@; \
-		[ -s $@ ] || rm -f $@'
+dep/%.dep: %.c
+	@echo "  * (DEP)    $<"
+	@$(CPP) -E $(CPPFLAGS) $(INCLUDES) $< \
+                 | sed -n 's!^\# *[0-9][0-9]* *"\([^"]*\)".*!$(OBJDIR)/$*.o: \1!p' \
+                 | grep -v '<' | sort | uniq > $@
 
-%.d: %.cc
-	$(SHELL) -ec '$(CXX) -M $(CPPFLAGS) $(INCLUDES) $< \
-		| sed '\''s/\($*\)\.o[ :]*/\1.o $@ : /g'\'' > $@; \
-		[ -s $@ ] || rm -f $@'
+dep/%.dep: %.cc
+	@echo "  * (DEP)    $<"
+	@$(CPP) -E $(CPPFLAGS) $(INCLUDES) $< \
+                 | sed -n 's!^\# *[0-9][0-9]* *"\([^"]*\)".*!$(OBJDIR)/$*.o: \1!p' \
+                 | grep -v '<' | sort | uniq > $@

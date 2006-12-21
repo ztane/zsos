@@ -14,8 +14,9 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
+DEPDIR=dep
 LIBDIR=.
-VPATH=.:mm:syscalls
+VPATH=.:mm:syscalls:dep
 TESTDIR=t
 
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)
@@ -25,12 +26,16 @@ ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(COBJS) $(CCOBJS) $(ASMOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
 ARFLAGS=r
+DEPS=$(CMODULES:%=dep/%.dep) $(CCMODULES:%=dep/%.dep)
 
-# include $(CMODULES:=.d)
-#
-# include $(CCMODULES:=.d)
 
 all: boot.o $(LIBDIR)/kernel.a
+
+-include $(DEPS)
+
+cleandep:
+	@echo "Cleaning dependencies" 
+	@rm -f $(DEPS)
 
 boot.o: boot.S
 	$(CC) -o $@ -c $< -O2 -fno-builtin -nostdinc $(INCLUDES) $(CFLAGS)
@@ -38,8 +43,6 @@ boot.o: boot.S
 $(LIBDIR)/kernel.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	$(RANLIB) $@
-
-$(COBJS) $(CCOBJS): $(HEADERS) Makefile
 
 $(COBJS): $(OBJDIR)/%.o: %.c
 	$(CC) -o $@ -c  $< -O2 $(INCLUDES) $(CFLAGS) -fno-strict-aliasing

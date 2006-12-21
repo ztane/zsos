@@ -1,2 +1,13 @@
 #!/bin/sh
-ld -T exe.ld crt0start.o $*
+_xx=$1
+x=$2
+shift
+shift
+if [[ "$_xx" != '-o' ]]
+then
+	echo "ERROR: THE FIRST PARAMETERS TO $0 MUST BE -o outputfile"
+	exit 1
+fi
+
+ld -T exe.ld -o $x crt0start.o $*
+objcopy -I binary "$x" -O elf32-i386 "${x}.o"
