@@ -88,6 +88,7 @@ void Process::dispatch() {
 
 void initialize_tasking() {
 	TSS_Segment.setup();
+
 	uint16_t tss_desc = TSS_DESCRIPTOR;
 	__asm__ __volatile__ ("ltr %0" : : "r"(tss_desc));
 }

@@ -192,6 +192,11 @@ void kernel_main(unsigned int magic, void *mbd)
 	enable_keyboard();
 	kout << " done" << endl;
 
+	kout << "Testing IDE..." << endl;
+	IdeHddDev hdd0(0, 0);
+	char idebuf[512];
+	hdd0.read(idebuf, 0, 1);
+
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi.setProcessId(1);
