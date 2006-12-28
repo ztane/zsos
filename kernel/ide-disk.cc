@@ -109,13 +109,13 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
 	// been initialized correctly
 	if (device < 0) {
 		kout << "IdeHddDev::issueRead: error uninitialized driver" << endl;
-		return -1;
+		return 0;
 	}
 
 	// reading 0 blocks is.. illogical
 	if (bcount < 1) {
 		kout << "IdeHddDev::issueRead: error attempt to read 0 blocks" << endl;
-		return -1;
+		return 0;
 	}
 
 //  1. Wait for drive to clear BUSY.
@@ -139,7 +139,7 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
                 io_wait();
         if (inb(regbase + IDE_STATUS) & 0x01) {
                 kout << "ide" << controller << ": error" << endl;
-                return -1;
+                return 0;
         }
 
 	// load command registers
@@ -157,7 +157,7 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
                 io_wait();
         if (inb(regbase + IDE_STATUS) & 0x01) {
                 kout << "ide" << controller << ": error" << endl;
-                return -1;
+                return 0;
         }
 
         // drive ready! issue Read Sectors (0x21) command
@@ -172,7 +172,7 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
         // error handling here!
         if (inb(regbase + IDE_STATUS) & 0x01) {
                 kout << "ide" << controller << ": error" << endl;
-                return -1;
+                return 0;
         }
 
 	uint16_t *buf = (uint16_t *) dst;
