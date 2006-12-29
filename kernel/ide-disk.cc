@@ -1,21 +1,18 @@
 #include <iostream>
+#include <cstdlib>
 #include <cstring>
+#include "../sim/mbox.h"
 #include "ide.hh"
 #include "printk.h"
 #include "interrupt.hh"
 #include "port.h"
-
-#define BUFB_LEN 512
 
 IdeHddDev::IdeHddDev(int cntrl, int dev) : 
 	controller(cntrl),
 	device(dev)
 {
 	// these are used in Identify Device
-	// bufb len is 512, bufw len is 256!
-	unsigned char   bufb[BUFB_LEN];
-	unsigned short *bufw = (unsigned short *) bufb;
-
+	uint16_t bufw[256]; // data register is 16bit wide, 256 words
 	char serial_number[20+1];
 	char firmware_rev [ 8+1];
 	char model_number [40+1];
@@ -23,11 +20,11 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 	// don't accept invalid device or controller IDs
 	if ((controller | device) & ~0x01) {
 		controller = device = -1;
-		kout << "IdeHddDev::IdeHddDev: invalid ide or device id. Aborting init." << endl;
+		kout << __FUNCTION__ << ": invalid ide or device id. Aborting init." << endl;
 		return;
 	}
 
-	kout << "IdeHddDev::IdeHddDev: initializing ide" << controller
+	kout << __FUNCTION__ << ": initializing ide" << controller
 		<< ", device" << device << endl;
 
 	// set up correct Command Block registers:
@@ -49,7 +46,8 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 	while (! (inb(regbase + IDE_STATUS) & (0x50 | 0x01)))
 		io_wait();
 	if (inb(regbase + IDE_STATUS) & 0x01) {
-		kout << "ide" << controller << ": error" << endl;
+		controller = device = -1;
+		kout << __FUNCTION__ << ": ide" << controller << ": error" << endl;
 		return;
 	}
 
@@ -64,13 +62,13 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 		io_wait();
 	// error handling here!
 	if (inb(regbase + IDE_STATUS) & 0x01) {
-		kout << "ide" << controller << ": error" << endl;
+		controller = device = -1;
+		kout << __FUNCTION__ << ": ide" << controller << ": error" << endl;
 		return;
 	}
 
 	// if no error read what ever data we got
-	for (int i = 0; i < BUFB_LEN / 2; i++)
-		bufw[i] = inw(regbase + IDE_DATA);
+	readDataReg(bufw, 1);
 
 	// with write(...) these could be done without the memcpy
 	// these aren't exactly essential, so we don't save 'em in
@@ -82,17 +80,27 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 	geometry.cylinders     = bufw[0x01];
 	geometry.heads         = bufw[0x03];
 	geometry.sectors_track = bufw[0x06];
-	geometry.total_sectors = geometry.cylinders * geometry.heads * geometry.sectors_track;
 
-	// LBA
+	// Does the device support LBA
+	// word #49 bit 9 is set if device has LBA
+	geometry.total_sectors = 0;
+	if (bufw[0x31] & 0x0200) {
+		// LBA 48? (word #83 bit 10 is set)
+		if (bufw[0x53] & 0x0400)
+			geometry.lba = 48;
+		else
+			geometry.lba = 28;
+	} else {
+		geometry.lba = 0;
+	}
+	geometry.total_sectors = bufw[0x3C] | bufw[0x3D] << 16;
 	
-
-	kout << "\tmodel: " << model_number 
-		<< " fw rev: " << firmware_rev << endl;
+	kout << "\tmodel: " << model_number << " fw rev: " << firmware_rev << endl;
 	kout << "\tserial: " << serial_number << endl;
-	kout << "\tC,H,S/T: " << geometry.cylinders
-		<< ", " << geometry.heads << ", " << geometry.sectors_track
-		<< " total sectors: " << geometry.total_sectors << endl;
+	kout << "\tC,H,S/T: " << geometry.cylinders << ", " << geometry.heads << ", " << geometry.sectors_track;
+	if (geometry.lba)
+		kout << " LBA: " << geometry.lba;
+	kout << " total sectors: " << geometry.total_sectors << endl;
 }
 
 IdeHddDev::~IdeHddDev()
@@ -108,13 +116,13 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
 	// no mind in doing anything if driver has not
 	// been initialized correctly
 	if (device < 0) {
-		kout << "IdeHddDev::issueRead: error uninitialized driver" << endl;
+		kout << __FUNCTION__ << ": error uninitialized driver" << endl;
 		return 0;
 	}
 
 	// reading 0 blocks is.. illogical
 	if (bcount < 1) {
-		kout << "IdeHddDev::issueRead: error attempt to read 0 blocks" << endl;
+		kout << __FUNCTION__ << ": error attempt to read 0 blocks" << endl;
 		return 0;
 	}
 
@@ -128,27 +136,43 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
 // sector   = (LBA mod SectorsPerTrack) + 1
 // head     = (LBA / SectorsPerTrack) mod NumberOfHeads
 // cylinder = (LBA / SectorsPerTrack) / NumberOfHeads
-	uint8_t sector    = (baddr % geometry.sectors_track) + 1;
-	uint8_t head      = (baddr / geometry.sectors_track) % geometry.heads;
-	uint16_t cylinder = (baddr / geometry.sectors_track) / geometry.heads;
+	uint8_t sector = 0, head = 0;
+	uint16_t cylinder = 0;
 
+	if (!geometry.lba) {
+		sector   = (baddr % geometry.sectors_track) + 1;
+		head     = (baddr / geometry.sectors_track) % geometry.heads;
+		cylinder = (baddr / geometry.sectors_track) / geometry.heads;
+	}
         // let's get started! wait till the device is ready...
         // 0x50 : (bit 6) drive is ready, (bit 4) seek complete
         // 0x01 : (bit 0) previous command ended in an error
         while (! (inb(regbase + IDE_STATUS) & (0x50 | 0x01)))
                 io_wait();
         if (inb(regbase + IDE_STATUS) & 0x01) {
-                kout << "ide" << controller << ": error" << endl;
+		kout << __FUNCTION__ << ": ide" << controller << ": error" << endl;
                 return 0;
         }
 
-	// load command registers
-        // select correct drive, set head
-	// FIXME! datatypes.
-        outb(regbase + IDE_DRHD, (0x0A | device) << 4 | head);
-	outb(regbase + IDE_CLOW, cylinder);
-	outb(regbase + IDE_CHIGH, cylinder >> 8);
-	outb(regbase + IDE_SNMBR, sector);
+	switch (geometry.lba) {
+	case 48:
+		kout << __FUNCTION__ << ": no LBA48 support yet, sorry." << endl;
+		return 0;
+	case 28:
+		outb(regbase + IDE_DRHD, (0x0E | device) << 4 | ((baddr >> 24) & 0x0f));
+		outb(regbase + IDE_CHIGH, baddr >> 16);
+		outb(regbase + IDE_CLOW, baddr >> 8);
+		outb(regbase + IDE_SNMBR, baddr);
+		break;
+	case 0:
+	        outb(regbase + IDE_DRHD, (0x0A | device) << 4 | head);
+		outb(regbase + IDE_CLOW, cylinder);
+		outb(regbase + IDE_CHIGH, cylinder >> 8);
+		outb(regbase + IDE_SNMBR, sector);
+		break;
+	default:
+		break;
+	}
 	outb(regbase + IDE_SCNT, bcount);
 
         // 0x50 : (bit 6) drive is ready, (bit 4) seek complete
@@ -156,7 +180,7 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
         while (! (inb(regbase + IDE_STATUS) & (0x50 | 0x01)))
                 io_wait();
         if (inb(regbase + IDE_STATUS) & 0x01) {
-                kout << "ide" << controller << ": error" << endl;
+		kout << __FUNCTION__ << ": ide" << controller << ": error" << endl;
                 return 0;
         }
 
@@ -171,15 +195,50 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
                 io_wait();
         // error handling here!
         if (inb(regbase + IDE_STATUS) & 0x01) {
-                kout << "ide" << controller << ": error" << endl;
+		kout << __FUNCTION__ << ": ide" << controller << ": error" << endl;
                 return 0;
         }
 
-	uint16_t *buf = (uint16_t *) dst;
         // if no error read what ever data we got
-	while (bcount --)
-	        for (int i = 0; i < 256; i++)
-			*(buf + i) = inw(regbase + IDE_DATA);
+	readDataReg(dst, bcount);
 
+	printk("\n");
 	return 0;
+}
+
+/*
+ * Buffered (IRQ handled) requests should call this to add request to que
+ */
+int IdeHddDev::pushIdeReq(struct IdeReq &request)
+{
+	// PROCESS:
+	/*
+		reading process:
+		if IdeRequest que empty (device unlocked)
+			push request to que
+			send request to device (since IRQ doesn't launch without...)
+		else
+			push request to que
+
+	*/
+	return 0;
+}
+
+inline size_t IdeHddDev::readDataReg(void *dst, size_t bcount)
+{
+	// NOTE: IDE data register is 16bit wide and
+	// sector buffer holds 512 bytes
+	uint16_t *buf = (uint16_t *) dst;
+        uint32_t wordcount = bcount * (512 / 2);
+
+        for (uint32_t i = 0; i < wordcount; i++) {
+                *(buf + i) = inw(regbase + IDE_DATA);
+/*
+		if (!(i % 16))
+			kout << endl;
+		printk("%02x", *((uint8_t *) (buf + i)));
+		printk("%02x", *((uint8_t *) (buf + i) + 1));
+*/
+	}
+	return bcount;
 }

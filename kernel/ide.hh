@@ -27,6 +27,16 @@ const unsigned short IDE_ALT_STATUS	= 0x00;	// read-only
 const unsigned short IDE_DEV_CTRL	= 0x00;	// write-only
 const unsigned short IDE_DRV_ADDR	= 0x01;	// read-only OBSOLETE
 
+// IDE requests
+struct IdeReq {
+	uint32_t pid;		// do we need this?
+	void *dst;		// destination address to write to
+	uint32_t bAddress;	// block address
+	uint32_t bCount;	// block count (dst must have at least bCount * bSize free space)
+				// bSize queried from device
+	uint32_t ideCtlr, ideDev; // IDE controller id and device id
+};
+
 // HardDiskDevice
 class IdeHddDev : public BlockDev
 {
@@ -36,19 +46,25 @@ class IdeHddDev : public BlockDev
 
 		size_t read(void *destination, uint32_t block_address, size_t block_count);
 
+		int pushIdeReq(struct IdeReq &req);
+
 	private:
+		inline size_t readDataReg(void *dst, size_t bcount);
+
 		// negative values mark a defunct / not in use device
 		struct _geometry
 		{
-			unsigned int cylinders;
-			unsigned int heads;
-			unsigned int sectors_track;
-			// if has LBA then total_sectors := max_LBA_addressable_sectors
-			unsigned int total_sectors;
-			unsigned int blocksize;
+			uint32_t cylinders;
+			uint32_t heads;
+			uint32_t sectors_track;
+			uint32_t blocksize;
 			// if has LBA then lba := 28 or 48
-			unsigned int lba;
+			uint32_t lba;
+			// if has LBA then total_sectors := max_LBA_addressable_sectors
+			// FIXME! USE UINT64 HERE
+			uint32_t total_sectors;
 		} geometry;
+		int mailbox;
 		int32_t controller, device;
 		uint16_t regbase, ctlbase;
 };
