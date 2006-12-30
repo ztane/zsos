@@ -6,8 +6,8 @@ boot: a
 megs: 32
 clock: sync=realtime, time0=local
 i440fxsupport: enabled=1, slot1=pcivga
-newharddrivesupport: enabled=1
 
+# newharddrivesupport: enabled=1
 # , slot2=ne2k
 # debugger_log: debugger.out
 # debug: action=report
