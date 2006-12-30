@@ -65,8 +65,9 @@ static memblock_ptr _kmalloc_best_fit(size_t size, int size_index)
 		bp = bp->free.next_free)
 	{
 		temp  = (void *) bp->free.next - (void *) bp - sizeof(usedblock_t);
-		if ((temp - size) < 0)
-			continue;
+// !! Warning, something strange here???
+//		if ((temp - size) < 0)
+//			continue;
 		if ((temp - size) == 0)
 		{
 			rval = bp;

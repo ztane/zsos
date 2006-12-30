@@ -14,7 +14,7 @@ int vsnprintf(char *str, size_t n, const char *fmt, va_list ap)
 {
         int d;
 	unsigned int u;
-	int pos = 0;
+	size_t pos = 0;
 
 	// big enough to hold binary number and the trailing null
 	char buf[sizeof(int) * 8 + 1];

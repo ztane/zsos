@@ -1,14 +1,11 @@
 #include "stdlib.h"
 #include "string.h"
 
+// does not honour C standard!! (mimics strlcpy)..
 char *strncpy(register char *dest, register const char *src, register size_t n) 
 {
         char *origdest = dest;
 	int orig_n = --n;
-
-	if (n < 0) {
-		return dest;
-	}
 
         while (*src && n) {
                 *dest++ = *src++;

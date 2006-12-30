@@ -19,6 +19,7 @@
 #include "scheduler.hh"
 #include "timer.hh"
 #include <panic.hh>
+#include <pci.hh>
 
 void haltloop() 
 {
@@ -194,8 +195,18 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Testing IDE..." << endl;
 	IdeHddDev hdd0(0, 0);
-	char idebuf[512];
+	unsigned char idebuf[512];
 	hdd0.read(idebuf, 0, 1);
+	for (int i = 0; i < 512; i ++) {
+//		printk("%02x ", (unsigned int)idebuf[i]);
+
+		if (i % 16 == 15) {
+//			printk("\n");
+		}
+	}
+
+	kout << "Detecting PCI devices..." << endl;
+	PCI::initialize();
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);

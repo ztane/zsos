@@ -7,7 +7,7 @@ CMODULES=kernel initial_vga printk \
 CCMODULES=main interrupt pic multiboot printstate paging   \
 	memory tasking syscall init_vga ide-disk scheduler \
 	timer freepagelist bootdynmem panic abi	cpuid	   \
-	pageframe memarea				   \
+	pageframe memarea pci				   \
 							   \
 	become_io_task console processes
 
