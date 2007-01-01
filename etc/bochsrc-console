@@ -1,0 +1,5 @@
+#include "etc/bochsrc"
+
+display_library: term 
+log: bochs.log
+

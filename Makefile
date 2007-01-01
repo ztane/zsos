@@ -26,7 +26,7 @@ always :
 	$(MAKE) -C libutil
 	@echo "================================="
 
-kernel.bin: lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/boot.o kernel/kernel.ld
+kernel.bin: kernel/boot.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/kernel.ld
 	$(LD) -T kernel/kernel.ld -e _start -N -dn kernel/boot.o kernel/kernel.a lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
 #	$(STRIP) kernel.bin
 
@@ -62,7 +62,10 @@ img/grubfloppy.img: img/grubfloppy.img.gz
 	@gzcat img/grubfloppy.img.gz > img/grubfloppy.img
 
 run: always install img/grubfloppy.img
-	@bochs -qf etc/bochsrc
+	@bochs -qf etc/bochsrc-gui
+
+crun: always install img/grubfloppy.img
+	@bochs -qf etc/bochsrc-console
 
 install:
 	@$(MOUNTCMD)
