@@ -2,67 +2,62 @@
 #include <port.h>
 #include <inttypes.h>
 #include <printk.h>
+#include <panic.hh>
+#include <new>
 
 const int PCI_CONFIG_ADDRESS = 0xCF8;
 const int PCI_CONFIG_DATA    = 0xCFC;
 
 namespace PCI {
+	static PCIDevice devices[64];
+	static const int nDevs = (sizeof (devices)) / (sizeof (PCIDevice));
+	static int nextFree = 0;
+	
+	static void detectDevice(uint32_t bus, uint32_t slot, uint32_t fun)
+	{
+		if (nextFree == nDevs) {
+			kernel_panic("Out of PCI device slots!");
+		}
 
-inline uint32_t pci_config_read_long(int bus, int slot, int func, int offset)
-{
-     uint32_t address;
- 
-     /* create configuration address as per Figure 1 */
-     address = (bus << 16) | (slot << 11) |
-             (func << 8) | (offset & 0xfc) | 0x80000000;
- 
-     /* write out the address */
-     outl(PCI_CONFIG_ADDRESS, address);
-     /* read in the data */
-     return inl(PCI_CONFIG_DATA);
-}
+		PCIDevice *place = devices + nextFree;
+		nextFree ++;
 
-inline uint16_t pci_config_read_short(int bus, int slot, int func, int offset) {
-	uint32_t temp = pci_config_read_long(bus, slot, func, offset);
-	return temp >> ((offset & 2) << 3) & 0xFFFF;
-}
+		PCIDevice& dev = *(new (place) PCIDevice(bus, slot, fun));
+		PCIConfig& c = dev.config;		
+		
+		uint16_t clazz = c.classID();
+		printk("%d:%d.%d - class %04x, vendor %04x - device %04x",
+       			c.bus(), c.slot(),   c.func(), 
+			clazz,   c.vendor(), c.deviceID());
 
-inline uint8_t pci_config_read_byte(int bus, int slot, int func, int offset) {
-	uint32_t temp = pci_config_read_long(bus, slot, func, offset);
-	return temp >> ((offset & 3) << 3) & 0xFF;
-}
+		if (clazz == 0x0101) {
+			printk("\n  * an IDE controller; bus mastering ");
+			uint8_t reserved = dev.config[0x08] >> 8;
+			printk("is %ssupported", reserved & 0x80 ? "" : "not ");
+		}
 
-static void pci_list_devices() {
-	for (int bus = 0; bus < 256; bus ++) {
-		for (int slot = 0; slot < 32; slot++) {
-		    for (int fun = 0; fun < 16; fun++) {
-			// assumes first fun is defined if second & so...
-			uint16_t vendor = pci_config_read_short(bus, slot, fun, 0);
-			if (vendor != 0xFFFF) {
-				uint16_t device = pci_config_read_short(bus, slot, fun, 2);
-				printk("%d:%d:%d: vendor %04x, device %04x\n",
-					bus, slot, fun, vendor, device);
+		printk("\n");
+	}
 
-				uint16_t clazz = pci_config_read_short(bus, slot, fun, 10);
-				printk("  class code %04x", clazz);
-				if (clazz == 0x0101) {
-					printk(" - an IDE controller; bus mastering ");
-					uint8_t reserved = 
-						pci_config_read_byte(bus, slot, fun, 0x09);
-					printk("is %ssupported", reserved & 0x80 ? "" : "not ");
-				}		
-				printk("\n");
+	void pciListDevices() {
+		for (int bus = 0; bus < 256; bus ++) {
+			for (int slot = 0; slot < 32; slot++) {
+				for (int fun = 0; fun < 16; fun++) {
+					PCIConfig cfg(bus, slot, fun);
+					if (cfg[0] != 0xFFFFFFFF) {
+						detectDevice(bus, slot, fun);
+					}
+					else {
+						break;
+					}
+		 		}
 			}
-			else {
-				break;
-			}
-		    }
 		}
 	}
-}
 
-void initialize() {
-	pci_list_devices();
-}
+	
 
+	void initialize() {
+		pciListDevices();
+	}
 };

@@ -142,6 +142,11 @@ Scheduler scheduler;
 
 void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
 
+void func() {
+	PCI::PCIDevice d(0, 0, 0);
+	volatile uint32_t x = d.config[0];
+}
+
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
@@ -207,6 +212,7 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Detecting PCI devices..." << endl;
 	PCI::initialize();
+	func();
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);

@@ -26,7 +26,7 @@ ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
 OBJS=$(COBJS) $(CCOBJS) $(ASMOBJS)
 INCLUDES=$(INCLUDE:%=-I%)
 
-all: boot.o $(LIBDIR)/kernel.a
+all: $(LIBDIR)/kernel.a
 
 -include $(DEPS)
 
@@ -34,8 +34,8 @@ depclean:
 	@echo "Cleaning dependencies" 
 	@rm -f $(DEPS)
 
-boot.o: boot.S
-	$(CC) -o $@ -c $< -O2 -fno-builtin -nostdinc $(INCLUDES) $(CFLAGS)
+# boot.o: boot.S
+# 	$(CC) -o $@ -c $< -O2 -fno-builtin -nostdinc $(INCLUDES) $(CFLAGS)
 
 $(LIBDIR)/kernel.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
