@@ -26,7 +26,7 @@ public:
 
 	inline bool operator --() 
 	{
-		return !dec_and_test();
+		return decAndIsZero();
 	}
 
 	inline bool release() {

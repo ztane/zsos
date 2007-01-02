@@ -179,7 +179,7 @@ C_ISR(IRQ_0)
 {
 	static int i = 0;
 	i ++;
-	if (i % (TIMER_TICKS_PER_SECOND * 10) == 0) {
+	if (i % (TIMER_TICKS_PER_SECOND / 10) == 0) {
 		extern Scheduler scheduler;
 		unlock_irq(1);
 		scheduler.inc_ticks();
@@ -200,7 +200,7 @@ C_ISR(IRQ_1)
 #endif
 
 	printk("Keyboard interrupt: %d\n", val);
-	enable_ints();	
+	enableInterruptsIf(true);	
 	unlock_irq(2);
 }
 

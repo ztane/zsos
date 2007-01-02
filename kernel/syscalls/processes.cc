@@ -24,3 +24,20 @@ SYSCALL(set_thread_priority)
 	// set priority for %EBX to %ECX
 	SYSCALL_RETURN(-1);
 }
+
+#include "semaphore.hh"
+static Semaphore<int32_t> testSem;
+
+SYSCALL(sem_post)
+{
+	printk("POSTING\n");
+	testSem.post();	
+	SYSCALL_RETURN(0);
+}
+
+SYSCALL(sem_wait) 
+{
+	printk("WAITING\n");
+	testSem.wait();	
+	SYSCALL_RETURN(0);
+}

@@ -20,6 +20,7 @@
 #include "timer.hh"
 #include <panic.hh>
 #include <pci.hh>
+#include "mutex.hh"
 
 void haltloop() 
 {
@@ -90,17 +91,34 @@ extern void initialize_tasking();
 
 void user_task() {
 	while (1) {
-		become_io_task();
+//		become_io_task();
 //		kout << get_process_id() << endl;
 //		printk("abc\n");
-//		write_character('A');
+		for (volatile int i = 'A'; i <= 'Z'; i++) {
+			for (volatile int j = 'A'; j <= 'Z'; j++) {
+				for (volatile int k = 'A'; k <= 'A'; k++) {
+					write_character(i);
+					write_character(j);
+					write_character(k);
+					write_character(' ');
+					write_character(' ');
+					write_character(' ');
+					write_character(' ');
+					write_character(' ');
+				}
+			}
+		}
+		sem_post();
+		break;
 	}
+	while(1)
+		write_character('A');
 }
 
 void user_task2() {
+	sem_wait();
 	while (1) {
-//		write_character('B');
-		*((char*)0xA000) = 5;
+		write_character('B');
 	}
 }
 
@@ -141,11 +159,6 @@ Process tesmi2("tesmi2");
 Scheduler scheduler;
 
 void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
-
-void func() {
-	PCI::PCIDevice d(0, 0, 0);
-	volatile uint32_t x = d.config[0];
-}
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
@@ -212,7 +225,6 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Detecting PCI devices..." << endl;
 	PCI::initialize();
-	func();
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);

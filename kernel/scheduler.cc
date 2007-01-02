@@ -26,7 +26,8 @@ void Scheduler::schedule()
 {
 	int i;
 	
-	enter_critical();
+	// unconditionally they MUST be disabled here...
+	disableInterrupts();
 	if (scheduler_running) {
 		return;
 	}
@@ -43,13 +44,13 @@ void Scheduler::schedule()
 				current = p;
 				p->current_state = Process::RUNNING;
 				scheduler_running = false;
-				
-				__critical_nest_depth = 0;
 				p->dispatch();
+				continue;
 			}
 		}
 	
-		leave_critical();
+		// and unconditionally enabled before halt (no shit?)
+		enableInterruptsIf(true);
 		__asm__ __volatile__ (
 			"hlt\t\n"
 		::);
@@ -57,7 +58,7 @@ void Scheduler::schedule()
 }
 
 void Scheduler::remove_process(Process *p) {
-	enter_critical();
+	bool fl = disableInterrupts();
 	
 	process_dir *entry = &tasks[p->getCurrentPriority()];
 	
@@ -76,25 +77,26 @@ void Scheduler::remove_process(Process *p) {
 	}
 	p->next = p->previous = NULL;
 	
-	leave_critical();
+	enableInterruptsIf(fl);
 }
 
 void Scheduler::inc_ticks() {
-	enter_critical();
+	bool fl = disableInterrupts();
 	
 	n_ticks ++;
 	current->timeslice ++;
 	if (current->timeslice > 0) {
 		current->timeslice = 0;
-		add_process(current);
+		if (current->current_state == Process::RUNNING)
+			add_process(current);
 	}
 	
-	leave_critical();
+	enableInterruptsIf(fl);
 }
 
 void Scheduler::add_process(Process *p)
 {
-	enter_critical();
+	bool fl = disableInterrupts();
 	
 	int prio;
 	Process *secondlast;
@@ -111,5 +113,5 @@ void Scheduler::add_process(Process *p)
 	tasks[prio].last = p;
 	p->current_state = Process::READY;
 	
-	leave_critical();
+	enableInterruptsIf(fl);
 }

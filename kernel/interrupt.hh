@@ -41,6 +41,8 @@
 #define INTR_ALIGN_CHECK     17
 #define INTR_MACHINE_CHECK   18
 
+#include <inttypes.h>
+
 #define C_ISR(name)                                                     \
         void __ISR_ ## name(Registers r,                                \
                 unsigned int eip, unsigned int cs, unsigned int eflags)
@@ -146,20 +148,21 @@ void load_idt(const InterruptDescriptor *start, int num_descs);
 
 void init_pic();
 
-static __inline__ void disable_ints() { __asm__ __volatile__ ("cli"); }
-static __inline__ void enable_ints()  {	__asm__ __volatile__ ("sti"); }
-
-extern volatile int __critical_nest_depth; 
-static __inline__ void enter_critical() {
-	disable_ints();
-	__critical_nest_depth ++;
+static __inline__ bool interruptsEnabled() {
+        volatile uint32_t flags;
+        asm volatile ("pushfl; popl %0": "=a"(flags) : );
+        return (flags & 0x200) != 0;
 }
 
-static __inline__ void leave_critical() {
-	__critical_nest_depth --;
-	if (__critical_nest_depth <= 0) {
-		__critical_nest_depth = 0;
-		enable_ints();
+static __inline__ bool disableInterrupts() {
+	bool rv = interruptsEnabled();
+	asm volatile ("cli");	
+	return rv;
+}
+
+static __inline__ void enableInterruptsIf(bool enable) {
+	if (enable) {
+		asm volatile ("sti");
 	}
 }
 

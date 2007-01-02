@@ -26,6 +26,14 @@ inline int become_io_task() {
 	return __syscall0(1);
 }
 
+inline int sem_post() {
+	return __syscall0(6);
+}
+
+inline int sem_wait() {
+	return __syscall0(7);
+}
+
 inline int illegal_syscall() {
 	return __syscall0(1000);
 }

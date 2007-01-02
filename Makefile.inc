@@ -19,7 +19,7 @@ ARFLAGS = rcs
 
 GCCINCLUDEDIRS := $(shell gcc-config -L)/include
 
-DEPS = $(CMODULES:%=.dep/%.dep) $(CCMODULES:%=.dep/%.dep)
+DEPS = $(CMODULES:%=.dep/%.dep) $(CCMODULES:%=.dep/%.dep) $(ASMMODULES:%=.dep/%.dep)
 
 MAKEDEPS = -E $(CPPFLAGS) $(INCLUDES) $< \
     | sed -n 's!^\# *[0-9][0-9]* *"\([^"]*\)".*!$*.dep $(OBJDIR)/$*.o: \1!p' \
