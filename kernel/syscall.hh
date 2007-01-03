@@ -6,15 +6,15 @@
 #include <ostypes>
 #include "interrupt.hh"
 
-inline unsigned int __syscall0(unsigned int number) {
-	int retv;
-	__asm__ __volatile__ ("int $0x80" : "=a"(retv) : "0"(number));
+inline unsigned int __syscall0(volatile unsigned int number) {
+	volatile unsigned int retv;
+	__asm__ __volatile__ ("int $0x80" : "=a"(retv) : "a"(number));
 	return retv;
 }
 
-inline unsigned int __syscall1(unsigned int number, unsigned int val1) {
-	int retv;
-	__asm__ __volatile__ ("int $0x80" : "=a"(retv) : "0"(number), "b"(val1));
+inline unsigned int __syscall1(volatile unsigned int number, volatile unsigned int val1) {
+	volatile unsigned int retv;
+	__asm__ __volatile__ ("int $0x80" : "=a"(retv) : "a"(number), "b"(val1));
 	return retv;
 }
 
@@ -26,8 +26,8 @@ inline int become_io_task() {
 	return __syscall0(1);
 }
 
-inline int sem_post() {
-	return __syscall0(6);
+inline int sem_post(int c) {
+	return __syscall1(6, c);
 }
 
 inline int sem_wait() {
@@ -48,6 +48,6 @@ inline pid_t get_process_id() {
 
 
 #define SYSCALL_RETURN(value)						\
-	do { r.eax = (unsigned long)(value); return; } while(0)
+	do { volatile uint32_t& rv = r.eax; rv = (unsigned long)(value); return; } while(0)
 
 #endif
