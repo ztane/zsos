@@ -1,0 +1,12 @@
+http://bos.asmhackers.net/docs/vga_without_bios/
+http://web.inter.nl.net/users/be-hold/BeOS/NVdriver/download.html
+http://web.inter.nl.net/users/be-hold/BeOS/Downloads/agp_driver_V2.00.zip
+
+http://www.osdever.net/FreeVGA/vga/vga.htm - most complete VGA reference around (and rather educational as well)
+http://home.worldonline.dk/finth/ - for details on many other graphics cards
+http://dimensionalrift.homelinux.net/combuster/mos3/?p=viewsource&file=/modules/vga_io.bas - sample vga mode setting code from my own OS
+
+http://www.osdev.org/osfaq2/index.php/AGP%20information
+
+http://www.o3one.org/hwdocs/video/voodoo3_spec.pdf
+http://www.cs.hut.fi/~tvoipio/threads.html
