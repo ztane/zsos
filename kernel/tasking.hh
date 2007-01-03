@@ -52,11 +52,12 @@ protected:
         unsigned int cr3;
 
 	char name[32];
+	bool isNew;
 	unsigned int padding;
 	unsigned char kernel_stack[4096];
 	unsigned int padding2;
 	unsigned char user_stack[4096];
-
+		
 	int current_priority;
 	int timeslice;
 	pid_t process_id;
@@ -70,7 +71,6 @@ public:
 	Process(char *name);
 	
 	void initialize(void *entry_point);
-	void dispatch();
 
 	ProcessState getCurrentState() {
 		return current_state;

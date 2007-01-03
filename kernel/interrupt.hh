@@ -44,7 +44,7 @@
 #include <inttypes.h>
 
 #define C_ISR(name)                                                     \
-        void __ISR_ ## name(Registers r,                                \
+        void __ISR_ ## name(volatile Registers r,                       \
                 unsigned int eip, unsigned int cs, unsigned int eflags)
 
 #define C_ISR_W_ECODE(name)                                             \
@@ -52,7 +52,7 @@
                 unsigned int eip, unsigned int cs, unsigned int eflags)
 
 
-typedef struct Registers { unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; } REGS;
+typedef struct Registers { volatile uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; } REGS;
 
 extern "C" {
 	typedef void (* ISR_W_ECODE_TYPE)(Registers r, unsigned int errorcode,

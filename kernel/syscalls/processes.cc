@@ -26,18 +26,25 @@ SYSCALL(set_thread_priority)
 }
 
 #include "semaphore.hh"
+#include "ringbuffer.hh"
 static Semaphore<int32_t> testSem;
+
+extern RingBuffer<int>* buf;
 
 SYSCALL(sem_post)
 {
-	printk("POSTING\n");
-	testSem.post();	
+	buf->put(r.ebx);
 	SYSCALL_RETURN(0);
 }
 
 SYSCALL(sem_wait) 
 {
-	printk("WAITING\n");
-	testSem.wait();	
-	SYSCALL_RETURN(0);
+	int rv;
+	buf->get(rv);
+	SYSCALL_RETURN(rv);
+}
+
+SYSCALL(testisys)
+{
+	SYSCALL_RETURN(5);
 }

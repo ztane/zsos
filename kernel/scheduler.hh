@@ -32,10 +32,13 @@ class Scheduler
 			return current;
 		}
 	private:
+		void dispatchNew(Process*, Process*);
 		bool scheduler_running;
 		uint64_t n_ticks;
 		Process *current;
 		process_dir tasks[PRIV_LEVELS];
 };
+
+extern Scheduler scheduler;
 
 #endif

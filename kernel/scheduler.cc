@@ -27,7 +27,7 @@ void Scheduler::schedule()
 	int i;
 	
 	// unconditionally they MUST be disabled here...
-	disableInterrupts();
+	bool fl = disableInterrupts();
 	if (scheduler_running) {
 		return;
 	}
@@ -39,13 +39,16 @@ void Scheduler::schedule()
 		{
 			if (tasks[i].first != NULL) {
 				Process *p = tasks[i].first;
+				Process *old = current;
 				remove_process(p);
-				
+								
 				current = p;
 				p->current_state = Process::RUNNING;
 				scheduler_running = false;
-				p->dispatch();
-				continue;
+				dispatchNew(old, p);
+
+				enableInterruptsIf(fl);
+				return;		
 			}
 		}
 	
@@ -114,4 +117,40 @@ void Scheduler::add_process(Process *p)
 	p->current_state = Process::READY;
 	
 	enableInterruptsIf(fl);
+}
+
+void Scheduler::dispatchNew(Process *old, Process *nu) {
+	uint32_t *esp_ptr;
+	uint32_t dummy;
+
+	if (old == NULL)
+		esp_ptr = &dummy;
+	else
+		esp_ptr = &(old->esp);
+	
+        TSS_Segment.esp0 = nu->kstack;
+
+	if (nu->isNew) {
+		nu->isNew = false;
+		__asm__ __volatile__ (
+			"pushal\n\t"
+			"mov %%esp, (%1)\n\t"
+                	"mov %0, %%esp\n\t"
+                	"popal\n\t"
+                	"pop %%gs\n\t"
+                	"pop %%fs\n\t"
+                	"pop %%es\n\t"
+                	"pop %%ds\n\t"
+                	"iret"
+                	: : "a"(nu->esp), "b"(esp_ptr));
+	}
+	else {
+	        __asm__ __volatile__ (
+        	        "pushal\n\t"
+               		"mov %%esp, (%1)\n\t"
+               		"mov %0, %%esp\n\t"
+                	"popal\n\t"
+                	:
+                	: "a"(nu->esp), "b"(&(old->esp)));
+	}
 }

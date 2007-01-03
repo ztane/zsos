@@ -2,6 +2,7 @@
 #define __WAITQUEUE_HH__
 
 #include "tasking.hh"
+#include "scheduler.hh"
 
 class WaitQueue {
 private:
@@ -11,7 +12,8 @@ public:
 	WaitQueue() {
 		head = end = NULL;
 	}
-	
+
+protected:	
 	void addLast(Process *p) {
 		p->setPrevious(end);
 		if (end != NULL) {
@@ -71,8 +73,30 @@ public:
 		return true;
 	}
 
+public:
 	bool isEmpty() const {
 		return head == NULL;
+	}
+
+	void addCurrentTask() {
+		Process *task = scheduler.getCurrentTask();
+		// scheduler.remove_process(task);
+		task->setCurrentState(Process::BLOCKED);
+		addLast(task);
+	}
+	
+	void resumeFirst() {
+               if (! isEmpty()) {
+                        Process *task = extractFirst();
+                        task->setCurrentState(Process::READY);
+                        scheduler.add_process(task);
+               }
+	}
+	
+	void resumeAll() {
+		while (! isEmpty()) {
+			resumeFirst();
+		}
 	}
 };
 

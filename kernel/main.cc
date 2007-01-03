@@ -22,6 +22,7 @@
 #include <panic.hh>
 #include <pci.hh>
 #include "mutex.hh"
+#include <new>
 
 void haltloop() 
 {
@@ -90,40 +91,20 @@ extern void init_idt();
 extern void init_gdt();
 extern void initialize_tasking();
 
-void user_task() {
-/*	while (1) {
-//		become_io_task();
-//		kout << get_process_id() << endl;
-//		printk("abc\n");
-		for (volatile int i = 'A'; i <= 'Z'; i++) {
-			for (volatile int j = 'A'; j <= 'Z'; j++) {
-				for (volatile int k = 'A'; k <= 'A'; k++) {
-					write_character(i);
-					write_character(j);
-					write_character(k);
-					write_character(' ');
-					write_character(' ');
-					write_character(' ');
-					write_character(' ');
-					write_character(' ');
-				}
-			}
-		}
-		sem_post();
-		break;
-	}*/
-	while(1)
-		;
-//		write_character('A');
+void user_task2() {
+	for (int i = 'A'; i < 'Z'; i++)
+		sem_post(i);
+
+	while(1);
 }
 
-void user_task2() {
-	sem_wait();
+void user_task() {
 	while (1) {
-		;
-//		write_character('B');
+		write_character(sem_wait());
 	}
 }
+
+#include "ringbuffer.hh"
 
 void detect_cpu() {
 	cpu_identity.identify();
@@ -162,6 +143,8 @@ Process tesmi2("tesmi2");
 Scheduler scheduler;
 
 void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
+
+RingBuffer<int> *buf;
 
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
@@ -226,8 +209,14 @@ void kernel_main(unsigned int magic, void *mbd)
 		}
 	}
 
+	extern void __set_default_allocator(Allocator *new_def);
+
+	__set_default_allocator(&boot_dynmem_alloc);
+
 	kout << "Detecting PCI devices..." << endl;
 	PCI::initialize();
+
+	buf = new RingBuffer<int>(10);
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
@@ -240,3 +229,4 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	kernel_panic("Fell out from scheduling loop!\n");
 }
+

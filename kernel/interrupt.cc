@@ -195,7 +195,7 @@ C_ISR(IRQ_1)
 
 #if MAGIC_SYSRQ_KEY
 	if (val == 225) {
-		print_kernel_state(r);
+		print_kernel_state(*const_cast<Registers*>(&r));
 	}
 #endif
 

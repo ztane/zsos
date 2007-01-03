@@ -28,7 +28,7 @@ void TSSContents::setup() {
 Process::Process(char *_name) {
 	esp = 0;
 	strncpy(name, _name, sizeof(name));
-
+	isNew = true;
 	current_state = READY;
 	current_priority = 47;
 	timeslice = 0;
@@ -71,19 +71,6 @@ void Process::initialize(void *entry) {
         *tmp    = 0;    // eax
 
 	esp = (unsigned int)tmp;
-}
-
-void Process::dispatch() {
-	TSS_Segment.esp0 = kstack;
-	__asm__ __volatile__ (
-		"mov %0, %%esp\n\t"
-		"popal\n\t"
-		"pop %%gs\n\t"
-		"pop %%fs\n\t"
-		"pop %%es\n\t"
-		"pop %%ds\n\t"
-		"iret"
-		: : "a"(this->esp));
 }
 
 void initialize_tasking() {

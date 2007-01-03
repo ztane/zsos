@@ -31,12 +31,7 @@ public:
 		extern Scheduler scheduler;
 		lock.lock();
 		if (! waitq.isEmpty()) {
-			printk("NOT EMPTY\n");
-			Process *task = waitq.extractFirst();
-			printk("GOT PROCESS %d\n", task->getProcessId());
-			task->setCurrentState(Process::READY);
-			scheduler.add_process(task);
-			printk("ADDED PROCESS!\n");
+			waitq.resumeFirst();
 		}
 		else {
 			count ++;
@@ -53,10 +48,7 @@ public:
 		}
 		else {
 			extern Scheduler scheduler;
-			Process *task = scheduler.getCurrentTask();
-			waitq.addFirst(task);
-			task->setCurrentState(Process::BLOCKED);
-
+			waitq.addCurrentTask();
 			lock.unlock();
 			scheduler.schedule();
 		}

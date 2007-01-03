@@ -43,11 +43,14 @@ inline pid_t get_process_id() {
 }
 
 #define SYSCALL(name)                                                   \
-        extern "C" void sys_ ## name(Registers r,                       \
+        extern "C" void sys_ ## name(volatile Registers r,          	\
                 unsigned int eip, unsigned int cs, unsigned int eflags)
 
 
 #define SYSCALL_RETURN(value)						\
-	do { volatile uint32_t& rv = r.eax; rv = (unsigned long)(value); return; } while(0)
+	do { 								\
+		r.eax = value;			\
+		return; 						\
+	} while(0)							
 
 #endif
