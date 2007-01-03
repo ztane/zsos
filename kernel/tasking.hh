@@ -56,7 +56,7 @@ protected:
 	unsigned int padding;
 	unsigned char kernel_stack[4096];
 	unsigned int padding2;
-	unsigned char user_stack[4096];
+	unsigned char user_stack[16384];
 		
 	int current_priority;
 	int timeslice;

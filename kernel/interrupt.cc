@@ -244,10 +244,10 @@ C_ISR_W_ECODE(page_fault)          {
 	: "=r"(addr) : );
 
 	// sanity check...
+        print_kernel_state(*const_cast<Registers*>(&r));
 
         extern Scheduler scheduler;
         Process *task = scheduler.getCurrentTask();
-        print_kernel_state(*const_cast<Registers*>(&r));
 	task->handlePageFault(addr);
 }
 
