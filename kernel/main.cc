@@ -16,6 +16,7 @@
 #include "tasking.hh"
 #include "init_vga.hh"
 #include "ide.hh"
+#include "ide-disk.hh"
 #include "scheduler.hh"
 #include "timer.hh"
 #include <panic.hh>
@@ -90,7 +91,7 @@ extern void init_gdt();
 extern void initialize_tasking();
 
 void user_task() {
-	while (1) {
+/*	while (1) {
 //		become_io_task();
 //		kout << get_process_id() << endl;
 //		printk("abc\n");
@@ -110,15 +111,17 @@ void user_task() {
 		}
 		sem_post();
 		break;
-	}
+	}*/
 	while(1)
-		write_character('A');
+		;
+//		write_character('A');
 }
 
 void user_task2() {
 	sem_wait();
 	while (1) {
-		write_character('B');
+		;
+//		write_character('B');
 	}
 }
 
@@ -212,7 +215,7 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << " done" << endl;
 
 	kout << "Testing IDE..." << endl;
-	IdeHddDev hdd0(0, 0);
+	IdeHdDev hdd0(0, 0);
 	unsigned char idebuf[512];
 	hdd0.read(idebuf, 0, 1);
 	for (int i = 0; i < 512; i ++) {

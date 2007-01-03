@@ -1,13 +1,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
-#include "../sim/mbox.h"
 #include "ide.hh"
+#include "ide-disk.hh"
 #include "printk.h"
 #include "interrupt.hh"
 #include "port.h"
 
-IdeHddDev::IdeHddDev(int cntrl, int dev) : 
+IdeHdDev::IdeHdDev(int cntrl, int dev) : 
 	controller(cntrl),
 	device(dev)
 {
@@ -103,7 +103,7 @@ IdeHddDev::IdeHddDev(int cntrl, int dev) :
 	kout << " total sectors: " << geometry.total_sectors << endl;
 }
 
-IdeHddDev::~IdeHddDev()
+IdeHdDev::~IdeHdDev()
 {
 
 }
@@ -111,7 +111,7 @@ IdeHddDev::~IdeHddDev()
 /**
  * FIXME! PIO read, doesn't even use IRQ!
  */
-size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
+size_t IdeHdDev::read(void *dst, uint32_t baddr, size_t bcount)
 {
 	// no mind in doing anything if driver has not
 	// been initialized correctly
@@ -209,7 +209,7 @@ size_t IdeHddDev::read(void *dst, uint32_t baddr, size_t bcount)
 /*
  * Buffered (IRQ handled) requests should call this to add request to que
  */
-int IdeHddDev::pushIdeReq(struct IdeReq &request)
+int IdeHdDev::pushIdeReq(struct IdeReq &request)
 {
 	// PROCESS:
 	/*
@@ -224,7 +224,7 @@ int IdeHddDev::pushIdeReq(struct IdeReq &request)
 	return 0;
 }
 
-inline size_t IdeHddDev::readDataReg(void *dst, size_t bcount)
+inline size_t IdeHdDev::readDataReg(void *dst, size_t bcount)
 {
 	// NOTE: IDE data register is 16bit wide and
 	// sector buffer holds 512 bytes
