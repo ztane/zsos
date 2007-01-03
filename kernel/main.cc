@@ -91,6 +91,7 @@ extern void init_gdt();
 extern void initialize_tasking();
 
 void user_task2() {
+	for (int j = 0; j < 100; j++)
 	for (int i = 'A'; i < 'Z'; i++)
 		sem_post(i);
 

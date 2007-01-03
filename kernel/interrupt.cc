@@ -247,6 +247,7 @@ C_ISR_W_ECODE(page_fault)          {
 
         extern Scheduler scheduler;
         Process *task = scheduler.getCurrentTask();
+        print_kernel_state(*const_cast<Registers*>(&r));
 	task->handlePageFault(addr);
 }
 
