@@ -16,7 +16,6 @@
 #include "tasking.hh"
 #include "init_vga.hh"
 #include "ide.hh"
-#include "ide-disk.hh"
 #include "scheduler.hh"
 #include "timer.hh"
 #include <panic.hh>
@@ -198,16 +197,6 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << " done" << endl;
 
 	kout << "Testing IDE..." << endl;
-	IdeHdDev hdd0(0, 0);
-	unsigned char idebuf[512];
-	hdd0.read(idebuf, 0, 1);
-	for (int i = 0; i < 512; i ++) {
-//		printk("%02x ", (unsigned int)idebuf[i]);
-
-		if (i % 16 == 15) {
-//			printk("\n");
-		}
-	}
 
 	extern void __set_default_allocator(Allocator *new_def);
 
