@@ -37,9 +37,9 @@ size_t vga_buf_write(const void *vbuf, size_t len)
 	
 	charmem += cursor_offset * 2;
 	
-	while (len-- > 0 && *buf != 0)
+	while (len-- > 0)
 	{
-		if (cursor_offset >= (VGA_TEXT_WIDTH * VGA_TEXT_HEIGHT))
+		while (cursor_offset >= (VGA_TEXT_WIDTH * VGA_TEXT_HEIGHT))
 		{
 			scroll_buffer();
 			cursor_offset -= VGA_TEXT_WIDTH;
