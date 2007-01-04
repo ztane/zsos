@@ -29,9 +29,9 @@ void Scheduler::schedule()
 	// unconditionally they MUST be disabled here...
 	bool fl = disableInterrupts();
 	if (scheduler_running) {
+		enableInterruptsIf(fl);
 		return;
 	}
-	
 	scheduler_running = true;
 	
 	while (true) {
@@ -122,6 +122,9 @@ void Scheduler::add_process(Process *p)
 void Scheduler::dispatchNew(Process *old, Process *nu) {
 	uint32_t *esp_ptr;
 	uint32_t dummy;
+
+	if (old == nu)
+		return;	
 
 	if (old == NULL)
 		esp_ptr = &dummy;

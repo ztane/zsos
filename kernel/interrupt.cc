@@ -188,6 +188,9 @@ C_ISR(IRQ_0)
 	unlock_irq(1);
 }
 
+#include <initial_vga.h>
+#include <string.h>
+
 // IRQ1 - Keyboard
 C_ISR(IRQ_1)
 {
@@ -198,9 +201,13 @@ C_ISR(IRQ_1)
 		print_kernel_state(*const_cast<Registers*>(&r));
 	}
 #endif
-
-	printk("Keyboard interrupt: %d\n", val);
 	enableInterruptsIf(true);	
+        vga_buf_write("interrupts enabled\n", strlen("interrupts enabled\n"));
+
+	printk("interrupts enabled\n");
+	printk("interrupts enabled: %d\n", (int)interruptsEnabled());
+	printk("Keyboard interrupt: %d\n", val);
+
 	unlock_irq(2);
 }
 

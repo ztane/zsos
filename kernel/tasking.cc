@@ -45,7 +45,7 @@ void Process::initialize(void *entry) {
 	unsigned int *tmp;
 
 	// build kernel stack
-	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
+	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 4;
 	kstack = (unsigned int)tmp;
 	tmp --;
 
@@ -70,6 +70,8 @@ void Process::initialize(void *entry) {
         *tmp -- = 0;    // ebx
         *tmp    = 0;    // eax
 
+	padding = 0xDEADBEEF;
+	padding2 = 0xDEADBEEF;
 	esp = (unsigned int)tmp;
 }
 

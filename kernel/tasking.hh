@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ostypes>
 #include <iostream>
+#include <printk.h>
 
 class TSSContents{
 public:
@@ -115,7 +116,8 @@ public:
 	void enable_io();
 
 	bool handlePageFault(uint32_t address) {
-		kout << "Process " << process_id << " had a pfault at " << address << endl;
+		printk("Process %d had a pfault at %p\n", process_id, address);
+		__asm__ __volatile__ ("hlt");
 		return true;
 	}
 
