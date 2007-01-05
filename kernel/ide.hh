@@ -68,6 +68,8 @@ public:
 	int init();
 	void dummy();
 };
+
+extern IDEController controller;
 	
 
 };

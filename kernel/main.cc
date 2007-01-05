@@ -207,8 +207,7 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	buf = new RingBuffer<int>(10);
 
-	extern IDE::IDEController controller;
-	controller.dummy();
+	IDE::controller.dummy();
 
 	kout << "Testing init..." << endl;
 	init::run();
