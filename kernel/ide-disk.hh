@@ -10,8 +10,8 @@ namespace IDE {
 class IDEDrive
 {
 public:
-	IDEDrive();
-	~IDEDrive();
+	IDEDrive() { }
+	~IDEDrive() { }
 };
 
 

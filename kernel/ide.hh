@@ -53,8 +53,8 @@ private:
 
 	IDEDrive drives[MAX_DRIVES];
 public:
-	IDEInterface();
-	~IDEInterface();
+	IDEInterface() { }
+	~IDEInterface() { }
 };
 
 class IDEController : init::Init {
@@ -66,7 +66,7 @@ public:
 	~IDEController();
 
 	int init();
-	void dummy() { printk("PERKELE\n"); };
+	void dummy();
 };
 	
 

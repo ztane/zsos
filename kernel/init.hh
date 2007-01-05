@@ -6,7 +6,7 @@ namespace init {
 
 class Init {
 public:
-	virtual ~Init();
+	virtual ~Init() { }
 	virtual int init() = 0;
 };
 
