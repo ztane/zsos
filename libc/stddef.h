@@ -15,6 +15,7 @@
 #endif
 
 typedef uint32_t size_t;
+typedef  int32_t ssize_t;
 typedef  int32_t ptrdiff_t;
 typedef uint32_t wint_t;
 

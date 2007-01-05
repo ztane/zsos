@@ -5,29 +5,71 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "interrupt.hh"
-#include "port.h"
-#include "blockdevice.hh"
+#include "printk.h"
+#include "init.hh"
 #include "pci.hh"
+#include "ide-disk.hh"
+
+
+namespace IDE {
+
+
+const int MAX_DRIVES		= 2;
+const int MAX_INTERFACES	= 2;
+
+/*
+const uint16_t CMD_BASE_0	= 0x1f0;
+const uint16_t CTRL_BASE_0	= 0x3f6;
+const uint16_t CMD_BASE_1	= 0x170;
+const uint16_t CTRL_BASE_1	= 0x376;
+// ADD OTHER IDE BASE ADDRESSES AS NEEDED
+*/
 
 // port address offsets for Command Block registers
-const unsigned short IDE_REG_BASE = 0x00;
-const unsigned short IDE_DATA 	= 0x00;	// read-write - data register
-const unsigned short IDE_ERROR 	= 0x01;	// read-only - error register
-const unsigned short IDE_WPC 	= 0x01;	// write-only - Write Precompensation Cylinder divided by 4
-const unsigned short IDE_SCNT 	= 0x02;	// read-write - sector count
-const unsigned short IDE_SNMBR 	= 0x03;	// read-write - sector number (CHS mode)
-const unsigned short IDE_CLOW 	= 0x04;	// read-write - cylinder low (CHS mode)
-const unsigned short IDE_CHIGH 	= 0x05;	// read-write - cylinder high (CHS mode)
-const unsigned short IDE_DRHD 	= 0x06;	// read-write - drive/head
-const unsigned short IDE_STATUS	= 0x07;	// read-only - status register
-const unsigned short IDE_CMD	= 0x07;	// write-only - command register
+const uint16_t DATA_OFFSET	= 0; // read-write - data register
+const uint16_t ERROR_OFFSET 	= 1; // read-only - error register
+const uint16_t NSECTOR_OFFSET 	= 2; // read-write - sector count
+const uint16_t SECTOR_OFFSET 	= 3; // read-write - sector number (CHS mode)
+const uint16_t LCYL_OFFSET 	= 4; // read-write - cylinder low (CHS mode)
+const uint16_t HCYL_OFFSET 	= 5; // read-write - cylinder high (CHS mode)
+const uint16_t SELECT_OFFSET 	= 6; // read-write - drive/head
+const uint16_t STATUS_OFFSET	= 7; // read-only - status register
+const uint16_t FEATURE_OFFSET = ERROR_OFFSET;  // write-only - Write Precompensation Cylinder divided by 4
+const uint16_t COMMAND_OFFSET = STATUS_OFFSET; // write-only - command register
+
+const uint16_t LBCOUNT_OFFSET = SECTOR_OFFSET; //   7-0 in LBA28
+const uint16_t MBCOUNT_OFFSET = LCYL_OFFSET;   //  15-8 in LBA28
+const uint16_t HBCOUNT_OFFSET = HCYL_OFFSET;   // 23-16 in LBA28, 27-24 go in low half of SELECT
 
 // port address offsets for Control Block registers
-const unsigned short IDE_ALT_STATUS	= 0x00;	// read-only
-const unsigned short IDE_DEV_CTRL	= 0x00;	// write-only
-const unsigned short IDE_DRV_ADDR	= 0x01;	// read-only OBSOLETE
+const uint16_t ALTSTATUS_OFFSET = 0; // read-only
+const uint16_t CONTROL_OFFSET = ALTSTATUS_OFFSET; // write-only
+/* const uint16_t DRV_ADDR_OFFSET = 1; // read-only OBSOLETE */
 
 
+class IDEInterface {
+private:
+	char name[8];
+
+	IDEDrive drives[MAX_DRIVES];
+public:
+	IDEInterface();
+	~IDEInterface();
+};
+
+class IDEController : init::Init {
+private:
+	IDEInterface ifs[MAX_INTERFACES];
+	PCI::PCIDevice pci; // PCI IDE controller?
+public:
+	IDEController();
+	~IDEController();
+
+	int init();
+	void dummy() { printk("PERKELE\n"); };
+};
+	
+
+};
 
 #endif

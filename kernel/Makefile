@@ -5,11 +5,11 @@ CMODULES=kernel initial_vga printk \
 	kmalloc
 
 CCMODULES=main interrupt pic multiboot printstate paging   \
-	memory tasking syscall init_vga ide-disk scheduler \
-	timer freepagelist bootdynmem panic abi	cpuid	   \
-	pageframe memarea pci messagequeue		   \
+	memory tasking syscall init_vga ide ide-disk       \
+	scheduler timer freepagelist bootdynmem panic abi  \
+	cpuid pageframe memarea pci			   \
 							   \
-	become_io_task console processes
+	become_io_task console processes init
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .

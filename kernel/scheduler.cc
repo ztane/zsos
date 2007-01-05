@@ -4,6 +4,7 @@
 #include "interrupt.hh"
 #include "scheduler.hh"
 #include "tasking.hh"
+#include "printk.h"
 
 Scheduler::Scheduler()
 {

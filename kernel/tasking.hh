@@ -30,7 +30,6 @@ public:
         unsigned short gs, __gsh;
 	unsigned short ldt, __ldth;
 	unsigned short trace, bitmap;
-
 	void setup();
 } __attribute__((packed));
 

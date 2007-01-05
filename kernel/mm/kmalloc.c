@@ -8,7 +8,7 @@
  */
 #define FREEMEM_LISTS 29
 #define FREEMEM_MIN   (sizeof(freeblock_t) - sizeof(usedblock_t))
-#define HEAP_PADDING  (sizeof(intptr_t))
+#define HEAP_ALIGN    (8 - 1) // as per bootdynmem
 
 typedef union _memory_block *memblock_ptr;
 
@@ -65,9 +65,8 @@ static memblock_ptr _kmalloc_best_fit(size_t size, int size_index)
 		bp = bp->free.next_free)
 	{
 		temp  = (void *) bp->free.next - (void *) bp - sizeof(usedblock_t);
-// !! Warning, something strange here???
-//		if ((temp - size) < 0)
-//			continue;
+		if (((int)temp - (int)size) < 0)
+			continue;
 		if ((temp - size) == 0)
 		{
 			rval = bp;
@@ -171,9 +170,9 @@ void *kmalloc(size_t size)
 	if (! kmalloc_initialized)
 		kernel_panic("FATAL: kmalloc not yet initialized\n");
 
-	/* correct padding */
-	size = size % HEAP_PADDING ?
-		size + (HEAP_PADDING - size % HEAP_PADDING) : size;
+	/* keep correct align */
+	size += HEAP_ALIGN;
+	size &= HEAP_ALIGN;
 
 	return _kmalloc_fast(size, _get_first_bit_set(size));
 }
@@ -190,9 +189,10 @@ void *kcalloc(size_t n, size_t size)
 		return NULL;
 
 	size *= n;
-	/* correct padding */
-	size = size % HEAP_PADDING ? 
-		size + (HEAP_PADDING - size % HEAP_PADDING) : size;
+	/* keep correct align */
+	size += HEAP_ALIGN;
+	size &= HEAP_ALIGN;
+
 	rval = _kmalloc_fast(size, _get_first_bit_set(size));
 
 	if (!rval)
@@ -233,8 +233,10 @@ void *krealloc(void *ptr, size_t size)
 	}
 
 	bp   = (memblock_ptr) (ptr - sizeof(usedblock_t));
-	size = size % HEAP_PADDING ? 
-		size + (HEAP_PADDING - size % HEAP_PADDING) : size;
+
+	/* keep correct align */
+	size += HEAP_ALIGN;
+	size &= HEAP_ALIGN;
 
 	/* if next block is free and it is large enough
 	 *	allocate new memory from next block
@@ -418,18 +420,24 @@ void kfree(void *ptr)
 int kmalloc_init(void *ptr, size_t size)
 {
 	int i, size_index;
+	intptr_t tmp = (intptr_t) ptr;
 	memblock_ptr bp1, bp2, bp3;
 
 	/* NULL or 0? */
 	if (!ptr || !size)
 		return -1;
 
+	// correct align (to 8 bytes)
+	tmp += HEAP_ALIGN;
+	tmp &= HEAP_ALIGN;
+
+	// fix size if align correction had to do something
+	size -= tmp - (intptr_t) ptr;
+	ptr = (void *) tmp;
+
 	/* is there enough space for basic structure? */
 	if (size < sizeof(usedblock_t) * 2 + sizeof(freeblock_t))
 		return -1;
-
-	/* correct padding */
-	size -= size % HEAP_PADDING;
 
 	for (i = 0; i < FREEMEM_LISTS; i++)
 	{

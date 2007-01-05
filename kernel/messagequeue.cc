@@ -4,93 +4,48 @@
 
 #include "messagequeue.hh"
 
-Mutex mQueuePoolLock;
-MessageQueue *messageQueuePool = NULL;
 
-MessageQueue::MessageQueue(const char *mqname) :
-	flags(0),
-	maxMsgCount(0),
-	maxMsgSize(0),
-	currMsgCount(0),
-	next(NULL)
+template <class T>
+MessageQueue<T>::MessageQueue(const char *_name, size_t _size, int _attr) :
+	flags(_attr),
+	maxmsgs(_size),
+	curmsgs(0)
 {
-	size_t nLen = strlen(mqname) + 1;
-	name = new char[nLen];
-	strncpy(name, mqname, nLen);
+	size_t nlen = strlen(_name) + 1;
+	name = new char[nlen];
+	strncpy(name, _name, nlen);
 
 	// initialize the ringbuffer
 }
 
-MessageQueue::~MessageQueue()
+template <class T>
+MessageQueue<T>::~MessageQueue()
 {
 	// destroy the ringbuffer
 	delete[] name;
 }
 
-void MessageQueue::setNext(MessageQueue *nmq)
+template <class T>
+void MessageQueue<T>::acquire()
 {
-	next = nmq;
+	++ rcount;
 }
 
-void MessageQueue::setPrev(MessageQueue *pmq)
+template <class T>
+void MessageQueue<T>::release()
 {
-	next = pmq;
-}
-
-MessageQueue *MessageQueue::getNext() const
-{
-	return next;
-}
-
-MessageQueue *MessageQueue::getPrev() const
-{
-	return prev;
-}
-
-void MessageQueue::acquire()
-{
-	++ rCount;
-}
-
-void MessageQueue::release()
-{
-	if (-- rCount && flags)
+	if (-- rcount && (flags & 0x80000000))
 		; // do suicide
 }
 
-MessageQueueDesc::MessageQueueDesc(const char *name, int attr) :
-	flags(attr)
+template <class T>
+void MessageQueue<T>::destroy()
 {
-	mq = messageQueuePool;
-
-	mQueuePoolLock.lock();
-	if (mq == NULL) {
-		messageQueuePool = new MessageQueue(name); // FIXME! check for NULL
-		mq = messageQueuePool;
-		mq->setNext(NULL);
-		mq->setPrev(NULL);
-	} else {
-		int rv = 0;
-		size_t nlen = strlen(name);
-
-		while ((rv = strncmp(name, mq->getName(), nlen)) && mq->getNext() != NULL)
-			mq = mq->getNext();
-		if (rv && mq->getNext() == NULL) {
-			// no match
-			MessageQueue *tmq = new MessageQueue(name);
-			tmq->setNext(NULL);
-			tmq->setPrev(mq);
-			mq->setNext(tmq);
-			mq = tmq;
-		}
-		// correct match (or new) and mq set
-	}
-	mQueuePoolLock.unlock();
-
-	mq->acquire();
+	flags |= 0x80000000;
 }
 
-MessageQueueDesc::~MessageQueueDesc()
+template <class T>
+const char * MessageQueue<T>::getName() const
 {
-	mq->release();
+	return (const char *) name;
 }

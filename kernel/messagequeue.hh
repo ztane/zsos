@@ -7,46 +7,46 @@
 
 #include "refcount.hh"
 #include "mutex.hh"
+#include "ringbuffer.hh"
 
 const int MAX_MSGQUEUE_COUNT = 64;
 
+template <class T>
 class MessageQueue {
 private:
 	int flags;
-	size_t maxMsgCount;
-	size_t maxMsgSize;
-	size_t currMsgCount;
+	size_t maxmsgs;
+	size_t curmsgs;
 	char *name;
-	RefCount rCount;
-	Mutex mqLock;
-//	RingBuffer msgData;
-	MessageQueue *next;
-	MessageQueue *prev;
+	RefCount rcount;
+	Mutex lock;
+	RingBuffer<T> msgs;
 public:
-	MessageQueue(const char *mqname);
+	MessageQueue(const char *_name, size_t _size, int _attr);
 	~MessageQueue();
-	int push(void *src, size_t len); // FIFO
-	int pop(void *dst, size_t len); // FIFO
-	void setNext(MessageQueue *nmq);
-	void setPrev(MessageQueue *pmq);
+	int add(const T &src); // FIFO
+	int get(T &dst); // FIFO
 	void acquire();
 	void release();
+	void destroy();
 
-	MessageQueue *getNext() const;
-	MessageQueue *getPrev() const;
 	const char *getName() const;
 };
 
+/* ADD IF NEEDED (for example for privilege separation) */
+/*
+template <class T>
 class MessageQueueDesc {
 private:
 	int flags;
-	MessageQueue *mq;
+	MessageQueue<T> &mq;
 public:
 	MessageQueueDesc(const char *name, int attr);
 	~MessageQueueDesc();
-	int send(const void *src, size_t len); // blocking
-	int recv(void *dst, size_t len); // blocking
+	int send(const T &src); // blocking
+	int recv(T &dst); // blocking
 	int destroy(); // mark Queue for desctruction (when mqd.rCount reaches 0)
 };
+*/
 
 #endif

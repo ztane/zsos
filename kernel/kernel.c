@@ -9,16 +9,14 @@ extern void (*__CTOR_LIST__)();
 
 static void call_ctors() 
 {
-    void (**fptr)() = (&__CTOR_LIST__) + 1;
-    int count = ((int *)(&__CTOR_LIST__))[0];
-    printk("Executing %d static C++ initializers...", count);
+	void (**fptr)() = (&__CTOR_LIST__) + 1;
+	int count = ((int *)(&__CTOR_LIST__))[0];
+	printk("Executing %d static C++ initializers...", count);
 
-    while (count--)
-    {
-        (*fptr++)();
-    }
+	while (count--)
+		(*fptr++)();
 
-    printk(" done\n");
+	printk(" done\n");
 }
 
 extern void kernel_main(unsigned long, void *);
