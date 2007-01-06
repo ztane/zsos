@@ -11,18 +11,18 @@ SYSCALL(get_pid)
 SYSCALL(suspend) 
 {
 	// suspend process with handle given in %EBX
-	SYSCALL_RETURN(-1);
+	SYSCALL_RETURN(0xFFFFFFFF);
 }
 
 SYSCALL(resume)
 {
-	SYSCALL_RETURN(-1);
+	SYSCALL_RETURN(0xFFFFFFFF);
 }
 
 SYSCALL(set_thread_priority)
 {
 	// set priority for %EBX to %ECX
-	SYSCALL_RETURN(-1);
+	SYSCALL_RETURN(0xFFFFFFFF);
 }
 
 #include "semaphore.hh"
