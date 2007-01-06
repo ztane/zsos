@@ -13,7 +13,7 @@ else
 	MAKE    = @make -s
 endif
 
-CFLAGS  = -Wall -Werror -Wno-conversion -Wno-unused -Wextra -fno-builtin -nostdinc -Wno-multichar -O3
+CFLAGS  = -Wall -Werror -Wno-unused -Wextra -Wno-conversion -fno-builtin -nostdinc -Wno-multichar -O3
 CCFLAGS = -fno-rtti -fno-exceptions -nostdlib
 ARFLAGS = rcs
 
