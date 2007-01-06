@@ -1,4 +1,6 @@
+#include <iostream>
 #include <cstdlib>
+
 #include "init.hh"
 
 
@@ -17,17 +19,18 @@ void setup(Init *ptr)
 
 void run()
 {
-	if (done)
+	if (list == NULL) {
+		// can overflow (on INT32_MAX * 2 attempts...)
+		kout << "init: warning: tried to call init::run() with nothing to do!" << endl;
 		return;
-
-	Init *ptr = list;
-	while (ptr) {
-		ptr->init();
-		ptr = ptr->next;
 	}
-
-	// run once
-	done = 1;
+	kout << "Running init... ";
+	// unwind list:
+	while (list) {
+		list->init();
+		list = list->next;
+	}
+	kout << "done" << endl;
 }
 
 };

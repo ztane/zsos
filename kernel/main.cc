@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <new>
 
 #include <kernel/cpuid.hh>
 #include <kernel/atomic.hh>
@@ -18,10 +19,9 @@
 #include "ide.hh"
 #include "scheduler.hh"
 #include "timer.hh"
-#include <panic.hh>
-#include <pci.hh>
+#include "panic.hh"
+#include "pci.hh"
 #include "mutex.hh"
-#include <new>
 #include "init.hh"
 
 void haltloop() 
@@ -35,8 +35,7 @@ void print_memmap(MultibootInfo *mbi)
 {
 	int ct = mbi->number_of_mmap_entries();
 	
-	for (int i = 0; i < ct; i++) 
-	{
+	for (int i = 0; i < ct; i++) {
 		const MultibootMMapInfo& inf =
 			mbi->mmap_entry(i);
 		
@@ -154,8 +153,7 @@ void kernel_main(unsigned int magic, void *mbd)
 	kout << "Detecting CPU:" << endl;
 	detect_cpu();
 
-	if (! cpu_identity.get_flags() & CPUIdentity::FLAG_PSE) 
-	{
+	if (! cpu_identity.get_flags() & CPUIdentity::FLAG_PSE) {
 		kernel_panic("The CPU does not support 4 MiB pages!");
 	}
 
@@ -207,7 +205,7 @@ void kernel_main(unsigned int magic, void *mbd)
 
 	buf = new RingBuffer<int>(10);
 
-	kout << "Testing init..." << endl;
+	init::run();
 	init::run();
 
 	kout << "Starting tasking...";
