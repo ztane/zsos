@@ -6,12 +6,14 @@
 namespace IDE {
 
 
-// HardDiskDevice
+// Perhpas IDEDrive should be generic interface for disk/cdrom/tape/whatever
 class IDEDrive
 {
 public:
-	IDEDrive() { }
-	~IDEDrive() { }
+	IDEDrive();
+	~IDEDrive();
+
+	int init();
 };
 
 

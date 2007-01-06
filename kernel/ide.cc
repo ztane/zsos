@@ -4,24 +4,33 @@
 
 namespace IDE {
 
-IDEController::IDEController() : init::Init()
+IDEController::IDEController()
 {
-	kout << "IDEController constructed" << endl;
 	init::setup(this);
 }
 
-IDEController::~IDEController()
-{
-
-}
+IDEController::~IDEController() { }
 
 int IDEController::init()
 {
 	kout << "IDEController got init()" << endl;
+	for (int i = 0; i < MAX_INTERFACES; i ++)
+		ifs[i].init();
+
 	return 0;
 }
 
-void IDEController::dummy() { printk("PERKELE\n"); }
+IDEInterface::IDEInterface() { }
+IDEInterface::~IDEInterface() { }
+
+int IDEInterface::init()
+{
+	kout << "IDEInterface got init()" << endl;
+	for (int i = 0; i < MAX_DRIVES; i ++)
+		drives[i].init();
+
+	return 0;
+}
 
 IDEController controller; // static driver
 

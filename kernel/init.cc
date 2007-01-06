@@ -1,24 +1,33 @@
+#include <cstdlib>
 #include "init.hh"
 
 
 namespace init {
 
-static int nfunc = 0;
-static Init *list[8];
+Init::~Init() { } // dummy destructor
+
+static int done = 0;
+static Init *list = NULL;
 
 void setup(Init *ptr)
 {
-	if (nfunc < 8) {
-		list[nfunc] = ptr;
-		nfunc ++;
-	}
+	ptr->next = list;
+	list = ptr;
 }
 
 void run()
 {
-	for (int i = 0; i < 8; i ++)
-		if (list[i])
-			(list[i])->init();
+	if (done)
+		return;
+
+	Init *ptr = list;
+	while (ptr) {
+		ptr->init();
+		ptr = ptr->next;
+	}
+
+	// run once
+	done = 1;
 }
 
 };

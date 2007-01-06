@@ -172,7 +172,7 @@ void *kmalloc(size_t size)
 
 	/* keep correct align */
 	size += HEAP_ALIGN;
-	size &= HEAP_ALIGN;
+	size &= ~HEAP_ALIGN;
 
 	return _kmalloc_fast(size, _get_first_bit_set(size));
 }
@@ -191,7 +191,7 @@ void *kcalloc(size_t n, size_t size)
 	size *= n;
 	/* keep correct align */
 	size += HEAP_ALIGN;
-	size &= HEAP_ALIGN;
+	size &= ~HEAP_ALIGN;
 
 	rval = _kmalloc_fast(size, _get_first_bit_set(size));
 
@@ -236,7 +236,7 @@ void *krealloc(void *ptr, size_t size)
 
 	/* keep correct align */
 	size += HEAP_ALIGN;
-	size &= HEAP_ALIGN;
+	size &= ~HEAP_ALIGN;
 
 	/* if next block is free and it is large enough
 	 *	allocate new memory from next block
@@ -429,7 +429,7 @@ int kmalloc_init(void *ptr, size_t size)
 
 	// correct align (to 8 bytes)
 	tmp += HEAP_ALIGN;
-	tmp &= HEAP_ALIGN;
+	tmp &= ~HEAP_ALIGN;
 
 	// fix size if align correction had to do something
 	size -= tmp - (intptr_t) ptr;

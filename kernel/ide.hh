@@ -53,11 +53,13 @@ private:
 
 	IDEDrive drives[MAX_DRIVES];
 public:
-	IDEInterface() { }
-	~IDEInterface() { }
+	IDEInterface();
+	~IDEInterface();
+
+	int init(); // called by IDEController
 };
 
-class IDEController : init::Init {
+class IDEController : public init::Init {
 private:
 	IDEInterface ifs[MAX_INTERFACES];
 	PCI::PCIDevice pci; // PCI IDE controller?
@@ -66,11 +68,8 @@ public:
 	~IDEController();
 
 	int init();
-	void dummy();
 };
 
-extern IDEController controller;
-	
 
 };
 

@@ -151,63 +151,61 @@ RingBuffer<int> *buf;
 extern "C" void kernel_main(unsigned int magic, void *mbd);
 void kernel_main(unsigned int magic, void *mbd)
 {
-//	kout << "Detecting CPU:" << endl;
-//	detect_cpu();
+	kout << "Detecting CPU:" << endl;
+	detect_cpu();
 
-//	if (! cpu_identity.get_flags() & CPUIdentity::FLAG_PSE) 
-//	{
-//		kernel_panic("The CPU does not support 4 MiB pages!");
-//	}
+	if (! cpu_identity.get_flags() & CPUIdentity::FLAG_PSE) 
+	{
+		kernel_panic("The CPU does not support 4 MiB pages!");
+	}
 
-//	kout << "Setting up GDT...";
+	kout << "Setting up GDT...";
 	init_gdt();
-//	kout << " done..." << endl;
+	kout << " done..." << endl;
 
-//	kout << "Setting up IDT...";
+	kout << "Setting up IDT...";
 	init_idt();
-//	kout << " done" << endl;
+	kout << " done" << endl;
 
-//	kout << "Remapping PIC...";
+	kout << "Remapping PIC...";
 	init_pic();
-//	kout << " done" << endl;
+	kout << " done" << endl;
 	
-//	kout << "Enabling initial paging..." << endl;
+	kout << "Enabling initial paging..." << endl;
 	initialize_page_tables();
-//	kout << "Paging enabled." << endl;
+	kout << "Paging enabled." << endl;
 
-//	kout << "Multiboot information:" << endl;
+	kout << "Multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
 
-//	kout << "Disabling boot-time double paging...";
+	kout << "Disabling boot-time double paging...";
 	disable_null_page();
-//	kout << "done." << endl; 
+	kout << "done." << endl; 
 
-//	kout << "Initializing page frame structures: " << endl;
+	kout << "Initializing page frame structures: " << endl;
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
-//	kout << global_page_frame_table.getLastPage();
-//	kout << " pages of RAM." << endl;
+	kout << global_page_frame_table.getLastPage();
+	kout << " pages of RAM." << endl;
 
-//	kout << "Initializing tasking...";
+	kout << "Initializing tasking...";
 	initialize_tasking();
-//	kout << " done" << endl;
+	kout << " done" << endl;
 
-//	kout << "Initializing timer...";
+	kout << "Initializing timer...";
 	initialize_timer();
-//	kout << " done" << endl;
+	kout << " done" << endl;
 
-//	kout << "Enabling keyboard and timer interrupts...";
+	kout << "Enabling keyboard and timer interrupts...";
 	enable_keyboard();
-//	kout << " done" << endl;
+	kout << " done" << endl;
 
 	extern void __set_default_allocator(Allocator *new_def);
 	__set_default_allocator(&boot_dynmem_alloc);
 
-//	kout << "Detecting PCI devices..." << endl;
-//	PCI::initialize();
+	kout << "Detecting PCI devices..." << endl;
+	PCI::initialize();
 
 	buf = new RingBuffer<int>(10);
-
-	IDE::controller.dummy();
 
 	kout << "Testing init..." << endl;
 	init::run();
