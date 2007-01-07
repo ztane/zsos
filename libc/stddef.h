@@ -2,6 +2,7 @@
 #define __STDDEF_H__
 
 #include <inttypes.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 
