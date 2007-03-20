@@ -14,7 +14,7 @@
 #include "multiboot.hh"
 #include "interrupt.hh"
 #include "paging.hh"
-#include "tasking.hh"
+#include "usertask.hh"
 #include "init_vga.hh"
 #include "ide.hh"
 #include "scheduler.hh"
@@ -91,17 +91,21 @@ extern void init_gdt();
 extern void initialize_tasking();
 
 void user_task2() {
-	for (int j = 0; j < 100; j++)
-	for (int i = 'A'; i < 'Z'; i++)
-		sem_post(i);
+//	for (int j = 0; j < 100; j++)
+// 		for (int i = 'A'; i <= 'Z'; i++)
+//			sem_post(i);
 
-	while(1);
+	while(1)
+		hello_world();
+
 }
 
 void user_task() {
 	while (1) {
-		//write_character(sem_wait());
-		sem_wait();
+		hello_world();
+//		hello_world();
+//		write_character(sem_wait());
+		// sem_wait();
 	}
 }
 
@@ -139,8 +143,8 @@ void detect_cpu() {
 	kout << endl;
 }
 
-Process tesmi("tesmi");
-Process tesmi2("tesmi2");
+UserTask tesmi("tesmi");
+UserTask tesmi2("tesmi2");
 Scheduler scheduler;
 
 void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
@@ -206,15 +210,14 @@ void kernel_main(unsigned int magic, void *mbd)
 	buf = new RingBuffer<int>(10);
 
 	init::run();
-	init::run();
 
 	kout << "Starting tasking...";
 	tesmi.initialize((void*)user_task);
 	tesmi.setProcessId(1);
 	tesmi2.initialize((void*)user_task2);
 	tesmi2.setProcessId(2);
-	scheduler.add_process(&tesmi);
-	scheduler.add_process(&tesmi2);
+	scheduler.add_task(&tesmi);
+	scheduler.add_task(&tesmi2);
 	scheduler.schedule();
 
 	kernel_panic("Fell out from scheduling loop!\n");

@@ -1,4 +1,5 @@
 #include <printk.h>
+#include <iostream>
 #include <syscall.hh>
 
 SYSCALL(write_character)
@@ -8,4 +9,8 @@ SYSCALL(write_character)
         SYSCALL_RETURN(0);
 }
 
-
+SYSCALL(hello_world)
+{
+	kout << "Hello World!" << endl;
+	SYSCALL_RETURN(0);
+}

@@ -1,20 +1,20 @@
 #ifndef __WAITQUEUE_HH__
 #define __WAITQUEUE_HH__
 
-#include "tasking.hh"
+#include "task.hh"
 #include "scheduler.hh"
 
 class WaitQueue {
 private:
-	Process *head;
-	Process *end;
+	Task *head;
+	Task *end;
 public:
 	WaitQueue() {
 		head = end = NULL;
 	}
 
 protected:	
-	void addLast(Process *p) {
+	void addLast(Task *p) {
 		p->setPrevious(end);
 		if (end != NULL) {
 			end->setNext(p);
@@ -26,7 +26,7 @@ protected:
 		end = p;
 	}
 
-	void addFirst(Process *p) {
+	void addFirst(Task *p) {
 		p->setNext(head);
 		if (head != NULL) {
 			head->setPrevious(p);
@@ -38,8 +38,8 @@ protected:
 		head = p;
 	}
 
-	Process *extractFirst() {
-		Process *rv = head;
+	Task *extractFirst() {
+		Task *rv = head;
 		head = rv->getNext();
 
 		if (head == NULL) {
@@ -54,7 +54,7 @@ protected:
 		return rv;
 	}
 
-	bool remove(Process *p) {
+	bool remove(Task *p) {
 		if (p == head) {
 			extractFirst();
 			return true;
@@ -79,17 +79,17 @@ public:
 	}
 
 	void addCurrentTask() {
-		Process *task = scheduler.getCurrentTask();
-		// scheduler.remove_process(task);
-		task->setCurrentState(Process::BLOCKED);
+		Task *task = scheduler.getCurrentTask();
+		// scheduler.remove_Task(task);
+		task->setCurrentState(Task::BLOCKED);
 		addLast(task);
 	}
 	
 	void resumeFirst() {
                if (! isEmpty()) {
-                        Process *task = extractFirst();
-                        task->setCurrentState(Process::READY);
-                        scheduler.add_process(task);
+                        Task *task = extractFirst();
+                        task->setCurrentState(Task::READY);
+                        scheduler.add_task(task);
                }
 	}
 	

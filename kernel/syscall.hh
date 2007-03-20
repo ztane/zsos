@@ -34,6 +34,10 @@ inline int sem_wait() {
 	return __syscall0(7);
 }
 
+inline int hello_world() {
+	return __syscall0(8);
+}
+
 inline int illegal_syscall() {
 	return __syscall0(1000);
 }

@@ -5,9 +5,10 @@
 #include "pokepeek.h"
 #include "printk.h"
 #include "printstate.hh"
-#include "tasking.hh"
+#include "task.hh"
 #include "scheduler.hh"
 #include "timer.hh"
+#include "bottomhalves.hh"
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -168,24 +169,30 @@ void load_idt(InterruptDescriptor *_base, int num)
 	__asm__ __volatile__ ("lidt (%0)" : : "r" ((void *) &idtr));
 }
 
+void do_timer() 
+{
+	static int i = 0;
+	i ++;
+	printk("TIMER\n");
+	if (i >= 10) {
+		i = 0;
+		printk("SCHEDULING\n");
+		scheduler.needsScheduling();
+	}	
+}
+
 void init_idt() 
 {
-
 	load_idt(interrupt_table, 256);
+	registerBottomHalf(BH_TIMER, do_timer);
 }
 
 // IRQ0 - Timer
 C_ISR(IRQ_0) 
 {
-	static int i = 0;
-	i ++;
-	if (i % (TIMER_TICKS_PER_SECOND / 10) == 0) {
-		extern Scheduler scheduler;
-		unlock_irq(1);
-		scheduler.inc_ticks();
-		scheduler.schedule();
-	}
+	markBottomHalf(BH_TIMER);
 	unlock_irq(1);
+	unlock_irq(0);
 }
 
 #include <initial_vga.h>
@@ -201,13 +208,7 @@ C_ISR(IRQ_1)
 		print_kernel_state(*const_cast<Registers*>(&r));
 	}
 #endif
-	enableInterruptsIf(true);	
-        vga_buf_write("interrupts enabled\n", strlen("interrupts enabled\n"));
-
-	printk("interrupts enabled\n");
-	printk("interrupts enabled: %d\n", (int)interruptsEnabled());
-	printk("Keyboard interrupt: %d\n", val);
-
+	markBottomHalf(2);
 	unlock_irq(2);
 }
 
@@ -254,7 +255,7 @@ C_ISR_W_ECODE(page_fault)          {
         print_kernel_state(*const_cast<Registers*>(&r));
 
         extern Scheduler scheduler;
-        Process *task = scheduler.getCurrentTask();
+        Task *task = scheduler.getCurrentTask();
 	task->handlePageFault(addr);
 }
 

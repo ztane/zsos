@@ -10,7 +10,7 @@ void print_kernel_state(Registers& r)
 		r.esp, r.ebp, r.esi, r.edi);
 
 	uint32_t *stack = (uint32_t*)&r;
-	for (int i = 0; i < 0x1002; i ++) {
+	for (int i = 0; i < 0x10; i ++) {
 		printk("%08x\t%08x\n", *(stack + i), stack + i);
 		if (*(stack + i) == 0xc0101090)
 			break;

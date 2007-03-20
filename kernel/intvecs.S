@@ -7,21 +7,36 @@
 #define ASMISR(name) __ISR_ ## name ## _asm
 #define ISR(name)    __ISR_ ## name 
 
-#define DEFINE_INTR_GATE(name)	 \
-	.globl ASMISR(name)	;\
-ASMISR(name):			;\
-	push %ds		;\
-	push %es		;\
-	push %fs		;\
-	push %gs		;\
-	pushal			;\
-	call ISR(name)		;\
-	popal			;\
-    	pop %gs			;\
-        pop %fs			;\
-        pop %es			;\
-        pop %ds			;\
-	iret
+#define POP_IRET			 	 \
+        popal                                   ;\
+        pop %gs                                 ;\
+        pop %fs                                 ;\
+        pop %es                                 ;\
+        pop %ds                                 ;\
+        iret                              	;\
+      
+#define CHECK_BH_FLAGS			 \
+	xorl %eax, %eax			;\
+	cmpl (__bh_active_flag), %eax	;\
+
+
+#define DEFINE_INTR_GATE(name)			 \
+	.globl ASMISR(name)			;\
+ASMISR(name):					;\
+	push %ds				;\
+	push %es				;\
+	push %fs				;\
+	push %gs				;\
+	pushal					;\
+	call ISR(name)				;\
+						;\
+	CHECK_BH_FLAGS				;\
+	jne   1f		          	;\
+0:		                          	;\
+	POP_IRET				;\
+1:						;\
+	call __EXECUTE_BOTTOM_HALVES	  	;\
+	jmp  0b					;\
 
 
 /*********************************************************
@@ -104,15 +119,32 @@ __ISR_SYS_CALL_asm:
 	call *SYSCALL_VECTORS(, %eax, 4)
 
 __RET_FROM_SYSCALL:
-        popal                   
-        pop %gs                 
-        pop %fs                 
-        pop %es                 
-        pop %ds                 
-        iret
+	POP_IRET
 
 __BAD_SYSCALL:
 	call sys_BAD
 	jmp  __RET_FROM_SYSCALL
 
+// does the job of executing bottom halves!
+__EXECUTE_BOTTOM_HALVES:
+	lock decl __BH_LOCK
+	jnz  __BH_RETURN
+	// do not bother to enable interrupts if we aren't going to run any bh
+	sti
+	// we have the lock now, interrupts enabled!
 
+__LOOP_CALL:
+	call	__execute_bottom_halves
+	// release lock now! do atomic check on bh flags instead!
+	lock incl __BH_LOCK
+		
+	CHECK_BH_FLAGS
+	jnz __EXECUTE_BOTTOM_HALVES
+
+__BH_RETURN:
+	lock incl __BH_LOCK
+	ret
+
+	.data
+__BH_LOCK:
+	.long 1

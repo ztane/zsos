@@ -8,31 +8,8 @@
 
 TSSContents TSS_Segment __attribute__((aligned(4096)));
 
-void TSSContents::setup() {
-	memset(&TSS_Segment, 0, sizeof(TSS_Segment));
-	ss0   = KERNEL_DATA_DESCRIPTOR;
+UserTask::UserTask(const char *name) : Task(name) {
 
-        es = 
-	ss = 
-	ds = 
-	fs = 
-	gs = USER_DATA_DESCRIPTOR + 3;
-
-        cs = USER_CODE_DESCRIPTOR + 3;
-
-	eflags = 2;
-	bitmap = 104;
-
-	__asm__ __volatile__ ("mov %%cr3, %0" : "=a"(cr3) : );
-}
-
-Task::Task(char *_name) {
-	esp = 0;
-	strncpy(name, _name, sizeof(name));
-	isNew = true;
-	current_state = READY;
-	current_priority = 47;
-	timeslice = 0;
 }
 
 void UserTask::enable_io() {
@@ -76,8 +53,13 @@ void UserTask::initialize(void *entry) {
 	esp = (unsigned int)tmp;
 }
 
+UserTask::~UserTask() {
+}
+
 void UserTask::dispatch(uint32_t *saved_esp) {
-        if (isNew) {
+	TSS_Segment.esp0 = kstack;
+        
+	if (isNew) {
                 isNew = false;
                 __asm__ __volatile__ (
                         "pushal\n\t"
@@ -97,11 +79,27 @@ void UserTask::dispatch(uint32_t *saved_esp) {
                         "mov %%esp, (%1)\n\t"
                         "mov %0, %%esp\n\t"
                         "popal\n\t"
-                        :
-                        : "a"(esp), "b"(saved_esp);
+                        : : "a"(esp), "b"(saved_esp));
         }
 }
 
+void TSSContents::setup() {
+	memset(&TSS_Segment, 0, sizeof(TSS_Segment));
+	ss0   = KERNEL_DATA_DESCRIPTOR;
+
+        es = 
+	ss = 
+	ds = 
+	fs = 
+	gs = USER_DATA_DESCRIPTOR + 3;
+
+        cs = USER_CODE_DESCRIPTOR + 3;
+
+	eflags = 2;
+	bitmap = 104;
+
+	__asm__ __volatile__ ("mov %%cr3, %0" : "=a"(cr3) : );
+}
 void initialize_tasking() {
 	TSS_Segment.setup();
 

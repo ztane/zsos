@@ -64,10 +64,10 @@ protected:
 	unsigned char kernel_stack[4096];
 
 public:
-	Task(char *name);
-	virtual ~Task();
+	Task(const char *name);
+	virtual ~Task() { };
 	
-	State getCurrentState() {
+	State getCurrentState() const {
 		return current_state;
 	}
 
@@ -75,7 +75,7 @@ public:
 		current_state = new_state;	
 	}
 
-	int getCurrentPriority() {
+	int getCurrentPriority() const {
 		return current_priority;
 	}
 
@@ -87,7 +87,7 @@ public:
 		process_id = pid;
 	}
 
-	uint32_t getProcessId() {
+	uint32_t getProcessId() const {
 		return process_id;
 	}
 
@@ -112,6 +112,8 @@ public:
 		__asm__ __volatile__ ("hlt");
 		return true;
 	}
+
+	virtual void dispatch(uint32_t* saved_eip) = 0;
 
 	friend class Scheduler;
 };

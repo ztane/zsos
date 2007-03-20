@@ -3,8 +3,9 @@
 #include <cstdlib>
 #include "interrupt.hh"
 #include "scheduler.hh"
-#include "tasking.hh"
+#include "task.hh"
 #include "printk.h"
+#include "bottomhalves.hh"
 
 Scheduler::Scheduler()
 {
@@ -39,12 +40,12 @@ void Scheduler::schedule()
 		for (i = 0; i < PRIV_LEVELS; i++)
 		{
 			if (tasks[i].first != NULL) {
-				Process *p = tasks[i].first;
-				Process *old = current;
-				remove_process(p);
+				Task *p = tasks[i].first;
+				Task *old = current;
+				remove_task(p);
 								
 				current = p;
-				p->current_state = Process::RUNNING;
+				p->current_state = Task::RUNNING;
 				scheduler_running = false;
 				dispatchNew(old, p);
 
@@ -61,10 +62,10 @@ void Scheduler::schedule()
 	}
 }
 
-void Scheduler::remove_process(Process *p) {
+void Scheduler::remove_task(Task *p) {
 	bool fl = disableInterrupts();
 	
-	process_dir *entry = &tasks[p->getCurrentPriority()];
+	task_dir *entry = &tasks[p->getCurrentPriority()];
 	
 	if (p->next) {
 		p->next->previous = p->previous;
@@ -91,19 +92,19 @@ void Scheduler::inc_ticks() {
 	current->timeslice ++;
 	if (current->timeslice > 0) {
 		current->timeslice = 0;
-		if (current->current_state == Process::RUNNING)
-			add_process(current);
+		if (current->current_state == Task::RUNNING)
+			add_task(current);
 	}
 	
 	enableInterruptsIf(fl);
 }
 
-void Scheduler::add_process(Process *p)
+void Scheduler::add_task(Task *p)
 {
 	bool fl = disableInterrupts();
 	
 	int prio;
-	Process *secondlast;
+	Task *secondlast;
 	prio = p->getCurrentPriority();
 	secondlast = tasks[prio].last;
 	p->next = p->previous = NULL;
@@ -115,12 +116,12 @@ void Scheduler::add_process(Process *p)
 		tasks[prio].first = p;
 	}
 	tasks[prio].last = p;
-	p->current_state = Process::READY;
+	p->current_state = Task::READY;
 	
 	enableInterruptsIf(fl);
 }
 
-void Scheduler::dispatchNew(Process *old, Process *nu) {
+void Scheduler::dispatchNew(Task *old, Task *nu) {
 	uint32_t *esp_ptr;
 	uint32_t dummy;
 
@@ -132,29 +133,13 @@ void Scheduler::dispatchNew(Process *old, Process *nu) {
 	else
 		esp_ptr = &(old->esp);
 	
-        TSS_Segment.esp0 = nu->kstack;
+	nu->dispatch(esp_ptr);
+}
 
-	if (nu->isNew) {
-		nu->isNew = false;
-		__asm__ __volatile__ (
-			"pushal\n\t"
-			"mov %%esp, (%1)\n\t"
-                	"mov %0, %%esp\n\t"
-                	"popal\n\t"
-                	"pop %%gs\n\t"
-                	"pop %%fs\n\t"
-                	"pop %%es\n\t"
-                	"pop %%ds\n\t"
-                	"iret"
-                	: : "a"(nu->esp), "b"(esp_ptr));
-	}
-	else {
-	        __asm__ __volatile__ (
-        	        "pushal\n\t"
-               		"mov %%esp, (%1)\n\t"
-               		"mov %0, %%esp\n\t"
-                	"popal\n\t"
-                	:
-                	: "a"(nu->esp), "b"(&(old->esp)));
-	}
+void Scheduler::needsScheduling() {
+	markBottomHalf(BH_SCHEDULER);
+}
+
+void schedulerBottomHalf() {
+	scheduler.schedule();
 }

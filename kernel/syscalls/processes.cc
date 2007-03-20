@@ -4,7 +4,7 @@
 SYSCALL(get_pid) 
 {
         extern Scheduler scheduler;
-        Process *task = scheduler.getCurrentTask();
+        Task *task = scheduler.getCurrentTask();
         SYSCALL_RETURN(task->getProcessId());
 }
 

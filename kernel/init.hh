@@ -4,18 +4,24 @@
 
 namespace init {
 
-class Init {
-private:
-	Init *next;
-	friend void setup(Init *ptr);
-	friend void run();
-public:
-	virtual ~Init();
-	virtual int init() = 0;
-};
+	class Init;
+	extern void setup(Init *ptr);
+	extern void run();
 
-extern void setup(Init *ptr);
-extern void run();
+	class Init {
+	private:
+		Init *next;
+		friend void setup(Init *ptr);
+		friend void run();
+
+	protected:
+		Init() {
+			setup(this);
+		}
+	public:
+		virtual ~Init();
+		virtual int init() = 0;
+	};
 
 };
 
