@@ -34,10 +34,10 @@ public:
 } __attribute__((packed));
 
 
-class Process {
+class Task {
 
 public:
-	enum ProcessState {
+	enum State {
 		READY = 0,
 		RUNNING = 1,
 		BLOCKED = 2,
@@ -46,37 +46,32 @@ public:
 	};
 
 protected:
-	unsigned int esp;    //actual position of esp
-        unsigned int kstack; //stacktop of kernel stack
-        unsigned int ustack; //stacktop of user stack
-        unsigned int cr3;
-
 	char name[32];
 	bool isNew;
-	unsigned int padding;
-	unsigned char kernel_stack[4096];
-	unsigned int padding2;
-	unsigned char user_stack[16384];
-		
+
 	int current_priority;
 	int timeslice;
 	pid_t process_id;
 
-	ProcessState current_state;
+	State current_state;
 
-	Process *next;
-	Process *previous;
+	Task *next;
+	Task *previous;
+
+        unsigned int  kstack; //stacktop of kernel stack
+	unsigned int  esp;    //actual position of esp
+	unsigned int  padding;
+	unsigned char kernel_stack[4096];
 
 public:
-	Process(char *name);
+	Task(char *name);
+	virtual ~Task();
 	
-	void initialize(void *entry_point);
-
-	ProcessState getCurrentState() {
+	State getCurrentState() {
 		return current_state;
 	}
 
-	void setCurrentState(ProcessState new_state) {
+	void setCurrentState(State new_state) {
 		current_state = new_state;	
 	}
 
@@ -96,36 +91,29 @@ public:
 		return process_id;
 	}
 
-	Process *getNext() {
+	Task *getNext() const {
 		return next;
 	}
 
-	void setNext(Process *n) {
+	void setNext(Task *n) {
 		next = n;
 	}
 
-	Process *getPrevious() {
+	Task *getPrevious() const {
 		return previous;
 	}
 
-	void setPrevious(Process *p) {
+	void setPrevious(Task *p) {
 		previous = p;
 	}
 
-	void enable_io();
-
-	bool handlePageFault(uint32_t address) {
+	virtual bool handlePageFault(uint32_t address) {
 		printk("Process %d had a pfault at %p\n", process_id, address);
 		__asm__ __volatile__ ("hlt");
 		return true;
 	}
 
 	friend class Scheduler;
-
 };
-
-
-
-extern TSSContents TSS_Segment;
 
 #endif

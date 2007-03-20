@@ -1,7 +1,8 @@
 #include <iostream>
 #include <cstring>
 
-#include "tasking.hh"
+#include "task.hh"
+#include "usertask.hh"
 #include "memory.hh"
 #include "printk.h"
 
@@ -25,7 +26,7 @@ void TSSContents::setup() {
 	__asm__ __volatile__ ("mov %%cr3, %0" : "=a"(cr3) : );
 }
 
-Process::Process(char *_name) {
+Task::Task(char *_name) {
 	esp = 0;
 	strncpy(name, _name, sizeof(name));
 	isNew = true;
@@ -34,14 +35,14 @@ Process::Process(char *_name) {
 	timeslice = 0;
 }
 
-void Process::enable_io() {
+void UserTask::enable_io() {
 	// set IOPL to 3...
 	unsigned int *tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
 	tmp -= 3;	
 	*tmp |= 3 << 12;
 }
 
-void Process::initialize(void *entry) {
+void UserTask::initialize(void *entry) {
 	unsigned int *tmp;
 
 	// build kernel stack
@@ -73,6 +74,32 @@ void Process::initialize(void *entry) {
 	padding = 0xDEADBEEF;
 	padding2 = 0xDEADBEEF;
 	esp = (unsigned int)tmp;
+}
+
+void UserTask::dispatch(uint32_t *saved_esp) {
+        if (isNew) {
+                isNew = false;
+                __asm__ __volatile__ (
+                        "pushal\n\t"
+                        "mov %%esp, (%1)\n\t"
+                        "mov %0, %%esp\n\t"
+                        "popal\n\t"
+                        "pop %%gs\n\t"
+                        "pop %%fs\n\t"
+                        "pop %%es\n\t"
+                        "pop %%ds\n\t"
+                        "iret"
+                        : : "a"(esp), "b"(saved_esp));
+        }
+        else {
+                __asm__ __volatile__ (
+                        "pushal\n\t"
+                        "mov %%esp, (%1)\n\t"
+                        "mov %0, %%esp\n\t"
+                        "popal\n\t"
+                        :
+                        : "a"(esp), "b"(saved_esp);
+        }
 }
 
 void initialize_tasking() {
