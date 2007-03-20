@@ -16,9 +16,10 @@ public:
 	KernelTask(const char *name);	
 	virtual ~KernelTask();
 
-	void initialize(void (*entry_point)(void *data));
+	void initialize(void (*entry_point)(void *data), void *parm);
 
 	virtual void dispatch(uint32_t *saved_eip);
+	virtual void terminate();
 
 	friend class Scheduler;
 };

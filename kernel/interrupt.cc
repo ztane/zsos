@@ -190,9 +190,7 @@ void init_idt()
 // IRQ0 - Timer
 C_ISR(IRQ_0) 
 {
-	markBottomHalf(BH_TIMER);
 	unlock_irq(1);
-	unlock_irq(0);
 }
 
 #include <initial_vga.h>

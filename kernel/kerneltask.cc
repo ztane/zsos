@@ -1,12 +1,11 @@
 #include <iostream>
 #include <cstring>
 
+#include "scheduler.hh"
 #include "task.hh"
-#include "usertask.hh"
+#include "kerneltask.hh"
 #include "memory.hh"
 #include "printk.h"
-
-TSSContents TSS_Segment __attribute__((aligned(4096)));
 
 KernelTask::KernelTask(const char *name) : Task(name) {
 
@@ -20,28 +19,39 @@ void KernelTask::initialize(void (*entry)(void *), void *param) {
 	kstack = (unsigned int)tmp;
 	tmp --;
 
-	*tmp -- = param;
-	*tmp -- = entry;
+	*tmp -- = (unsigned int)param;
+	*tmp    = (unsigned int)entry;
+
+        esp = (unsigned int)tmp;
 }
 
 KernelTask::~KernelTask() {
 }
 
+extern "C" static void do_dispatch_kernel_task(void (*entry)(void *), void *param) {
+	extern Scheduler scheduler;
+
+	entry(param);
+	scheduler.getCurrentTask()->terminate();
+}
+
+void KernelTask::terminate() {
+	extern Scheduler scheduler;
+
+	setCurrentState(TERMINATED);
+	scheduler.schedule();	
+}
+
 void KernelTask::dispatch(uint32_t *saved_esp) {
-	TSS_Segment.esp0 = kstack;
-        
 	if (isNew) {
                 isNew = false;
                 __asm__ __volatile__ (
                         "pushal\n\t"
                         "mov %%esp, (%1)\n\t"
                         "mov %0, %%esp\n\t"
-                        "popal\n\t"
-                        "pop %%gs\n\t"
-                        "pop %%fs\n\t"
-                        "pop %%es\n\t"
-                        "pop %%ds\n\t"
-                        "iret"
+			// now would be a good time to enable interrupts (ASAP).
+			"sti\n\t"
+                        "call do_dispatch_kernel_task"
                         : : "a"(esp), "b"(saved_esp));
         }
         else {
@@ -53,28 +63,3 @@ void KernelTask::dispatch(uint32_t *saved_esp) {
                         : : "a"(esp), "b"(saved_esp));
         }
 }
-
-void TSSContents::setup() {
-	memset(&TSS_Segment, 0, sizeof(TSS_Segment));
-	ss0   = KERNEL_DATA_DESCRIPTOR;
-
-        es = 
-	ss = 
-	ds = 
-	fs = 
-	gs = USER_DATA_DESCRIPTOR + 3;
-
-        cs = USER_CODE_DESCRIPTOR + 3;
-
-	eflags = 2;
-	bitmap = 104;
-
-	__asm__ __volatile__ ("mov %%cr3, %0" : "=a"(cr3) : );
-}
-void initialize_tasking() {
-	TSS_Segment.setup();
-
-	uint16_t tss_desc = TSS_DESCRIPTOR;
-	__asm__ __volatile__ ("ltr %0" : : "r"(tss_desc));
-}
-

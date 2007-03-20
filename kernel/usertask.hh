@@ -22,6 +22,7 @@ public:
 
 	virtual void enable_io();
 	virtual void dispatch(uint32_t *saved_eip);
+	virtual void terminate();
 
 	friend class Scheduler;
 };

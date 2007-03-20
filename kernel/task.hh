@@ -3,36 +3,8 @@
 #ifndef TASKING_H
 #define TASKING_H
 
-#include <cstdlib>
+#include <stdint.h>
 #include <ostypes>
-#include <iostream>
-#include <printk.h>
-
-class TSSContents{
-public:
-	unsigned short backlink, __blh;
-       	unsigned int   esp0;
-	unsigned short ss0, __ss0h;
-        unsigned int   esp1;
-	unsigned short ss1, __ss1h;
-        unsigned int   esp2;
-	unsigned short ss2, __ss2h;
-	unsigned int   cr3;
-	unsigned int   eip;
-	unsigned int   eflags;
-	unsigned int   eax, ecx, edx, ebx;
-       	unsigned int   esp, ebp, esi, edi;
-       	unsigned short es, __esh;
-        unsigned short cs, __csh;
-        unsigned short ss, __ssh;
-        unsigned short ds, __dsh;
-        unsigned short fs, __fsh;
-        unsigned short gs, __gsh;
-	unsigned short ldt, __ldth;
-	unsigned short trace, bitmap;
-	void setup();
-} __attribute__((packed));
-
 
 class Task {
 
@@ -42,7 +14,8 @@ public:
 		RUNNING = 1,
 		BLOCKED = 2,
 		SUSPENDED = 4,
-		BLOCKED_AND_SUSPENDED = 6
+		BLOCKED_AND_SUSPENDED = 6,
+		TERMINATED = 8
 	};
 
 protected:
@@ -107,13 +80,9 @@ public:
 		previous = p;
 	}
 
-	virtual bool handlePageFault(uint32_t address) {
-		printk("Process %d had a pfault at %p\n", process_id, address);
-		__asm__ __volatile__ ("hlt");
-		return true;
-	}
-
+	virtual bool handlePageFault(uint32_t address);
 	virtual void dispatch(uint32_t* saved_eip) = 0;
+	virtual void terminate() = 0;
 
 	friend class Scheduler;
 };

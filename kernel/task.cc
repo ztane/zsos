@@ -14,3 +14,10 @@ Task::Task(const char *_name) {
 	current_priority = 47;
 	timeslice = 0;
 }
+
+bool Task::handlePageFault(uint32_t address) {
+        printk("Process %d had a pfault at %p\n", process_id, address);
+        __asm__ __volatile__ ("hlt");
+        return true;
+}
+

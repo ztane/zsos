@@ -15,6 +15,7 @@
 #include "interrupt.hh"
 #include "paging.hh"
 #include "usertask.hh"
+#include "kerneltask.hh"
 #include "init_vga.hh"
 #include "ide.hh"
 #include "scheduler.hh"
@@ -95,19 +96,32 @@ void user_task2() {
 // 		for (int i = 'A'; i <= 'Z'; i++)
 //			sem_post(i);
 
-	while(1)
-		hello_world();
+//	while(1)
+//		hello_world();
 
 }
 
 void user_task() {
 	while (1) {
-		hello_world();
+//		hello_world();
 //		hello_world();
 //		write_character(sem_wait());
 		// sem_wait();
 	}
 }
+
+void user_task3(void *parm) {
+	for (int i = 0; i < 10; i ++) {
+		kout << "deadbeef" << endl;
+	}
+}
+
+void user_task4(void *parm) {
+	for (int i = 0; i < 10; i ++) {
+		kout << "deadbeef2" << endl;
+	}
+}
+
 
 #include "ringbuffer.hh"
 
@@ -145,14 +159,18 @@ void detect_cpu() {
 
 UserTask tesmi("tesmi");
 UserTask tesmi2("tesmi2");
+KernelTask tesmi3("tesmi3");
+KernelTask tesmi4("tesmi4");
 Scheduler scheduler;
 
 void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
 
 RingBuffer<int> *buf;
+void startIdleTask();
 
-extern "C" void kernel_main(unsigned int magic, void *mbd);
-void kernel_main(unsigned int magic, void *mbd)
+extern void __set_default_allocator(Allocator *new_def);
+
+extern "C" void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Detecting CPU:" << endl;
 	detect_cpu();
@@ -201,7 +219,6 @@ void kernel_main(unsigned int magic, void *mbd)
 	enable_keyboard();
 	kout << " done" << endl;
 
-	extern void __set_default_allocator(Allocator *new_def);
 	__set_default_allocator(&boot_dynmem_alloc);
 
 	kout << "Detecting PCI devices..." << endl;
@@ -210,14 +227,24 @@ void kernel_main(unsigned int magic, void *mbd)
 	buf = new RingBuffer<int>(10);
 
 	init::run();
-
+	
 	kout << "Starting tasking...";
+	tesmi3.initialize(user_task3, (void*)0xdeadbeef);
+	tesmi3.setProcessId(3);
+
+	tesmi4.initialize(user_task4, (void*)0xdeadbeef);
+	tesmi4.setProcessId(4);
+
 	tesmi.initialize((void*)user_task);
 	tesmi.setProcessId(1);
+
 	tesmi2.initialize((void*)user_task2);
 	tesmi2.setProcessId(2);
-	scheduler.add_task(&tesmi);
-	scheduler.add_task(&tesmi2);
+
+	scheduler.add_task(&tesmi3);
+	scheduler.add_task(&tesmi4);
+	startIdleTask();
+
 	scheduler.schedule();
 
 	kernel_panic("Fell out from scheduling loop!\n");

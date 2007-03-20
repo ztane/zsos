@@ -2,9 +2,12 @@
 #include <cstring>
 
 #include "task.hh"
+#include "scheduler.hh"
 #include "usertask.hh"
 #include "memory.hh"
 #include "printk.h"
+
+#include "tss.hh"
 
 TSSContents TSS_Segment __attribute__((aligned(4096)));
 
@@ -83,6 +86,12 @@ void UserTask::dispatch(uint32_t *saved_esp) {
         }
 }
 
+void UserTask::terminate() {
+	extern Scheduler scheduler;
+	setCurrentState(TERMINATED);
+	scheduler.schedule();
+}
+
 void TSSContents::setup() {
 	memset(&TSS_Segment, 0, sizeof(TSS_Segment));
 	ss0   = KERNEL_DATA_DESCRIPTOR;
@@ -100,6 +109,7 @@ void TSSContents::setup() {
 
 	__asm__ __volatile__ ("mov %%cr3, %0" : "=a"(cr3) : );
 }
+
 void initialize_tasking() {
 	TSS_Segment.setup();
 

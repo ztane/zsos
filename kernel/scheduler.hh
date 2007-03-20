@@ -9,7 +9,8 @@
 //  0 - 15: HISR (Highlevel Interrupt Service Routine)
 // 16 - 31: Realtime tasks
 // 32 - 47: Normal tasks
-#define PRIV_LEVELS 48
+// 48     : idle...
+#define PRIV_LEVELS 49
 
 // NOTE: turn into a class if requires complex operations!
 typedef struct _task_dir

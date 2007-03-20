@@ -7,16 +7,16 @@ CMODULES=kernel initial_vga printk \
 CCMODULES=main interrupt pic multiboot printstate paging   \
 	memory task usertask syscall init_vga ide ide-disk \
 	scheduler timer freepagelist bootdynmem panic abi  \
-	cpuid pageframe memarea pci bottomhalf		   \
+	cpuid pageframe memarea pci bottomhalf kerneltask  \
 							   \
-	become_io_task console processes init
+	become_io_task console processes init idletask
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 DEPDIR=dep
 LIBDIR=.
-VPATH=.:mm:syscalls
+VPATH=.:mm:syscalls:ktasks
 TESTDIR=t
 
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)

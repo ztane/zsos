@@ -1,5 +1,5 @@
 #include "memory.hh"
-#include "tasking.hh"
+#include "task.hh"
 #include "printk.h"
 
 #define N_SEGMENT_DESCRIPTORS 5
@@ -12,6 +12,8 @@
 	DSC_ACCESS_WRITABLE  | DSC_ACCESS_DATA_CODE
 
 #define FLAGS DSC_FLAG_PAGE_GRAN | DSC_FLAG_DEFAULT_32 
+
+extern class TSS_Contents TSS_Segment;
 
 SegmentDescriptor GDT[] = {
 	SegmentDescriptor(),
