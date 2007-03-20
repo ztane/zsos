@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cstring>
 
-const char *flag_names[32] = {
+static const char *flag_names[32] = {
 	"fpu",	"vme",	"de",	"pse",
 	"tsc",	"msr",	"pae",	"mce",
 	"cxchg8","apic","<unk>","sep",
@@ -14,9 +14,9 @@ const char *flag_names[32] = {
 	"htt",	"tm1",	"ia-64","pbe",
 };
 
-CPUIdentity cpu_identity;
+CpuIdentity cpuIdentity;
 
-CPUIdentity::CPUIdentity() {
+CpuIdentity::CpuIdentity() {
 	family = model = type = stepping = 0;
 	_vendor_id_vals._ebx = 0;
 	vendor = 0;
@@ -25,14 +25,14 @@ CPUIdentity::CPUIdentity() {
 	*processor_name = 0;
 }
 
-const char* CPUIdentity::get_flag_name(int number) {
+const char* CpuIdentity::getFlagName(int number) {
 	if (number < 0 || number > 31)
 		return "<unk>";
 
 	return flag_names[number];
 }
 
-static int is_386() {
+static int is386() {
 	int rv;
 	__asm__ __volatile__ (
 		"pushfl;"
@@ -51,7 +51,7 @@ static int is_386() {
 	return ! rv;
 }
 
-static int has_cpuid() 
+static int hasCpuid() 
 {
 	int rv;
 	__asm__ __volatile__ (
@@ -70,7 +70,7 @@ static int has_cpuid()
 	return rv;
 }
 
-void __get_cpuid(CPUIdentity& ident)
+void __get_cpuid(CpuIdentity& ident)
 {
 	uint32_t _eax;
 	uint32_t _ebx;
@@ -164,15 +164,15 @@ void __get_cpuid(CPUIdentity& ident)
 	}
 }
 
-void CPUIdentity::identify() {
-	if (is_386()) {
+void CpuIdentity::identify() {
+	if (is386()) {
 		family = 3;
 		return;
 	}
-	else if (! has_cpuid()) {
+	else if (! hasCpuid()) {
 		family = 4;
 		return;
 	}
 
-	__get_cpuid(cpu_identity);
+	__get_cpuid(cpuIdentity);
 }

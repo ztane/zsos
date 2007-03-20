@@ -13,7 +13,7 @@
 
 #define FLAGS DSC_FLAG_PAGE_GRAN | DSC_FLAG_DEFAULT_32 
 
-extern class TSS_Contents TSS_Segment;
+extern class TssContents tssSegment;
 
 SegmentDescriptor GDT[] = {
 	SegmentDescriptor(),
@@ -30,7 +30,7 @@ SegmentDescriptor GDT[] = {
 	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		DATA_ACCESS | DSC_ACCESS_RING_3, FLAGS),
 
-	SegmentDescriptor((unsigned long)&TSS_Segment, 103,
+	SegmentDescriptor((unsigned long)&tssSegment, 103,
 		DSC_ACCESS_PRESENT | DSC_ACCESS_IS_TSS, 0)
 };
 

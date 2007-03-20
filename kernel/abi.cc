@@ -11,7 +11,7 @@
 extern "C"
 void __cxa_pure_virtual(void)
 {
-	kernel_panic("FATAL: pure virtual method.");
+	kernelPanic("FATAL: pure virtual method.");
 }
 
 extern "C"

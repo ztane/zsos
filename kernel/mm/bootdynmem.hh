@@ -26,7 +26,7 @@ public:
 		next_free  += size;
 		
 		if (bytes_left < 0) {
-			kernel_panic("Initial boot memory pool exhausted.");
+			kernelPanic("Initial boot memory pool exhausted.");
 		}
 
 		return (void*)ptr;

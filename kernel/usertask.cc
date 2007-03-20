@@ -9,7 +9,7 @@
 
 #include "tss.hh"
 
-TSSContents TSS_Segment __attribute__((aligned(4096)));
+TssContents tssSegment __attribute__((aligned(4096)));
 
 UserTask::UserTask(const char *name) : Task(name) {
 
@@ -60,7 +60,7 @@ UserTask::~UserTask() {
 }
 
 void UserTask::dispatch(uint32_t *saved_esp) {
-	TSS_Segment.esp0 = kstack;
+	tssSegment.esp0 = kstack;
         
 	if (isNew) {
                 isNew = false;
@@ -92,8 +92,8 @@ void UserTask::terminate() {
 	scheduler.schedule();
 }
 
-void TSSContents::setup() {
-	memset(&TSS_Segment, 0, sizeof(TSS_Segment));
+void TssContents::setup() {
+	memset(&tssSegment, 0, sizeof(tssSegment));
 	ss0   = KERNEL_DATA_DESCRIPTOR;
 
         es = 
@@ -111,7 +111,7 @@ void TSSContents::setup() {
 }
 
 void initialize_tasking() {
-	TSS_Segment.setup();
+	tssSegment.setup();
 
 	uint16_t tss_desc = TSS_DESCRIPTOR;
 	__asm__ __volatile__ ("ltr %0" : : "r"(tss_desc));

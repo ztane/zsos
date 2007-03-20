@@ -9,7 +9,7 @@ static Allocator *default_allocator = 0;
 void *operator new(size_t size)
 {
 	if (default_allocator == 0)
-		kernel_panic("Default allocator not set");
+		kernelPanic("Default allocator not set");
 
 	return default_allocator->allocate(size);
 }
@@ -18,7 +18,7 @@ void *operator new(size_t size)
 void *operator new[](size_t size)
 {
 	if (default_allocator == 0)
-		kernel_panic("Default allocator not set");
+		kernelPanic("Default allocator not set");
 
 	return default_allocator->allocate(size);
 }

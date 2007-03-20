@@ -16,7 +16,7 @@ namespace PCI {
 	static void detectDevice(uint32_t bus, uint32_t slot, uint32_t fun)
 	{
 		if (nextFree == nDevs) {
-			kernel_panic("Out of PCI device slots!");
+			kernelPanic("Out of PCI device slots!");
 		}
 
 		PCIDevice *place = devices + nextFree;

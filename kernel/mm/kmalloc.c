@@ -168,7 +168,7 @@ void *kmalloc(size_t size)
 		return NULL;
 
 	if (! kmalloc_initialized)
-		kernel_panic("FATAL: kmalloc not yet initialized\n");
+		kernelPanic("FATAL: kmalloc not yet initialized\n");
 
 	/* keep correct align */
 	size += HEAP_ALIGN;

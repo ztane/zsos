@@ -27,7 +27,7 @@ always :
 	@echo "================================="
 
 kernel.bin: kernel/boot.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/kernel.ld
-	$(LD) -T kernel/kernel.ld -e _start -N -dn kernel/boot.o --whole-archive kernel/kernel.a lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
+	$(LD) -T kernel/kernel.ld -e _start -N -dn kernel/boot.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
 #	$(STRIP) kernel.bin
 
 clean:

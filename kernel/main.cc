@@ -125,25 +125,25 @@ void user_task4(void *parm) {
 
 #include "ringbuffer.hh"
 
-void detect_cpu() {
-	cpu_identity.identify();
+void detectCpu() {
+	cpuIdentity.identify();
 	
 	kout << "\tCPU0:" << endl;
 	kout << "\t-----" << endl;
-	kout << "\tVendor:\t\t" << cpu_identity.get_vendor()   << endl;
-	kout << "\tName:\t\t" << cpu_identity.get_processor_name()   << endl;
-	kout << "\tFamily:\t\t" << cpu_identity.get_family()   << endl;
-	kout << "\tModel:\t\t"  << cpu_identity.get_model()    << endl;
-	kout << "\tStepping:\t" << cpu_identity.get_stepping() << endl;
+	kout << "\tVendor:\t\t" << cpuIdentity.getVendor()   << endl;
+	kout << "\tName:\t\t"   << cpuIdentity.getProcessorName()   << endl;
+	kout << "\tFamily:\t\t" << cpuIdentity.getFamily()   << endl;
+	kout << "\tModel:\t\t"  << cpuIdentity.getModel()    << endl;
+	kout << "\tStepping:\t" << cpuIdentity.getStepping() << endl;
 	kout << "\tFeatures:\t";
 	
-	uint32_t flags = cpu_identity.get_flags();
+	uint32_t flags = cpuIdentity.getFlags();
 	int flag_no = 0;
 	int pretty_ct = 0;
 
 	while (flags != 0) {
 		if (flags & 1) {
-			kout << CPUIdentity::get_flag_name(flag_no) << "\t";
+			kout << CpuIdentity::getFlagName(flag_no) << "\t";
 			pretty_ct ++;
 			if ((pretty_ct & 3) == 0) {
 				kout << endl << "\t\t\t";
@@ -173,10 +173,10 @@ extern void __set_default_allocator(Allocator *new_def);
 extern "C" void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Detecting CPU:" << endl;
-	detect_cpu();
+	detectCpu();
 
-	if (! cpu_identity.get_flags() & CPUIdentity::FLAG_PSE) {
-		kernel_panic("The CPU does not support 4 MiB pages!");
+	if (! cpuIdentity.getFlags() & CpuIdentity::FLAG_PSE) {
+		kernelPanic("The CPU does not support 4 MiB pages!");
 	}
 
 	kout << "Setting up GDT...";
@@ -247,6 +247,6 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	scheduler.schedule();
 
-	kernel_panic("Fell out from scheduling loop!\n");
+	kernelPanic("Fell out from scheduling loop!\n");
 }
 

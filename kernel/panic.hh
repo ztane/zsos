@@ -4,6 +4,6 @@
 #ifdef __cplusplus 
 extern "C" 
 #endif
-void kernel_panic(char *message);
+void kernelPanic(char *message);
 
 #endif // __PANIC_INCLUDED__

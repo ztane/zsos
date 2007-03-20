@@ -1,7 +1,7 @@
 #ifndef TSS_H_INCLUDED
 #define TSS_H_INCLUDED
 
-class TSSContents{
+class TssContents {
 public:
         unsigned short backlink, __blh;
         unsigned int   esp0;
