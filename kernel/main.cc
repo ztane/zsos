@@ -241,8 +241,8 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	tesmi2.initialize((void*)user_task2);
 	tesmi2.setProcessId(2);
 
-	scheduler.add_task(&tesmi3);
-	scheduler.add_task(&tesmi4);
+	scheduler.addTask(&tesmi3);
+	scheduler.addTask(&tesmi4);
 	startIdleTask();
 
 	scheduler.schedule();

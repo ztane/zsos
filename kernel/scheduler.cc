@@ -9,14 +9,14 @@
 
 Scheduler::Scheduler()
 {
-	scheduler_running = false;
+	schedulerRunning = false;
 	for (int i = 0; i < PRIV_LEVELS; i++)
 	{
 		tasks[i].first = NULL;
 		tasks[i].last = NULL;
 	}
 	
-	n_ticks = 0;
+	nTicks = 0;
 }
 /*
 Scheduler::~Scheduler()
@@ -30,11 +30,11 @@ void Scheduler::schedule()
 	
 	// unconditionally they MUST be disabled here...
 	bool fl = disableInterrupts();
-	if (scheduler_running) {
+	if (schedulerRunning) {
 		enableInterruptsIf(fl);
 		return;
 	}
-	scheduler_running = true;
+	schedulerRunning = true;
 	
 	while (true) {
 		for (i = 0; i < PRIV_LEVELS; i++)
@@ -42,11 +42,11 @@ void Scheduler::schedule()
 			if (tasks[i].first != NULL) {
 				Task *p = tasks[i].first;
 				Task *old = current;
-				remove_task(p);
+				removeTask(p);
 								
 				current = p;
 				p->current_state = Task::RUNNING;
-				scheduler_running = false;
+				schedulerRunning = false;
 				dispatchNew(old, p);
 
 				enableInterruptsIf(fl);
@@ -62,7 +62,7 @@ void Scheduler::schedule()
 	}
 }
 
-void Scheduler::remove_task(Task *p) {
+void Scheduler::removeTask(Task *p) {
 	bool fl = disableInterrupts();
 	
 	task_dir *entry = &tasks[p->getCurrentPriority()];
@@ -85,21 +85,21 @@ void Scheduler::remove_task(Task *p) {
 	enableInterruptsIf(fl);
 }
 
-void Scheduler::inc_ticks() {
+void Scheduler::incTicks() {
 	bool fl = disableInterrupts();
 	
-	n_ticks ++;
+	nTicks ++;
 	current->timeslice ++;
 	if (current->timeslice > 0) {
 		current->timeslice = 0;
 		if (current->current_state == Task::RUNNING)
-			add_task(current);
+			addTask(current);
 	}
 	
 	enableInterruptsIf(fl);
 }
 
-void Scheduler::add_task(Task *p)
+void Scheduler::addTask(Task *p)
 {
 	bool fl = disableInterrupts();
 	

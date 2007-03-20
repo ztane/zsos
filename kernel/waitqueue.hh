@@ -89,7 +89,7 @@ public:
                if (! isEmpty()) {
                         Task *task = extractFirst();
                         task->setCurrentState(Task::READY);
-                        scheduler.add_task(task);
+                        scheduler.addTask(task);
                }
 	}
 	

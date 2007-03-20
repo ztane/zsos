@@ -16,6 +16,6 @@ extern Scheduler scheduler;
 void startIdleTask() {
 	idleTask.initialize(idleTaskRoutine, 0);
 	idleTask.setCurrentPriority(48);
-	scheduler.add_task(&idleTask);
+	scheduler.addTask(&idleTask);
 }
 

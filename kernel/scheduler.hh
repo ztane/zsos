@@ -26,9 +26,9 @@ class Scheduler
 		//~Scheduler();
 		
 		void needsScheduling();
-		void add_task(Task* task);
-		void remove_task(Task* task);
-		void inc_ticks();
+		void addTask(Task* task);
+		void removeTask(Task* task);
+		void incTicks();
 		Task *getCurrentTask() {
 			return current;
 		}
@@ -36,8 +36,8 @@ class Scheduler
 
 	private:
 		void dispatchNew(Task *, Task *);
-		bool scheduler_running;
-		uint64_t n_ticks;
+		bool schedulerRunning;
+		uint64_t nTicks;
 		Task *current;
 		task_dir tasks[PRIV_LEVELS];
 };
