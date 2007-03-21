@@ -1,5 +1,5 @@
 #include <pci.hh>
-#include <port.h>
+#include <kernel/arch/current/port.h>
 #include <inttypes.h>
 #include <printk.h>
 #include <panic.hh>

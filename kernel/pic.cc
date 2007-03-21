@@ -1,4 +1,4 @@
-#include <kernel/port.h>
+#include <kernel/arch/current/port.h>
 
 #define PIC1            0x20
 #define PIC2            0xA0

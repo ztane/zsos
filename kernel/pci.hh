@@ -2,7 +2,7 @@
 #define __PCI_HH_INCLUDED__
 
 #include <inttypes.h>
-#include <port.h>
+#include <kernel/arch/current/port.h>
 
 namespace PCI {
 	void initialize();

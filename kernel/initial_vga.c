@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "port.h"
+#include <kernel/arch/current/port.h>
 
 static unsigned char * const VGA_TEXT_BASE = (unsigned char * const) 0xC00B8000;
 #define VGA_TEXT_WIDTH  80

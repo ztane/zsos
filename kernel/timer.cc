@@ -1,5 +1,5 @@
 #include "timer.hh"
-#include "port.h"
+#include <kernel/arch/current/port.h>
 #include "printk.h"
 
 void initialize_timer() {

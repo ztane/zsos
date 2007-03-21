@@ -1,8 +1,8 @@
 #include <cstdlib>
 #include "config.h"
 #include "interrupt.hh"
-#include "port.h"
-#include "pokepeek.h"
+#include <kernel/arch/current/port.h>
+#include <kernel/arch/current/pokepeek.h>
 #include "printk.h"
 #include "printstate.hh"
 #include "task.hh"
