@@ -6,30 +6,30 @@
 
 namespace init {
 
-Init::~Init() { } // dummy destructor
+static Init *list[NUM_LIST] = { 0 };
 
-static int done = 0;
-static Init *list = NULL;
-
-void setup(Init *ptr)
+Init::Init(int when)
 {
-	ptr->next = list;
-	list = ptr;
+	next = list[when];
+	list[when] = this;
 }
 
-void run()
+Init::~Init() { } // dummy destructor
+
+void run(int when)
 {
-	if (list == NULL) {
-		// can overflow (on INT32_MAX * 2 attempts...)
+	if (list[when] == 0) {
 		kout << "init: warning: tried to call init::run() with nothing to do!" << endl;
 		return;
 	}
+
 	kout << "Running init... ";
-	// unwind list:
-	while (list) {
-		list->init();
-		list = list->next;
+
+	while (list[when]) {
+		list[when]->init();
+		list[when] = list[when]->next;
 	}
+
 	kout << "done" << endl;
 }
 

@@ -2,7 +2,7 @@ include Makefile.inc
 
 MOUNTCMD  = sudo mount -tvfat -oloop=/dev/loop7,offset=32256,uid=`id -u`,gid=`id -g` img/disk.img mnt
 UMOUNTCMD = sudo umount mnt
-GRUBMOUNT = sudo mount -tvfat -oloop,uid=`id -u`,gid=`id -g` img/grubfloppy.img mnt 
+GRUBMOUNT = sudo mount -tvfat -oloop,uid=`id -u`,gid=`id -g` img/grubfloppy.img mnt
 
 .phony : all clean diskimage
 

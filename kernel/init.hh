@@ -4,20 +4,21 @@
 
 namespace init {
 
+	const int EARLY = 0;
+	const int LATE  = 1;
+
+	const int NUM_LIST = 2;
+
 	class Init;
-	extern void setup(Init *ptr);
-	extern void run();
+	extern void run(int when);
 
 	class Init {
 	private:
 		Init *next;
-		friend void setup(Init *ptr);
-		friend void run();
+		friend void run(int);
 
 	protected:
-		Init() {
-			setup(this);
-		}
+		Init(int when = EARLY);
 	public:
 		virtual ~Init();
 		virtual int init() = 0;
