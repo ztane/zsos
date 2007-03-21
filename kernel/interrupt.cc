@@ -181,12 +181,14 @@ void init_idt()
 	load_idt(interrupt_table, 256);
 }
 
+extern Scheduler scheduler;
+
 // IRQ0 - Timer
 C_ISR(IRQ_0) 
 {
-	kout << "asdfsdf" << endl;
 	triggerSoftIrq(1);
 	unlock_irq(1);
+	scheduler.schedule();
 }
 
 // IRQ1 - Keyboard

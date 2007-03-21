@@ -1,11 +1,13 @@
 #include <iostream>
 #include <cstring>
 
-#include "scheduler.hh"
-#include "task.hh"
-#include "kerneltask.hh"
-#include "memory.hh"
-#include "printk.h"
+#include "kernel/kerneltask.hh"
+
+#include "kernel/interrupt.hh"
+#include "kernel/memory.hh"
+#include "kernel/panic.hh"
+#include "kernel/scheduler.hh"
+#include "kernel/task.hh"
 
 KernelTask::KernelTask(const char *name, State state, int priority) 
 	: Task(name, state, priority) 
@@ -40,8 +42,14 @@ extern "C" static void do_dispatch_kernel_task(void (*entry)(void *), void *para
 void KernelTask::terminate() {
 	extern Scheduler scheduler;
 
+	// no need to save.. 
+	disableInterrupts();
+	scheduler.removeTask(this);
 	setCurrentState(TERMINATED);
-	scheduler.schedule();	
+
+	// will never return
+	scheduler.schedule();
+	kernelPanic("Returned to a terminated task!!");	
 }
 
 void KernelTask::dispatch(uint32_t *saved_esp) {

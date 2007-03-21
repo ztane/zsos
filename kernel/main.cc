@@ -4,12 +4,12 @@
 #include <iostream>
 #include <new>
 
-#include <kernel/cpuid.hh>
-#include <kernel/atomic.hh>
-#include <kernel/refcount.hh>
-#include <kernel/mm/memarea.hh>
-
+#include "kernel/cpuid.hh"
+#include "kernel/atomic.hh"
+#include "kernel/refcount.hh"
+#include "kernel/mm/memarea.hh"
 #include "kernel/ktasks/softirq.hh"
+
 #include "syscall.hh"
 #include "printk.h"
 #include "multiboot.hh"
@@ -172,7 +172,7 @@ void startIdleTask();
 extern void __set_default_allocator(Allocator *new_def);
 
 void timerRoutine(int vector) {
-	kout << "SoftIrq on " << vector << endl;
+	kout << "Timer - Soft IRQ (vector " << vector << ")." << endl;
 }
 
 extern "C" void kernel_main(unsigned int magic, void *mbd)
@@ -255,7 +255,6 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	startIdleTask();
 
 	scheduler.schedule();
-
 	kernelPanic("Fell out from scheduling loop!\n");
 }
 

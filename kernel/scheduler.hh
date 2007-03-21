@@ -36,7 +36,6 @@ class Scheduler
 
 	private:
 		void dispatchNew(Task *, Task *);
-		bool schedulerRunning;
 		uint64_t nTicks;
 		Task *current;
 		task_dir tasks[PRIV_LEVELS];

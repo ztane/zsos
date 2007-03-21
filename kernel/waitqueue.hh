@@ -80,7 +80,7 @@ public:
 
 	void addCurrentTask() volatile {
 		Task *task = scheduler.getCurrentTask();
-		// scheduler.remove_Task(task);
+		scheduler.removeTask(task);
 		task->setCurrentState(Task::BLOCKED);
 		addLast(task);
 	}

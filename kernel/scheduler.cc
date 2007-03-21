@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
+#include "kernel/panic.hh"
 #include "interrupt.hh"
 #include "scheduler.hh"
 #include "task.hh"
@@ -9,7 +10,6 @@
 
 Scheduler::Scheduler()
 {
-	schedulerRunning = false;
 	for (int i = 0; i < PRIV_LEVELS; i++)
 	{
 		tasks[i].first = NULL;
@@ -30,36 +30,23 @@ void Scheduler::schedule()
 	
 	// unconditionally they MUST be disabled here...
 	bool fl = disableInterrupts();
-	if (schedulerRunning) {
-		enableInterruptsIf(fl);
-		return;
-	}
-	schedulerRunning = true;
-	
-	while (true) {
-		for (i = 0; i < PRIV_LEVELS; i++)
-		{
-			if (tasks[i].first != NULL) {
-				Task *p = tasks[i].first;
-				Task *old = current;
-				removeTask(p);
-								
-				current = p;
-				p->current_state = Task::RUNNING;
-				schedulerRunning = false;
-				dispatchNew(old, p);
+	for (i = 0; i < PRIV_LEVELS; i++)
+	{
+		if (tasks[i].first != NULL) {
+			Task *p = tasks[i].first;
+			Task *old = current;
+			removeTask(p);
+			addTask(p);				
+			current = p;
+			p->current_state = Task::RUNNING;
 
-				enableInterruptsIf(fl);
-				return;		
-			}
+			dispatchNew(old, p);
+			enableInterruptsIf(fl);
+			return;		
 		}
-	
-		// and unconditionally enabled before halt (no shit?)
-		enableInterruptsIf(true);
-		__asm__ __volatile__ (
-			"hlt\t\n"
-		::);
 	}
+
+	kernelPanic("NO TASKS TO SCHEDULE!");	
 }
 
 void Scheduler::removeTask(Task *p) {
@@ -92,8 +79,10 @@ void Scheduler::incTicks() {
 	current->timeslice ++;
 	if (current->timeslice > 0) {
 		current->timeslice = 0;
-		if (current->current_state == Task::RUNNING)
+		if (current->current_state == Task::RUNNING) {
+			removeTask(current); 
 			addTask(current);
+		}
 	}
 	
 	enableInterruptsIf(fl);
@@ -137,9 +126,7 @@ void Scheduler::dispatchNew(Task *old, Task *nu) {
 }
 
 void Scheduler::needsScheduling() {
-	markBottomHalf(BH_SCHEDULER);
 }
 
 void schedulerBottomHalf() {
-	scheduler.schedule();
 }

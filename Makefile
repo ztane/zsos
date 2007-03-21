@@ -39,11 +39,11 @@ clean:
 	@rm -f init.o kernel.bin floppy.bin
 
 depclean:
-	$(MAKE) -C boot depclean
-	$(MAKE) -C libc depclean
-	$(MAKE) -C libc++ depclean
-	$(MAKE) -C libutil depclean
+	@# $(MAKE) -C boot depclean
 	$(MAKE) -C kernel depclean
+	@# $(MAKE) -C libc depclean
+	@# $(MAKE) -C libc++ depclean
+	@# $(MAKE) -C libutil depclean
 
 diskimage: 
 	@sudo sh tools/createloop img/disk.img 100
