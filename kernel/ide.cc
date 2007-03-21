@@ -6,7 +6,7 @@ namespace IDE {
 
 IDEController::IDEController()
 {
-	init::setup(this);
+//	init::setup(this);
 }
 
 IDEController::~IDEController() { }

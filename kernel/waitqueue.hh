@@ -14,7 +14,7 @@ public:
 	}
 
 protected:	
-	void addLast(Task *p) {
+	void addLast(Task *p) volatile {
 		p->setPrevious(end);
 		if (end != NULL) {
 			end->setNext(p);
@@ -26,7 +26,7 @@ protected:
 		end = p;
 	}
 
-	void addFirst(Task *p) {
+	void addFirst(Task *p) volatile {
 		p->setNext(head);
 		if (head != NULL) {
 			head->setPrevious(p);
@@ -38,7 +38,7 @@ protected:
 		head = p;
 	}
 
-	Task *extractFirst() {
+	Task *extractFirst() volatile {
 		Task *rv = head;
 		head = rv->getNext();
 
@@ -54,7 +54,7 @@ protected:
 		return rv;
 	}
 
-	bool remove(Task *p) {
+	bool remove(Task *p) volatile {
 		if (p == head) {
 			extractFirst();
 			return true;
@@ -74,18 +74,18 @@ protected:
 	}
 
 public:
-	bool isEmpty() const {
+	bool isEmpty() const volatile {
 		return head == NULL;
 	}
 
-	void addCurrentTask() {
+	void addCurrentTask() volatile {
 		Task *task = scheduler.getCurrentTask();
 		// scheduler.remove_Task(task);
 		task->setCurrentState(Task::BLOCKED);
 		addLast(task);
 	}
 	
-	void resumeFirst() {
+	void resumeFirst() volatile {
                if (! isEmpty()) {
                         Task *task = extractFirst();
                         task->setCurrentState(Task::READY);
@@ -93,7 +93,7 @@ public:
                }
 	}
 	
-	void resumeAll() {
+	void resumeAll() volatile {
 		while (! isEmpty()) {
 			resumeFirst();
 		}

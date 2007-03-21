@@ -1,8 +1,15 @@
 #include <cstdlib>
 #include "config.h"
 #include "interrupt.hh"
-#include <kernel/arch/current/port.h>
-#include <kernel/arch/current/pokepeek.h>
+
+#include "kernel/arch/current/port.h"
+#include "kernel/arch/current/pokepeek.h"
+#include "kernel/ktasks/softirq.hh"
+#include <iostream>
+
+#include <initial_vga.h>
+#include <string.h>
+
 #include "printk.h"
 #include "printstate.hh"
 #include "task.hh"
@@ -169,32 +176,18 @@ void load_idt(InterruptDescriptor *_base, int num)
 	__asm__ __volatile__ ("lidt (%0)" : : "r" ((void *) &idtr));
 }
 
-void do_timer() 
-{
-	static int i = 0;
-	i ++;
-	printk("TIMER\n");
-	if (i >= 10) {
-		i = 0;
-		printk("SCHEDULING\n");
-		scheduler.needsScheduling();
-	}	
-}
-
 void init_idt() 
 {
 	load_idt(interrupt_table, 256);
-	registerBottomHalf(BH_TIMER, do_timer);
 }
 
 // IRQ0 - Timer
 C_ISR(IRQ_0) 
 {
+	kout << "asdfsdf" << endl;
+	triggerSoftIrq(1);
 	unlock_irq(1);
 }
-
-#include <initial_vga.h>
-#include <string.h>
 
 // IRQ1 - Keyboard
 C_ISR(IRQ_1)
@@ -206,7 +199,6 @@ C_ISR(IRQ_1)
 		print_kernel_state(*const_cast<Registers*>(&r));
 	}
 #endif
-	markBottomHalf(2);
 	unlock_irq(2);
 }
 

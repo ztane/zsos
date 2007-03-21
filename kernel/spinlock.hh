@@ -10,12 +10,12 @@ private:
 public:
 	SpinLock() : allowCount(1) { }
 
-	void lockIRQ(bool& savedFlag) {
+	void lockIRQ(bool& savedFlag) volatile {
 		bool rv = disableInterrupts();
 		lock();
 	}
 
-	void lock() {
+	void lock() volatile {
 		while (1) {
 			bool rv = allowCount.decAndIsZero();
 			if (rv) {
@@ -26,7 +26,7 @@ public:
 		}
 	}
 
-	bool tryLock() {
+	bool tryLock() volatile {
 		bool got = allowCount.decAndIsZero();
 
 		// did not get...
@@ -38,7 +38,7 @@ public:
 		return got;
 	}
 
-	bool tryLockIRQ(bool& savedFlag) {
+	bool tryLockIRQ(bool& savedFlag) volatile {
 		bool clied = disableInterrupts();
 		bool rv = tryLock();
 		if (! rv) 
@@ -49,12 +49,12 @@ public:
 		}		
 	}
 	
-	void unlockIRQ(bool savedFlag) {
+	void unlockIRQ(bool savedFlag) volatile {
 		allowCount ++;
 		enableInterruptsIf(savedFlag);
 	}
 	
-	void unlock() {
+	void unlock() volatile {
 		allowCount ++;
 	}
 };

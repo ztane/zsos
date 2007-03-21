@@ -9,6 +9,7 @@
 #include <kernel/refcount.hh>
 #include <kernel/mm/memarea.hh>
 
+#include "kernel/ktasks/softirq.hh"
 #include "syscall.hh"
 #include "printk.h"
 #include "multiboot.hh"
@@ -170,6 +171,10 @@ void startIdleTask();
 
 extern void __set_default_allocator(Allocator *new_def);
 
+void timerRoutine(int vector) {
+	kout << "SoftIrq on " << vector << endl;
+}
+
 extern "C" void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Detecting CPU:" << endl;
@@ -243,6 +248,10 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	scheduler.addTask(&tesmi3);
 	scheduler.addTask(&tesmi4);
+
+	initSoftIrq();
+	registerSoftIrq(1, timerRoutine);	
+
 	startIdleTask();
 
 	scheduler.schedule();

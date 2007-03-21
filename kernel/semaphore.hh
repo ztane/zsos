@@ -11,7 +11,7 @@ class Semaphore {
 private:
 	SpinLock  lock;
 	WaitQueue waitq;
-        T count;
+        volatile T count;
 public:
 	Semaphore() {
 		count = 0;
@@ -27,7 +27,7 @@ public:
 		return rv;
 	}
 
-	void post() {
+	void post() volatile {
 		extern Scheduler scheduler;
 		lock.lock();
 		if (! waitq.isEmpty()) {
@@ -39,7 +39,7 @@ public:
 		lock.unlock();
 	}
 
-	void wait() {
+	void wait() volatile {
 		lock.lock();
 		if (count != 0) {
 			count --;
