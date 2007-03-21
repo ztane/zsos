@@ -15,7 +15,7 @@ protected:
 	unsigned char user_stack[16384];
 
 public:
-	UserTask(const char *name);	
+	UserTask(const char *name, State state = READY, int priority = NORMAL_LOW);	
 	virtual ~UserTask();
 
 	void initialize(void *entry_point);
@@ -25,6 +25,9 @@ public:
 	virtual void terminate();
 
 	friend class Scheduler;
+
+private:
+        UserTask(const UserTask& t) : Task(t) { }
 };
 
 #endif

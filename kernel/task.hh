@@ -18,6 +18,16 @@ public:
 		TERMINATED = 8
 	};
 
+	enum Priority {
+		HISR_HIGH     = 0,
+		HISR_LOW      = 15,
+		REALTIME_HIGH = 16,
+		REALTIME_LOW  = 31,
+		NORMAL_HIGH = 32,
+		NORMAL_LOW  = 47,
+		IDLE 	 = 48
+	};
+
 protected:
 	char name[32];
 	bool isNew;
@@ -37,9 +47,9 @@ protected:
 	unsigned char kernel_stack[4096];
 
 public:
-	Task(const char *name);
+	Task(const char *name, State initial, int priority);
 	virtual ~Task() { };
-	
+
 	State getCurrentState() const {
 		return current_state;
 	}
@@ -53,6 +63,12 @@ public:
 	}
 
 	void setCurrentPriority(int priority) {
+		if (priority > IDLE)
+			priority = NORMAL_LOW;
+
+		if (priority < 0)
+			priority = NORMAL_HIGH;
+
 		current_priority = priority;
 	}
 

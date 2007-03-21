@@ -11,7 +11,9 @@
 
 TssContents tssSegment __attribute__((aligned(4096)));
 
-UserTask::UserTask(const char *name) : Task(name) {
+UserTask::UserTask(const char *name, State state, int priority) 
+	: Task(name, state, priority) 
+{
 
 }
 

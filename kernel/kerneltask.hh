@@ -7,13 +7,9 @@
 
 class KernelTask : public Task {
 
-protected:
-        unsigned int ustack; //stacktop of user stack
-	unsigned int padding2;
-	unsigned char user_stack[16384];
-
 public:
-	KernelTask(const char *name);	
+	KernelTask(const char *name, State state = READY, int priority = NORMAL_LOW);
+
 	virtual ~KernelTask();
 
 	void initialize(void (*entry_point)(void *data), void *parm);
@@ -22,6 +18,15 @@ public:
 	virtual void terminate();
 
 	friend class Scheduler;
+
+protected:
+        unsigned int ustack; //stacktop of user stack
+	unsigned int padding2;
+	unsigned char user_stack[16384];
+
+private:
+	KernelTask(const KernelTask& t) : Task(t) { }
+
 };
 
 #endif

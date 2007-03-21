@@ -7,7 +7,9 @@
 #include "memory.hh"
 #include "printk.h"
 
-KernelTask::KernelTask(const char *name) : Task(name) {
+KernelTask::KernelTask(const char *name, State state, int priority) 
+	: Task(name, state, priority) 
+{
 
 }
 

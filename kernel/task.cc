@@ -6,12 +6,12 @@
 #include "memory.hh"
 #include "printk.h"
 
-Task::Task(const char *_name) {
+Task::Task(const char *_name, State state, int priority) {
 	esp = 0;
 	strncpy(name, _name, sizeof(name));
 	isNew = true;
-	current_state = READY;
-	current_priority = 47;
+	setCurrentState(READY);
+	setCurrentPriority(priority);
 	timeslice = 0;
 }
 
