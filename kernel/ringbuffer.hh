@@ -12,7 +12,7 @@ extern Scheduler scheduler;
 template <class _T, class _MutexType = Mutex>
 class RingBuffer {
 	size_t nElems;
-	_T volatile* elements;
+	_T * volatile elements;
 	_MutexType mutex;	
 
 	volatile size_t readPos;
