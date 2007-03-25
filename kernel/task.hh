@@ -43,8 +43,8 @@ protected:
 
         unsigned int  kstack; //stacktop of kernel stack
 	unsigned int  esp;    //actual position of esp
-	unsigned int  padding;
-	unsigned char kernel_stack[4096];
+//	unsigned int  padding;
+//	unsigned char kernel_stack[4096];
 
 public:
 	Task(const char *name, State initial, int priority);

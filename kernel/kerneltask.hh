@@ -19,12 +19,9 @@ public:
 
 	friend class Scheduler;
 
-protected:
-        unsigned int ustack; //stacktop of user stack
-	unsigned int padding2;
-	unsigned char user_stack[16384];
-
 private:
+	uint8_t *kernelStack;
+	uint32_t kernelStackSize;
 	KernelTask(const KernelTask& t) : Task(t) { }
 
 };

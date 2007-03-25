@@ -53,8 +53,9 @@ void UserTask::initialize(void *entry) {
         *tmp -- = 0;    // ebx
         *tmp    = 0;    // eax
 
-	padding = 0xDEADBEEF;
-	padding2 = 0xDEADBEEF;
+// old canary stack overflow checking...
+//	padding = 0xDEADBEEF;
+//	padding2 = 0xDEADBEEF;
 	esp = (unsigned int)tmp;
 }
 

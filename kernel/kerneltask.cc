@@ -12,14 +12,15 @@
 KernelTask::KernelTask(const char *name, State state, int priority) 
 	: Task(name, state, priority) 
 {
-
+	kernelStackSize = 4096;
 }
 
 void KernelTask::initialize(void (*entry)(void *), void *param) {
 	unsigned int *tmp;
 
 	// build kernel stack
-	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 4;
+	kernelStack = new uint8_t[kernelStackSize];
+	tmp = (unsigned int *)(kernelStack + kernelStackSize) - 4;
 	kstack = (unsigned int)tmp;
 	tmp --;
 
@@ -46,6 +47,8 @@ void KernelTask::terminate() {
 	disableInterrupts();
 	scheduler.removeTask(this);
 	setCurrentState(TERMINATED);
+
+	delete[] kernelStack;
 
 	// will never return
 	scheduler.schedule();

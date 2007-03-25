@@ -8,11 +8,11 @@
 class UserTask : public Task {
 
 protected:
-        unsigned int ustack; //stacktop of user stack
-        unsigned int cr3;
+       	uint32_t ustack; //stacktop of user stack
+        uint32_t cr3;
 
-	unsigned int padding2;
-	unsigned char user_stack[16384];
+	uint8_t  kernel_stack[4096];
+	uint8_t  user_stack[16384];
 
 public:
 	UserTask(const char *name, State state = READY, int priority = NORMAL_LOW);	
