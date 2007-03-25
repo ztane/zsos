@@ -231,7 +231,8 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	buf = new RingBuffer<int>(10);
 
-	init::run(init::LATE);
+	Init::run(Init::EARLY);
+	Init::run(Init::LATE);
 	
 	kout << "Starting tasking...";
 	tesmi3.initialize(user_task3, (void*)0xdeadbeef);

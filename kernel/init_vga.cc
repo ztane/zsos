@@ -4,7 +4,7 @@
 extern "C" void   init_vga_buffer();
 extern "C" size_t vga_buf_write(const void *, size_t);
 
-VgaDev::VgaDev() : CharDev()
+VgaDev::VgaDev()
 {
 	init_vga_buffer();
 }

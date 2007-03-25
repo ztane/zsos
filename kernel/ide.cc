@@ -1,34 +1,30 @@
-#include "init.hh"
-#include "ide.hh"
+#include "kernel/ide.hh"
 
+namespace ide {
 
-namespace IDE {
+IdeController::IdeController() : Init(EARLY) {}
 
-IDEController::IDEController() : init::Init() { }
+IdeController::~IdeController() {}
 
-IDEController::~IDEController() { }
-
-int IDEController::init()
+int IdeController::init()
 {
-	kout << "IDEController got init()" << endl;
 	for (int i = 0; i < MAX_INTERFACES; i ++)
-		ifs[i].init();
+		ifs[i].init(i);
 
 	return 0;
 }
 
-IDEInterface::IDEInterface() { }
-IDEInterface::~IDEInterface() { }
+IdeInterface::IdeInterface() {}
+IdeInterface::~IdeInterface() {}
 
-int IDEInterface::init()
+int IdeInterface::init(int ifnum)
 {
-	kout << "IDEInterface got init()" << endl;
 	for (int i = 0; i < MAX_DRIVES; i ++)
-		drives[i].init();
+		drives[i].init(ifnum, i);
 
 	return 0;
 }
 
-IDEController controller; // static driver
+IdeController controller; // static driver
 
 };

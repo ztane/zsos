@@ -4,9 +4,8 @@
 #define INIT_VGA 1
 
 #include <cstdlib>
-#include "chardevice.hh"
 
-class VgaDev : public CharDev
+class VgaDev
 {
 	public:
 		VgaDev();

@@ -1,25 +1,21 @@
 #include <iostream>
 #include <cstdlib>
+#include "kernel/init.hh"
 
-#include "init.hh"
+static Init *list[Init::LIST_MAX];
 
-
-namespace init {
-
-static Init *list[NUM_LIST] = { 0 };
-
-Init::Init(int when)
+Init::Init(Init::Time when)
 {
 	next = list[when];
 	list[when] = this;
 }
 
-Init::~Init() { } // dummy destructor
+Init::~Init() {}
 
-void run(int when)
+void Init::run(Init::Time when)
 {
 	if (list[when] == 0) {
-		kout << "init: warning: tried to call init::run() with nothing to do!" << endl;
+		kout << "init: warning: called runInit() with nothing to do!" << endl;
 		return;
 	}
 
@@ -32,5 +28,3 @@ void run(int when)
 
 	kout << "done" << endl;
 }
-
-};
