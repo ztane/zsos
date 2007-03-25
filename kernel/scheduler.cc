@@ -6,7 +6,6 @@
 #include "scheduler.hh"
 #include "task.hh"
 #include "printk.h"
-#include "bottomhalves.hh"
 
 Scheduler::Scheduler()
 {
@@ -18,12 +17,14 @@ Scheduler::Scheduler()
 	
 	nTicks = 0;
 }
-/*
-Scheduler::~Scheduler()
+
+// used from asm - do not change the width!
+int32_t __needs_scheduling_flag;
+static void schedulingNeeded(bool is) 
 {
-	kout << "Scheduler: YARR!! They killed me!" << endl;
+	__needs_scheduling_flag = is;
 }
-*/
+
 void Scheduler::schedule()
 {
 	int i;
@@ -40,6 +41,7 @@ void Scheduler::schedule()
 			current = p;
 			p->current_state = Task::RUNNING;
 
+			schedulingNeeded(false);
 			dispatchNew(old, p);
 			enableInterruptsIf(fl);
 			return;		
@@ -69,6 +71,7 @@ void Scheduler::removeTask(Task *p) {
 	}
 	p->next = p->previous = NULL;
 	
+	schedulingNeeded(true);
 	enableInterruptsIf(fl);
 }
 
@@ -84,7 +87,8 @@ void Scheduler::incTicks() {
 			addTask(current);
 		}
 	}
-	
+
+	schedulingNeeded(true);
 	enableInterruptsIf(fl);
 }
 
@@ -107,6 +111,7 @@ void Scheduler::addTask(Task *p)
 	tasks[prio].last = p;
 	p->current_state = Task::READY;
 	
+	schedulingNeeded(true);
 	enableInterruptsIf(fl);
 }
 
@@ -126,7 +131,10 @@ void Scheduler::dispatchNew(Task *old, Task *nu) {
 }
 
 void Scheduler::needsScheduling() {
+	schedulingNeeded(true);
 }
 
-void schedulerBottomHalf() {
+extern "C" void __execute_scheduler() {
+	kout << "forced scheduling" << endl;
+	scheduler.schedule();
 }

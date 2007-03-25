@@ -15,7 +15,6 @@
 #include "task.hh"
 #include "scheduler.hh"
 #include "timer.hh"
-#include "bottomhalves.hh"
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -188,7 +187,6 @@ C_ISR(IRQ_0)
 {
 	triggerSoftIrq(1);
 	unlock_irq(1);
-	scheduler.schedule();
 }
 
 // IRQ1 - Keyboard

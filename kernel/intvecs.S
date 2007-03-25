@@ -15,9 +15,9 @@
         pop %ds                                 ;\
         iret                              	;\
       
-#define CHECK_BH_FLAGS			 \
-	xorl %eax, %eax			;\
-	cmpl (__bh_active_flag), %eax	;\
+
+#define NEEDS_SCHEDULING			      \
+	testl $0xFFFFFFFF, (__needs_scheduling_flag) ;\
 
 
 #define DEFINE_INTR_GATE(name)			 \
@@ -30,13 +30,13 @@ ASMISR(name):					;\
 	pushal					;\
 	call ISR(name)				;\
 						;\
-	CHECK_BH_FLAGS				;\
+	NEEDS_SCHEDULING			;\
 	jne   1f		          	;\
 0:		                          	;\
 	POP_IRET				;\
 1:						;\
-	call __EXECUTE_BOTTOM_HALVES	  	;\
-	jmp  0b					;\
+	call __EXECUTE_SCHEDULER	  	;\
+	POP_IRET				;\
 
 
 /*********************************************************
@@ -119,32 +119,24 @@ __ISR_SYS_CALL_asm:
 	call *SYSCALL_VECTORS(, %eax, 4)
 
 __RET_FROM_SYSCALL:
+	NEEDS_SCHEDULING
+	jnz __CALL_EXECUTE_SCHEDULER
 	POP_IRET
 
 __BAD_SYSCALL:
 	call sys_BAD
 	jmp  __RET_FROM_SYSCALL
 
+__CALL_EXECUTE_SCHEDULER:
+	call __EXECUTE_SCHEDULER
+	POP_IRET
+
+
+
 // does the job of executing bottom halves!
-__EXECUTE_BOTTOM_HALVES:
-	lock decl __BH_LOCK
-	jnz  __BH_RETURN
-	// do not bother to enable interrupts if we aren't going to run any bh
-	sti
-	// we have the lock now, interrupts enabled!
-
-__LOOP_CALL:
-	call	__execute_bottom_halves
+__EXECUTE_SCHEDULER:
+	call	__execute_scheduler
 	// release lock now! do atomic check on bh flags instead!
-	lock incl __BH_LOCK
-		
-	CHECK_BH_FLAGS
-	jnz __EXECUTE_BOTTOM_HALVES
-
-__BH_RETURN:
-	lock incl __BH_LOCK
+	NEEDS_SCHEDULING
+	jnz __EXECUTE_SCHEDULER
 	ret
-
-	.data
-__BH_LOCK:
-	.long 1
