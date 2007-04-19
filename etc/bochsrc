@@ -6,6 +6,10 @@ boot: a
 megs: 32
 clock: sync=realtime, time0=local
 i440fxsupport: enabled=1, slot1=pcivga
+debug: action=ignore
+panic: action=fatal
+error: action=report
+info:  action=report 
 
 # newharddrivesupport: enabled=1
 # , slot2=ne2k

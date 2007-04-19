@@ -1,8 +1,9 @@
+#include <iostream>
+
 #include "kernel/ktasks/softirq.hh"
 #include "kernel/kerneltask.hh"
 #include "kernel/refcount.hh"
 #include "kernel/semaphore.hh"
-
 
 typedef void (*SOFTIRQ_ROUTINE)(int vector);
 
@@ -43,6 +44,7 @@ bool triggerSoftIrq(int vector) {
 void softIrqTaskRoutine(void *param) {
 	while (1) {
 		softIrqSem.wait();
+		kout << "SOFTIRQ_ROLLING" << endl;
 		for (int i = 0; i < numSoftIrqVectors; i ++) {
 			if (activationCount[i] > 0) {
 				activationCount[i] --;
@@ -54,6 +56,7 @@ void softIrqTaskRoutine(void *param) {
 				break;
 			} 
 		}
+		kout << "SOFTIRQ_DONE" << endl;
 	}
 }
 
@@ -62,6 +65,10 @@ KernelTask softIrqTask("softirqd", Task::READY, Task::HISR_HIGH);
 extern Scheduler scheduler;
 
 void initSoftIrq() {
+	memset((void*)vectors, 0, sizeof vectors);
+	memset((void*)activationCount, 0, sizeof activationCount);
+
 	softIrqTask.initialize(softIrqTaskRoutine, 0);
+	softIrqTask.setProcessId(1234);
 	scheduler.addTask(&softIrqTask);
 }

@@ -20,6 +20,7 @@ static KernelTask idleTask("idletask", Task::READY, Task::IDLE);
 
 void startIdleTask() {
 	idleTask.initialize(idleTaskRoutine, 0);
+	idleTask.setProcessId(10);
 	scheduler.addTask(&idleTask);
 }
 

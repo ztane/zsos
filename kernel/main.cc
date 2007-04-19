@@ -26,13 +26,6 @@
 #include "mutex.hh"
 #include "init.hh"
 
-void haltloop() 
-{
-	while(1) {
-		__asm__ __volatile__("hlt");
-	}
-}
-
 void print_memmap(MultibootInfo *mbi) 
 {
 	int ct = mbi->number_of_mmap_entries();
@@ -57,7 +50,7 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 
 	if (MB_MAGIC_VALUE != magic || mbd == 0) {
 		kout << "ERROR - NO MULTIBOOT INFO PRESENT!!!" << endl;
-		haltloop();
+//		haltloop();
 	}
 
 	multiboot_info = new (boot_dynmem_alloc) MultibootInfo
@@ -91,38 +84,6 @@ extern void enable_keyboard();
 extern void init_idt();
 extern void init_gdt();
 extern void initialize_tasking();
-
-void user_task2() {
-//	for (int j = 0; j < 100; j++)
-// 		for (int i = 'A'; i <= 'Z'; i++)
-//			sem_post(i);
-
-//	while(1)
-//		hello_world();
-
-}
-
-void user_task() {
-	while (1) {
-//		hello_world();
-//		hello_world();
-//		write_character(sem_wait());
-		// sem_wait();
-	}
-}
-
-void user_task3(void *parm) {
-	for (int i = 0; i < 10; i ++) {
-		kout << "deadbeef" << endl;
-	}
-}
-
-void user_task4(void *parm) {
-	for (int i = 0; i < 10; i ++) {
-		kout << "deadbeef2" << endl;
-	}
-}
-
 
 #include "ringbuffer.hh"
 
@@ -159,9 +120,6 @@ void detectCpu() {
 }
 
 UserTask tesmi("tesmi");
-UserTask tesmi2("tesmi2");
-KernelTask tesmi3("tesmi3");
-KernelTask tesmi4("tesmi4");
 Scheduler scheduler;
 
 void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
@@ -174,6 +132,8 @@ extern void __set_default_allocator(Allocator *new_def);
 void timerRoutine(int vector) {
 	kout << "Timer - Soft IRQ (vector " << vector << ")." << endl;
 }
+
+#include "kernel/exe/bits.hh"
 
 extern "C" void kernel_main(unsigned int magic, void *mbd)
 {
@@ -195,22 +155,22 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Remapping PIC...";
 	init_pic();
 	kout << " done" << endl;
+
+	kout << "Multiboot information:" << endl;
+	extract_multiboot_info(magic, mbd);
+
+	kout << "Initializing page frame structures: " << endl;
+	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
+	kout << page_frames.getLastPage();
+	kout << " pages of RAM." << endl;
 	
 	kout << "Enabling initial paging..." << endl;
 	initialize_page_tables();
 	kout << "Paging enabled." << endl;
 
-	kout << "Multiboot information:" << endl;
-	extract_multiboot_info(magic, mbd);
-
 	kout << "Disabling boot-time double paging...";
 	disable_null_page();
 	kout << "done." << endl; 
-
-	kout << "Initializing page frame structures: " << endl;
-	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
-	kout << global_page_frame_table.getLastPage();
-	kout << " pages of RAM." << endl;
 
 	kout << "Initializing tasking...";
 	initialize_tasking();
@@ -234,24 +194,13 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	Init::run(Init::EARLY);
 	Init::run(Init::LATE);
 	
-	kout << "Starting tasking...";
-	tesmi3.initialize(user_task3, (void*)0xdeadbeef);
-	tesmi3.setProcessId(3);
-
-	tesmi4.initialize(user_task4, (void*)0xdeadbeef);
-	tesmi4.setProcessId(4);
-
-	tesmi.initialize((void*)user_task);
+	kout << "Starting tasking..." << endl;
+	tesmi.initialize(&_binary_example_zsx_start);
 	tesmi.setProcessId(1);
-
-	tesmi2.initialize((void*)user_task2);
-	tesmi2.setProcessId(2);
-
-	scheduler.addTask(&tesmi3);
-	scheduler.addTask(&tesmi4);
+	scheduler.addTask(&tesmi);
 
 	initSoftIrq();
-	registerSoftIrq(1, timerRoutine);	
+	registerSoftIrq(1, timerRoutine);
 
 	startIdleTask();
 

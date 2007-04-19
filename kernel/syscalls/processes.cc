@@ -1,9 +1,10 @@
 #include <syscall.hh>
+#include <iostream>
 #include <scheduler.hh>
 
+extern Scheduler scheduler;
 SYSCALL(get_pid) 
-{
-        extern Scheduler scheduler;
+{       
         Task *task = scheduler.getCurrentTask();
         SYSCALL_RETURN(task->getProcessId());
 }
@@ -11,6 +12,14 @@ SYSCALL(get_pid)
 SYSCALL(suspend) 
 {
 	// suspend process with handle given in %EBX
+	SYSCALL_RETURN(0xFFFFFFFF);
+}
+
+SYSCALL(exit)
+{
+        Task *task = scheduler.getCurrentTask();
+	task->terminate();
+	__asm__ __volatile__ ("cli; hlt;");
 	SYSCALL_RETURN(0xFFFFFFFF);
 }
 

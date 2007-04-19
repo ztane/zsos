@@ -52,7 +52,7 @@
                 unsigned int eip, unsigned int cs, unsigned int eflags)
 
 
-typedef struct Registers { volatile uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; } REGS;
+typedef struct Registers { volatile uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax, gs, fs, es, ds; } REGS;
 
 extern "C" {
 	typedef void (* ISR_W_ECODE_TYPE)(Registers r, unsigned int errorcode,

@@ -7,6 +7,16 @@
 #define ASMISR(name) __ISR_ ## name ## _asm
 #define ISR(name)    __ISR_ ## name 
 
+// return w/ skip error code ;)
+#define POP_IRETE			 	 \
+        popal                                   ;\
+        pop %gs                                 ;\
+        pop %fs                                 ;\
+        pop %es                                 ;\
+        pop %ds                                 ;\
+	add $4, %esp;				;\
+        iret                              	;\
+      
 #define POP_IRET			 	 \
         popal                                   ;\
         pop %gs                                 ;\
@@ -17,7 +27,7 @@
       
 
 #define NEEDS_SCHEDULING			      \
-	testl $0xFFFFFFFF, (__needs_scheduling_flag) ;\
+	testl $0xFFFFFFFF, (__needs_scheduling_flag) ;
 
 
 #define DEFINE_INTR_GATE(name)			 \
@@ -36,7 +46,26 @@ ASMISR(name):					;\
 	POP_IRET				;\
 1:						;\
 	call __EXECUTE_SCHEDULER	  	;\
-	POP_IRET				;\
+	POP_IRET				;
+
+
+#define DEFINE_INTRE_GATE(name)			 \
+	.globl ASMISR(name)			;\
+ASMISR(name):					;\
+	push %ds				;\
+	push %es				;\
+	push %fs				;\
+	push %gs				;\
+	pushal					;\
+	call ISR(name)				;\
+						;\
+	NEEDS_SCHEDULING			;\
+	jne   1f		          	;\
+0:		                          	;\
+	POP_IRETE				;\
+1:						;\
+	call __EXECUTE_SCHEDULER	  	;\
+	POP_IRETE				
 
 
 /*********************************************************
@@ -72,13 +101,13 @@ DEFINE_INTR_GATE(overflow)
 DEFINE_INTR_GATE(bound_exception)
 DEFINE_INTR_GATE(invalid_opcode)
 DEFINE_INTR_GATE(fpu_not_avail)
-DEFINE_INTR_GATE(double_fault)		// w/ error
+DEFINE_INTRE_GATE(double_fault)		// w/ error
 DEFINE_INTR_GATE(cop_segment_overrun)	
-DEFINE_INTR_GATE(invalid_tss)		// w/ error
-DEFINE_INTR_GATE(segment_not_present)   // w/ error
-DEFINE_INTR_GATE(stack_exception)       // w/ error
-DEFINE_INTR_GATE(general_prot_fault)    // w/ error
-DEFINE_INTR_GATE(page_fault)            // w/ error
+DEFINE_INTRE_GATE(invalid_tss)		// w/ error
+DEFINE_INTRE_GATE(segment_not_present)   // w/ error
+DEFINE_INTRE_GATE(stack_exception)       // w/ error
+DEFINE_INTRE_GATE(general_prot_fault)    // w/ error
+DEFINE_INTRE_GATE(page_fault)            // w/ error
 DEFINE_INTR_GATE(floating_point_error)
 DEFINE_INTR_GATE(alignment_check)
 DEFINE_INTR_GATE(machine_check)

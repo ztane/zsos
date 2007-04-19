@@ -9,6 +9,8 @@
 
 #include "tss.hh"
 
+#include "kernel/exe/bits.hh"
+
 TssContents tssSegment __attribute__((aligned(4096)));
 
 UserTask::UserTask(const char *name, State state, int priority) 
@@ -24,20 +26,22 @@ void UserTask::enable_io() {
 	*tmp |= 3 << 12;
 }
 
-void UserTask::initialize(void *entry) {
+void UserTask::initialize(ZsosExeHeader *hdr) {
 	unsigned int *tmp;
 
+	header = hdr;
+	
 	// build kernel stack
-	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 4;
+	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 1;
 	kstack = (unsigned int)tmp;
 	tmp --;
 
 	*tmp -- = USER_DATA_DESCRIPTOR + 3;
-	*tmp -- = (unsigned int)user_stack + 16380;
+	*tmp -- = 0xC0000000UL - 4;
         *tmp -- = 0x0202;
 
         *tmp -- = USER_CODE_DESCRIPTOR + 3;
-        *tmp -- = (unsigned int) entry; 
+        *tmp -- = (unsigned int)hdr->entryPoint; 
 
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // ds
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // es
@@ -53,9 +57,6 @@ void UserTask::initialize(void *entry) {
         *tmp -- = 0;    // ebx
         *tmp    = 0;    // eax
 
-// old canary stack overflow checking...
-//	padding = 0xDEADBEEF;
-//	padding2 = 0xDEADBEEF;
 	esp = (unsigned int)tmp;
 }
 
@@ -67,6 +68,7 @@ void UserTask::dispatch(uint32_t *saved_esp) {
         
 	if (isNew) {
                 isNew = false;
+		kout << "sdfsdfsdfsdf" << endl;
                 __asm__ __volatile__ (
                         "pushal\n\t"
                         "mov %%esp, (%1)\n\t"
@@ -75,8 +77,8 @@ void UserTask::dispatch(uint32_t *saved_esp) {
                         "pop %%gs\n\t"
                         "pop %%fs\n\t"
                         "pop %%es\n\t"
-                        "pop %%ds\n\t"
-                        "iret"
+                        "pop %%ds\n\t" 
+                        "iret\n\t"
                         : : "a"(esp), "b"(saved_esp));
         }
         else {
@@ -92,6 +94,7 @@ void UserTask::dispatch(uint32_t *saved_esp) {
 void UserTask::terminate() {
 	extern Scheduler scheduler;
 	setCurrentState(TERMINATED);
+	scheduler.removeTask(this);
 	scheduler.schedule();
 }
 

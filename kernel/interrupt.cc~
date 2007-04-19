@@ -1,23 +1,23 @@
 #include <cstdlib>
-#include <iostream>
-#include <string.h>
-
+#include "config.h"
+#include "interrupt.hh"
 
 #include "kernel/arch/current/port.h"
 #include "kernel/arch/current/pokepeek.h"
 
 #include "kernel/ktasks/softirq.hh"
+#include <iostream>
 
-#include "kernel/config.h"
-#include "kernel/interrupt.hh"
-#include "kernel/initial_vga.h"
+#include <initial_vga.h>
+#include <string.h>
+
+#include "printk.h"
+#include "printstate.hh"
+#include "task.hh"
+#include "scheduler.hh"
+#include "timer.hh"
+
 #include "kernel/paging.hh"
-#include "kernel/printk.h"
-#include "kernel/printstate.hh"
-#include "kernel/scheduler.hh"
-#include "kernel/task.hh"
-#include "kernel/timer.hh"
-
 
 #define ASM_ISR(name) 			\
 	void __ISR_ ## name ## _asm();	\
@@ -229,7 +229,7 @@ C_ISR(fpu_not_avail)   { out_status(' A N'); }
 // just 
 C_ISR_W_ECODE(double_fault) { 
 	out_status(' F D'); 
-	while (1) { __asm__ __volatile__("hlt"); }
+	__asm__ __volatile__("hlt"); 
 }
 
 C_ISR(cop_segment_overrun)  { out_status(' O C'); }
@@ -258,10 +258,8 @@ C_ISR_W_ECODE(page_fault)          {
 	// the page was present:
 	f.present  = errorcode & 0x1;
 
-	if (f.address.inUserSpace() && task) {
-		kout << "IP: " << eip << endl;
+	if (f.address.inUserMode() && task) {
 		task->handlePageFault(f);
-		return;
 	}
 	else {
 		kout << "\nIllegal page fault at " << f.address << ".\n";

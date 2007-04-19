@@ -7,6 +7,8 @@
 #include "task.hh"
 #include "printk.h"
 
+bool forced_scheduling;
+
 Scheduler::Scheduler()
 {
 	for (int i = 0; i < PRIV_LEVELS; i++)
@@ -37,9 +39,13 @@ void Scheduler::schedule()
 			Task *p = tasks[i].first;
 			Task *old = current;
 			removeTask(p);
-			addTask(p);				
+			addTask(p);	
 			current = p;
 			p->current_state = Task::RUNNING;
+
+			kout << "scheduling: " << (uint32_t)p->getProcessId() << endl;
+			if (old != 0) 
+				kout << " old: " << (uint32_t)old->getProcessId() << endl;
 
 			schedulingNeeded(false);
 			dispatchNew(old, p);
@@ -69,9 +75,8 @@ void Scheduler::removeTask(Task *p) {
 	else {
 		entry->first = p->next;
 	}
+
 	p->next = p->previous = NULL;
-	
-	schedulingNeeded(true);
 	enableInterruptsIf(fl);
 }
 
@@ -136,5 +141,6 @@ void Scheduler::needsScheduling() {
 
 extern "C" void __execute_scheduler() {
 	kout << "forced scheduling" << endl;
+	forced_scheduling = true;
 	scheduler.schedule();
 }

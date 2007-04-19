@@ -2,7 +2,7 @@
 #include <kernel/multiboot.hh>
 #include <iostream>
 
-PageFrameTable global_page_frame_table;
+PageFrameTable page_frames;
 
 extern char _BOOT_HEAP_END;
 extern char g_code;
@@ -16,7 +16,7 @@ void initializePageFrameTable(
 	pageaddr_t last_page = 
 		boot_info.get_max_ram_address() / 0x1000l + 1l;
 	
-	global_page_frame_table.initialize(last_page, alloc);
+	page_frames.initialize(last_page, alloc);
 
         int ct = boot_info.number_of_mmap_entries();
 
@@ -32,10 +32,10 @@ void initializePageFrameTable(
 		kout << "Mapping as ram: " << length << " pages ";
 		kout << " at " << start << "." << endl;
 		
-		global_page_frame_table.setFlagsRange(
+		page_frames.setFlagsRange(
 			start, length, PageFrame::IS_RAM);
 
-		global_page_frame_table.clearFlagsRange(
+		page_frames.clearFlagsRange(
 			start, length, PageFrame::LOCKED);
         }
 
@@ -44,7 +44,7 @@ void initializePageFrameTable(
 	pageaddr_t klength = kend - kstart + 1;
 	kout << "Reserving " << klength << " pages at " << kstart << " for kernel." << endl;
 
-	global_page_frame_table.setFlagsRange(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
+	page_frames.setFlagsRange(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
 }
 
 void PageFrameTable::acquireRange(pageaddr_t start, size_t length) 

@@ -51,7 +51,7 @@ public:
 		pageaddr_t _start, size_t _length) 
 			: table(tb) 
 	{
-		start = _start;
+		start  = _start;
 		length = _length;
 		// printk("Memory area: %d %d\n", start, length);
 	}

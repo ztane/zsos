@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <ostypes>
+#include "kernel/paging.hh"
 
 class Task {
 
@@ -96,7 +97,7 @@ public:
 		previous = p;
 	}
 
-	virtual bool handlePageFault(uint32_t address);
+	virtual bool handlePageFault(PageFaultInfo& f);
 	virtual void dispatch(uint32_t* saved_eip) = 0;
 	virtual void terminate() = 0;
 

@@ -3,27 +3,28 @@
 
 #include <cstdlib>
 #include <allocator>
-#include <kernel/atomic.hh>	
-#include <kernel/refcount.hh>
-
-typedef size_t pageaddr_t;
+#include "kernel/atomic.hh"	
+#include "kernel/refcount.hh"
+#include "kernel/mm/bits.hh"
 
 class MemoryArea;
 
 class PageFrame {
 private:
-	Atomic   flags;
-	RefCount refs;
-	RefCount pte_refs;
-	Atomic   privdata;
+	Atomic     flags;
+	RefCount   refs;
+	RefCount   pte_refs;
+	Atomic     privdata;
+	pageaddr_t addr;
 public:
 	enum {
 		IS_RAM = 1,
 		LOCKED = 2,
 		KERNEL = 4,
+		HIGH   = 8,
 	};
 
-	PageFrame() {
+	PageFrame() : refs(), pte_refs(), privdata() {
 		flags = LOCKED;
 	}
 
@@ -47,6 +48,10 @@ public:
 		return (int32_t)flags;
 	}
 
+	inline pageaddr_t getPageAddr() const {
+		return addr;
+	}
+
 	friend class PageFrameTable;
 	friend class MemoryArea;
 };
@@ -64,9 +69,12 @@ public:
 	void initialize(pageaddr_t max_addr, Allocator& alloc) {
 		max_page = max_addr;
 		page_frames = new (alloc) PageFrame[max_addr + 1];
+		for (uint32_t i = 0; i < max_addr; i ++) {
+			page_frames[i].addr = i;
+		}
 	}
 
-	inline PageFrame& getFrameEntry(pageaddr_t a) {
+	inline PageFrame& getByFrame(pageaddr_t a) const {
 		if (a <= max_page) {
 			return page_frames[a];
 		}
@@ -74,8 +82,8 @@ public:
 		// a bug?
 		return page_frames[0];
 	}
-	
-	inline pageaddr_t getLastPage() {
+
+	inline pageaddr_t getLastPage() const {
 		return max_page;
 	}
 
@@ -87,5 +95,5 @@ public:
 	friend class MemoryArea;
 };
 
-extern PageFrameTable global_page_frame_table;
+extern PageFrameTable page_frames;
 #endif

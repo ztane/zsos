@@ -20,7 +20,7 @@ void KernelTask::initialize(void (*entry)(void *), void *param) {
 
 	// build kernel stack
 	kernelStack = new uint8_t[kernelStackSize];
-	tmp = (unsigned int *)(kernelStack + kernelStackSize) - 4;
+	tmp = (unsigned int *)(kernelStack + kernelStackSize);
 	kstack = (unsigned int)tmp;
 	tmp --;
 
@@ -43,12 +43,14 @@ extern "C" static void do_dispatch_kernel_task(void (*entry)(void *), void *para
 void KernelTask::terminate() {
 	extern Scheduler scheduler;
 
+	kout << "TERMINATING: " << endl;
+
 	// no need to save.. 
 	disableInterrupts();
 	scheduler.removeTask(this);
 	setCurrentState(TERMINATED);
 
-	delete[] kernelStack;
+	// delete[] kernelStack;
 
 	// will never return
 	scheduler.schedule();
