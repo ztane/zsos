@@ -44,7 +44,6 @@ bool triggerSoftIrq(int vector) {
 void softIrqTaskRoutine(void *param) {
 	while (1) {
 		softIrqSem.wait();
-		kout << "SOFTIRQ_ROLLING" << endl;
 		for (int i = 0; i < numSoftIrqVectors; i ++) {
 			if (activationCount[i] > 0) {
 				activationCount[i] --;
@@ -56,7 +55,6 @@ void softIrqTaskRoutine(void *param) {
 				break;
 			} 
 		}
-		kout << "SOFTIRQ_DONE" << endl;
 	}
 }
 

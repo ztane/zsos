@@ -26,6 +26,8 @@ void UserTask::enable_io() {
 	*tmp |= 3 << 12;
 }
 
+extern "C" void ____user_task_dispatch_new_asm(); 
+
 void UserTask::initialize(ZsosExeHeader *hdr) {
 	unsigned int *tmp;
 
@@ -48,6 +50,9 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // fs
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // gs
 
+	// return here after switching stacks...
+	*tmp -- = (uint32_t)____user_task_dispatch_new_asm;
+
         *tmp -- = 0;    // ebp
         *tmp -- = 0;    // esp
         *tmp -- = 0;    // edi
@@ -63,32 +68,21 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 UserTask::~UserTask() {
 }
 
+void ____user_task_dispatch_new() {
+	__asm__ __volatile__(
+		".globl ____user_task_dispatch_new_asm\n"
+		"____user_task_dispatch_new_asm:\n\t"
+		"popl %%gs\n\t"
+        	"popl %%fs\n\t"
+        	"popl %%es\n\t"
+        	"popl %%ds\n\t"
+	        "iret\n\t"
+	: : );
+}
+
 void UserTask::dispatch(uint32_t *saved_esp) {
 	tssSegment.esp0 = kstack;
-        
-	if (isNew) {
-                isNew = false;
-		kout << "sdfsdfsdfsdf" << endl;
-                __asm__ __volatile__ (
-                        "pushal\n\t"
-                        "mov %%esp, (%1)\n\t"
-                        "mov %0, %%esp\n\t"
-                        "popal\n\t"
-                        "pop %%gs\n\t"
-                        "pop %%fs\n\t"
-                        "pop %%es\n\t"
-                        "pop %%ds\n\t" 
-                        "iret\n\t"
-                        : : "a"(esp), "b"(saved_esp));
-        }
-        else {
-                __asm__ __volatile__ (
-                        "pushal\n\t"
-                        "mov %%esp, (%1)\n\t"
-                        "mov %0, %%esp\n\t"
-                        "popal\n\t"
-                        : : "a"(esp), "b"(saved_esp));
-        }
+	Task::switchContexts(saved_esp);
 }
 
 void UserTask::terminate() {

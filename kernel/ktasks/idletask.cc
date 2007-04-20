@@ -8,7 +8,7 @@ void idleTaskRoutine(void *parm) {
 		// do something useful here first...
 		// everything done, it'd be a good time to hlt..
 	
-		kout << "idling..." << endl;
+		// kout << "idling..." << endl;
 		halt();
 		// resume after interrupt!
 	}

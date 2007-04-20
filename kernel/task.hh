@@ -97,6 +97,8 @@ public:
 		previous = p;
 	}
 
+	void switchContexts(uint32_t*);
+
 	virtual bool handlePageFault(PageFaultInfo& f);
 	virtual void dispatch(uint32_t* saved_eip) = 0;
 	virtual void terminate() = 0;

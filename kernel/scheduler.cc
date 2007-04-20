@@ -43,10 +43,6 @@ void Scheduler::schedule()
 			current = p;
 			p->current_state = Task::RUNNING;
 
-			kout << "scheduling: " << (uint32_t)p->getProcessId() << endl;
-			if (old != 0) 
-				kout << " old: " << (uint32_t)old->getProcessId() << endl;
-
 			schedulingNeeded(false);
 			dispatchNew(old, p);
 			enableInterruptsIf(fl);
@@ -140,7 +136,6 @@ void Scheduler::needsScheduling() {
 }
 
 extern "C" void __execute_scheduler() {
-	kout << "forced scheduling" << endl;
 	forced_scheduling = true;
 	scheduler.schedule();
 }

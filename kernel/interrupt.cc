@@ -259,7 +259,6 @@ C_ISR_W_ECODE(page_fault)          {
 	f.present  = errorcode & 0x1;
 
 	if (f.address.inUserSpace() && task) {
-		kout << "IP: " << eip << endl;
 		task->handlePageFault(f);
 		return;
 	}

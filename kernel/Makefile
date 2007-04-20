@@ -19,10 +19,16 @@ VPATH=.:mm:syscalls:ktasks
 TESTDIR=t
 
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)
+
 COBJS=$(CMODULES:%=$(OBJDIR)/%.o)
 CCOBJS=$(CCMODULES:%=$(OBJDIR)/%.o)
 ASMOBJS=$(ASMMODULES:%=$(OBJDIR)/%.o)
+
 OBJS=$(COBJS) $(CCOBJS) $(ASMOBJS)
+
+CASMS=$(CMODULES:%=$(OBJDIR)/%.s)
+CCASMS=$(CCMODULES:%=$(OBJDIR)/%.s)
+
 INCLUDES=$(INCLUDE:%=-I%)
 
 all: $(LIBDIR)/kernel.a
@@ -42,8 +48,14 @@ $(LIBDIR)/kernel.a: $(OBJS)
 $(COBJS): $(OBJDIR)/%.o: %.c
 	$(CC) -o $@ -c  $< -O2 $(INCLUDES) $(CFLAGS) -fno-strict-aliasing
 
+$(CASMS): $(OBJDIR)/%.s: %.c
+	$(CC) -S -o $@ $< -O2 $(INCLUDES) $(CFLAGS) -fno-strict-aliasing
+
 $(CCOBJS): $(OBJDIR)/%.o: %.cc
 	$(CXX) -o $@ -c $< -O2 $(INCLUDES) $(CFLAGS) $(CCFLAGS)
+
+$(CCASMS): $(OBJDIR)/%.s: %.cc
+	$(CXX) -S -o $@ $< -O2 $(INCLUDES) $(CFLAGS) $(CCFLAGS)
 
 $(ASMOBJS): $(OBJDIR)/%.o: %.S
 	$(CC) -o $@ -c $< -O2 $(INCLUDES)
