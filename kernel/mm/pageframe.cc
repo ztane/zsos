@@ -67,7 +67,7 @@ void PageFrameTable::setFlagsRange(pageaddr_t start, size_t length, int32_t flag
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
-		page_frames[i].set_flag(flag);
+		page_frames[i].setFlag(flag);
 	}	
 }
 
@@ -75,6 +75,6 @@ void PageFrameTable::clearFlagsRange(pageaddr_t start, size_t length, int32_t fl
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
-		page_frames[i].clear_flag(flag);
+		page_frames[i].clearFlag(flag);
 	}	
 }

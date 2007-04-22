@@ -24,5 +24,3 @@ void MemMap::addArea(MemMapArea *a) {
 }
 void removeArea(MemMapArea *a) {
 };
-
-#endif

@@ -8,7 +8,8 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 	memory task usertask syscall init_vga ide ide-disk \
 	scheduler timer freepagelist bootdynmem panic abi  \
 	cpuid pageframe memarea pci kerneltask softirq     \
-	become_io_task console processes init idletask
+	become_io_task console processes init idletask	   \
+	mm
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .

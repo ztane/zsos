@@ -1,8 +1,6 @@
 #ifndef __BUDDY_HH_INCLUDED__
 #define __BUDDY_HH_INCLUDED__
 
-typedef int pageaddr_t;
-
 class BuddyZone {
 private:
 	pageaddr_t __get_free_pages(int n);

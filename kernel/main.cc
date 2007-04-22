@@ -10,8 +10,8 @@
 #include "kernel/mm/memarea.hh"
 #include "kernel/ktasks/softirq.hh"
 
-#include "syscall.hh"
-#include "printk.h"
+#include "kernel/syscall.hh"
+#include "kernel/printk.h"
 #include "multiboot.hh"
 #include "interrupt.hh"
 #include "paging.hh"

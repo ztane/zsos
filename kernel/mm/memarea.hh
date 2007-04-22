@@ -2,9 +2,11 @@
 #define __MEMAREA_HH_INCLUDED__
 
 #include <inttypes.h>
-#include "bits.hh"
-#include "pageframe.hh"
 #include <iostream>
+
+#include "kernel/mm/bits.hh"
+#include "kernel/mm/pageframe.hh"
+#include "kernel/panic.hh"
 
 class PageAllocation {
 protected:
@@ -82,6 +84,23 @@ public:
 
 		alloc.amt = 0;
 		return alloc;	
+	}
+
+	PageFrame *allocatePage() 
+	{
+		for (size_t i = start; i < (start + length); i ++)
+                {
+                	PageFrame& f = table.page_frames[i];
+
+                        if (! (f.flags & PageFrame::IS_RAM) || f.refs > 0)
+                                continue;
+
+	                f.acquire();
+			return &f;
+                }
+
+		kernelPanic("Out of free pages in allocatePage");
+		return 0;
 	}
 
 	void releasePages(PageAllocation& alloc) {

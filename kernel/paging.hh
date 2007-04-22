@@ -19,7 +19,14 @@ class PageFlags {
 protected:
 	unsigned long flags;
 public:
+	enum {
+		PRESENT = 1,
+		READWRITE = 2,
+		USER = 4,
+	};
+
 	PageFlags() { flags = 0; }
+	PageFlags(unsigned long f) { flags = f; }
 	
 	unsigned long getFlags() {
 		return flags;

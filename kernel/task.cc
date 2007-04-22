@@ -9,6 +9,7 @@
 #include "kernel/paging.hh"
 #include "kernel/mm/pageframe.hh"
 #include "kernel/mm/memarea.hh"
+#include "kernel/mm/mm.hh"
 #include "kernel/panic.hh"
 
 Task::Task(const char *_name, State state, int priority) {
@@ -31,61 +32,44 @@ bool Task::handlePageFault(PageFaultInfo& f) {
 		
 		pageaddr_t p = pageaddr_t::fromVirtual(text_address);
 	
-		PageFlags fl;
-		fl.setPresent(true);
-		fl.setRW(false);
-		fl.setUser(true);
-
+		PageFlags fl(PageFlags::PRESENT | PageFlags::USER);
 		mapPage(page_directory, f.address, 
 			&(page_frames.getByFrame(p)), fl);
 	}
 	// map stack...
 	else if ((f.address & 0xF0000000) == 0xB0000000) {
-                PageFlags fl;
-                fl.setPresent(true);
-                fl.setRW(true);
-                fl.setUser(true);
+                PageFrame *frm = MM::allocateZeroPage();
 
-                PageAllocation ac;
-                NormalMemory.allocatePages(1, ac);
-                if (! ac) {
+                if (! frm) {
                         kernelPanic("Could not allocate a frame for stack\n");
 	        }
 
-                mapPage(page_directory, f.address,
-                        &(page_frames.getByFrame(ac.getAddress())), fl);
+                mapPage(page_directory, f.address, frm,
+			PageFlags::PRESENT | PageFlags::USER | PageFlags::READWRITE);
 	}
 	// map data (* should use COW *)...
 	else if ((f.address & 0xF0000000) == 0x80000000) {
-		// bss.. ;)
-		pageaddr_t p;
+		PageFrame *frm;
 
 		// bss...
 		if (f.address & 0xF000) {
-	                PageAllocation ac;
-        	        NormalMemory.allocatePages(1, ac);
-                	if (! ac) {
+	                frm = MM::allocateZeroPage();
+
+                	if (! frm) {
                         	kernelPanic("Could not allocate data for bss\n");
 	        	}
-
-			void *addr = ac.getAddress().toVirtual();
-			memset(addr, 0, 4096);
-			kout << "bss..." << endl;
 		}
 		else {
 			char *data_address = (char*)&_binary_example_zsx_start 
 				+ _binary_example_zsx_start.dataPhys;
-		
-			p = pageaddr_t::fromVirtual(data_address);
+			
+			pageaddr_t p = pageaddr_t::fromVirtual(data_address);
+			frm = &(page_frames.getByFrame(p));
 		}
 
-		PageFlags fl;
-		fl.setPresent(true);
-		fl.setRW(true);
-		fl.setUser(true);
+		PageFlags fl(PageFlags::PRESENT | PageFlags::USER | PageFlags::READWRITE);
 
-		mapPage(page_directory, f.address, 
-			&(page_frames.getByFrame(p)), fl);
+		mapPage(page_directory, f.address, frm, fl);
 	}
 	else {
         	__asm__ __volatile__ ("cli; hlt");

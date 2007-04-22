@@ -22,6 +22,7 @@ public:
 		LOCKED = 2,
 		KERNEL = 4,
 		HIGH   = 8,
+		COW    = 16,
 	};
 
 	PageFrame() : refs(), pte_refs(), privdata() {
@@ -36,11 +37,11 @@ public:
 		return -- refs;
 	}
 
-	inline void set_flag(int32_t flag) {
+	inline void setFlag(int32_t flag) {
 		flags |= flag;
 	}
 
-	inline void clear_flag(int32_t flag) {
+	inline void clearFlag(int32_t flag) {
 		flags &= ~flag;
 	}
 
