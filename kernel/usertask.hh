@@ -24,6 +24,7 @@ public:
 	virtual void enable_io();
 	virtual void dispatch(uint32_t *saved_eip);
 	virtual void terminate();
+	virtual bool handlePageFault(PageFaultInfo& f);
 
 	friend class Scheduler;
 

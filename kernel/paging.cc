@@ -131,14 +131,14 @@ void initialize_page_tables()
 	for (uint32_t i = 0xC0000000UL; i < 0xF0000000UL; 
 		i += 0x400000, ptr += 0x400) 
 	{
-		PageDirectoryEntry *e = page_directory->getPDE(VirtAddr(i));
+		PageDirectoryEntry *e = page_directory->getPDE(VirtAddr((void*)i));
 		e->setFlags(flags);
 		e->setPageAddr(ptr);
 	}
 
 	for (uint32_t i = 0x00000000UL; i < 0xC0000000UL; i += 0x400000)
 	{
-		page_directory->getPDE(VirtAddr(i))->clear();
+		page_directory->getPDE(VirtAddr((void*)i))->clear();
 	}
 
 	_set_cr3(LOG_TO_PHYS(page_directory));

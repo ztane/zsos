@@ -10,6 +10,14 @@
 #include "tss.hh"
 
 #include "kernel/exe/bits.hh"
+#include "kernel/paging.hh"
+
+#include "kernel/mm/memarea.hh"
+#include "kernel/mm/mm.hh"
+#include "kernel/mm/pageframe.hh"
+#include "kernel/mm/zeropageloader.hh"
+
+#include "kernel/panic.hh"
 
 TssContents tssSegment __attribute__((aligned(4096)));
 
@@ -63,6 +71,48 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
         *tmp    = 0;    // eax
 
 	esp = (unsigned int)tmp;
+
+	memmap = new MemMap();
+	MemMapArea *m;
+
+	m = new MemMapArea(
+		VirtAddr((void*)hdr->textVirt), 
+		VirtAddr((void*)(hdr->textVirt + hdr->textLength)));
+	int rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+	m = new MemMapArea(
+		VirtAddr((void*)hdr->dataVirt), 
+		VirtAddr((void*)(hdr->dataVirt + hdr->dataLength)));
+	rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+	m = new MemMapArea(
+		VirtAddr((void*)hdr->bssVirt), 
+		VirtAddr((void*)(hdr->bssVirt + hdr->bssLength)));
+	m->setLoader(&zeroPageLoader);
+	rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+	m = new MemMapArea(
+		VirtAddr((void*)(0xC0000000 - 0x100000)), 
+		VirtAddr((void*)(0xC0000000)));
+	m->setLoader(&zeroPageLoader);
+	rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+	memmap->dumpMemMap();
+	return;		
+error:
+	kernelPanic("Error in UserTask::initialize");
 }
 
 UserTask::~UserTask() {
@@ -91,6 +141,60 @@ void UserTask::terminate() {
 	scheduler.removeTask(this);
 	scheduler.schedule();
 }
+
+bool UserTask::handlePageFault(PageFaultInfo& f) {
+        kout << "Process " << process_id << " had a pfault at " 
+		<< (uint32_t)f.address << endl;
+
+	MemMapArea *m = memmap->findAreaByAddr(f.address);
+	if (! m) {
+		kernelPanic("User task killed...\n");
+	}
+
+	else {
+		PageLoader *p = m->getLoader();
+		if (p) {
+			p->loadPage(this, 
+				m,
+				f.write ? MemMapArea::W : MemMapArea::R, 
+				f.address);
+			kout << "Mapped...\n";
+			return true;
+		}
+	}
+
+	// map code...
+	if (f.address == 1048740) {
+		char *text_address = (char*)&_binary_example_zsx_start 
+			+ _binary_example_zsx_start.textPhys;
+		
+		pageaddr_t p = pageaddr_t::fromVirtual(text_address);
+	
+		PageFlags fl(PageFlags::PRESENT | PageFlags::USER);
+		mapPage(page_directory, f.address, 
+			&(page_frames.getByFrame(p)), fl);
+	}
+
+	// map data (* should use COW *)...
+	else if ((f.address & 0xF0000000) == 0x80000000) {
+		PageFrame *frm;
+
+		char *data_address = (char*)&_binary_example_zsx_start 
+			+ _binary_example_zsx_start.dataPhys;
+			
+		pageaddr_t p = pageaddr_t::fromVirtual(data_address);
+		frm = &(page_frames.getByFrame(p));
+
+		PageFlags fl(PageFlags::PRESENT | PageFlags::USER | PageFlags::READWRITE);
+
+		mapPage(page_directory, f.address, frm, fl);
+	}
+	else {
+        	__asm__ __volatile__ ("cli; hlt");
+	}
+        return true;
+}
+
 
 void TssContents::setup() {
 	memset(&tssSegment, 0, sizeof(tssSegment));

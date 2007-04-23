@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <ostypes>
 #include "kernel/paging.hh"
+#include "kernel/mm/memmap.hh"
 
 class Task {
 
@@ -41,6 +42,8 @@ protected:
 
 	Task *next;
 	Task *previous;
+
+	MemMap *memmap;
 
         unsigned int  kstack; //stacktop of kernel stack
 	unsigned int  esp;    //actual position of esp

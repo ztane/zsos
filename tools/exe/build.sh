@@ -2,4 +2,5 @@
 
 gcc -c crt0start.c
 gcc -c joo.cc
-./linkexe -o example.zsx joo.o
+gcc -c malloc.c
+./linkexe -o example.zsx malloc.o joo.o

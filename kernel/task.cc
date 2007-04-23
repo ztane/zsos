@@ -5,11 +5,6 @@
 #include "kernel/usertask.hh"
 #include "kernel/memory.hh"
 #include "kernel/printk.h"
-#include "kernel/exe/bits.hh"
-#include "kernel/paging.hh"
-#include "kernel/mm/pageframe.hh"
-#include "kernel/mm/memarea.hh"
-#include "kernel/mm/mm.hh"
 #include "kernel/panic.hh"
 
 Task::Task(const char *_name, State state, int priority) {
@@ -19,61 +14,11 @@ Task::Task(const char *_name, State state, int priority) {
 	setCurrentState(READY);
 	setCurrentPriority(priority);
 	timeslice = 0;
+	memmap = 0;
 }
 
 bool Task::handlePageFault(PageFaultInfo& f) {
-        kout << "Process " << process_id << " had a pfault at " 
-		<< (uint32_t)f.address << endl;
-
-	// map code...
-	if (f.address == 1048740) {
-		char *text_address = (char*)&_binary_example_zsx_start 
-			+ _binary_example_zsx_start.textPhys;
-		
-		pageaddr_t p = pageaddr_t::fromVirtual(text_address);
-	
-		PageFlags fl(PageFlags::PRESENT | PageFlags::USER);
-		mapPage(page_directory, f.address, 
-			&(page_frames.getByFrame(p)), fl);
-	}
-	// map stack...
-	else if ((f.address & 0xF0000000) == 0xB0000000) {
-                PageFrame *frm = MM::allocateZeroPage();
-
-                if (! frm) {
-                        kernelPanic("Could not allocate a frame for stack\n");
-	        }
-
-                mapPage(page_directory, f.address, frm,
-			PageFlags::PRESENT | PageFlags::USER | PageFlags::READWRITE);
-	}
-	// map data (* should use COW *)...
-	else if ((f.address & 0xF0000000) == 0x80000000) {
-		PageFrame *frm;
-
-		// bss...
-		if (f.address & 0xF000) {
-	                frm = MM::allocateZeroPage();
-
-                	if (! frm) {
-                        	kernelPanic("Could not allocate data for bss\n");
-	        	}
-		}
-		else {
-			char *data_address = (char*)&_binary_example_zsx_start 
-				+ _binary_example_zsx_start.dataPhys;
-			
-			pageaddr_t p = pageaddr_t::fromVirtual(data_address);
-			frm = &(page_frames.getByFrame(p));
-		}
-
-		PageFlags fl(PageFlags::PRESENT | PageFlags::USER | PageFlags::READWRITE);
-
-		mapPage(page_directory, f.address, frm, fl);
-	}
-	else {
-        	__asm__ __volatile__ ("cli; hlt");
-	}
+	kernelPanic("Page fault in a non-user task!");
         return true;
 }
 
