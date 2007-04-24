@@ -21,6 +21,7 @@ class MemMapArea {
 		VirtAddr base;
 		VirtAddr end;
 		MemMapArea *parent, *lower, *upper;
+		void *priv;
 		Prot prot;
         public:
 		MemMapArea(VirtAddr b = VirtAddr((void*)0), VirtAddr e = VirtAddr((void*)0)) :
@@ -29,6 +30,9 @@ class MemMapArea {
 		void setBase(VirtAddr b) { base = b; }
 		void setEnd (VirtAddr e) { end  = e; }
 		void setProt(Prot p)     { prot = p; } 		
+		void setPrivPointer(void *p) { priv = p; } 		
+		void *getPrivPointer()       { return priv; } 		
+		
 		Prot getProt()           { return prot; } 		
 
 		VirtAddr    getBase()   const { return base; }

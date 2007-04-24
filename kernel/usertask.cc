@@ -16,6 +16,8 @@
 #include "kernel/mm/mm.hh"
 #include "kernel/mm/pageframe.hh"
 #include "kernel/mm/zeropageloader.hh"
+#include "kernel/mm/textpageloader.hh"
+#include "kernel/mm/datapageloader.hh"
 
 #include "kernel/panic.hh"
 
@@ -38,6 +40,7 @@ extern "C" void ____user_task_dispatch_new_asm();
 
 void UserTask::initialize(ZsosExeHeader *hdr) {
 	unsigned int *tmp;
+	char *text_address, *data_address;
 
 	header = hdr;
 	
@@ -78,6 +81,12 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	m = new MemMapArea(
 		VirtAddr((void*)hdr->textVirt), 
 		VirtAddr((void*)(hdr->textVirt + hdr->textLength)));
+
+        text_address = (char*)&_binary_example_zsx_start
+		+ _binary_example_zsx_start.textPhys;
+	m->setPrivPointer((void*)text_address);
+	m->setLoader(&textPageLoader);
+
 	int rc = memmap->addAreaAt(m);
 	if (rc != 0) {
 		goto error;
@@ -86,6 +95,12 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	m = new MemMapArea(
 		VirtAddr((void*)hdr->dataVirt), 
 		VirtAddr((void*)(hdr->dataVirt + hdr->dataLength)));
+
+        data_address = (char*)&_binary_example_zsx_start
+		+ _binary_example_zsx_start.dataPhys;
+	m->setPrivPointer((void*)data_address);
+	m->setLoader(&dataPageLoader);
+
 	rc = memmap->addAreaAt(m);
 	if (rc != 0) {
 		goto error;
@@ -143,11 +158,10 @@ void UserTask::terminate() {
 }
 
 bool UserTask::handlePageFault(PageFaultInfo& f) {
-        kout << "Process " << process_id << " had a pfault at " 
-		<< (uint32_t)f.address << endl;
-
 	MemMapArea *m = memmap->findAreaByAddr(f.address);
+
 	if (! m) {
+		kout << "Invalid address: " << f.address << endl;
 		kernelPanic("User task killed...\n");
 	}
 
@@ -158,43 +172,18 @@ bool UserTask::handlePageFault(PageFaultInfo& f) {
 				m,
 				f.write ? MemMapArea::W : MemMapArea::R, 
 				f.address);
-			kout << "Mapped...\n";
+
 			return true;
 		}
+		else {
+			kernelPanic("Tried to address a memarea with no PageLoader");
+		}
 	}
-
-	// map code...
-	if (f.address == 1048740) {
-		char *text_address = (char*)&_binary_example_zsx_start 
-			+ _binary_example_zsx_start.textPhys;
-		
-		pageaddr_t p = pageaddr_t::fromVirtual(text_address);
-	
-		PageFlags fl(PageFlags::PRESENT | PageFlags::USER);
-		mapPage(page_directory, f.address, 
-			&(page_frames.getByFrame(p)), fl);
-	}
-
-	// map data (* should use COW *)...
-	else if ((f.address & 0xF0000000) == 0x80000000) {
-		PageFrame *frm;
-
-		char *data_address = (char*)&_binary_example_zsx_start 
-			+ _binary_example_zsx_start.dataPhys;
-			
-		pageaddr_t p = pageaddr_t::fromVirtual(data_address);
-		frm = &(page_frames.getByFrame(p));
-
-		PageFlags fl(PageFlags::PRESENT | PageFlags::USER | PageFlags::READWRITE);
-
-		mapPage(page_directory, f.address, frm, fl);
-	}
-	else {
-        	__asm__ __volatile__ ("cli; hlt");
-	}
-        return true;
 }
 
+void *UserTask::setBrk(void *n) {
+	return memmap->setBrk(n);
+}
 
 void TssContents::setup() {
 	memset(&tssSegment, 0, sizeof(tssSegment));

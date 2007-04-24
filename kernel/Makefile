@@ -9,7 +9,8 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 	scheduler timer freepagelist bootdynmem panic abi  \
 	cpuid pageframe memarea pci kerneltask softirq     \
 	become_io_task console processes init idletask	   \
-	mm memmap zeropageloader
+	mm memmap zeropageloader textpageloader 	   \
+	datapageloader sysmm
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .

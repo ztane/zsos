@@ -22,6 +22,10 @@ bool Task::handlePageFault(PageFaultInfo& f) {
         return true;
 }
 
+void *Task::setBrk(void *newBrk) {
+	return 0;
+}
+
 void Task::switchContexts(uint32_t *saved_esp) {
         __asm__ __volatile__ (
                 "call 1f\n\t"
