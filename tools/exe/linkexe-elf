@@ -1,2 +1,2 @@
 #!/bin/sh
-ld -T exe.ld --oformat=elf32-i386 crt0start.o $*
+ld -T exe.ld --oformat=elf32-i386 lib/crt0start.o $* lib/libc.a

@@ -1,6 +1,5 @@
 #!/bin/sh
 
-gcc -c crt0start.c
-gcc -c joo.cc
-gcc -c malloc.c
-./linkexe -o example.zsx malloc.o joo.o
+# gcc -c joo.cc -I libc/include
+./linkexe -o example.zsx lib/libc.a
+# lib/crt0start.o lib/libc.a
