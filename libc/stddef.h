@@ -15,8 +15,8 @@
 
 #endif
 
-typedef uint32_t size_t;
-typedef  int32_t ssize_t;
+typedef unsigned int size_t;
+typedef          int ssize_t;
 typedef  int32_t ptrdiff_t;
 typedef uint32_t wint_t;
 

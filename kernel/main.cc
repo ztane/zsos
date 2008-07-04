@@ -81,6 +81,7 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 }
 
 extern void enable_keyboard();
+extern bool initKeyboard();
 extern void init_idt();
 extern void init_gdt();
 extern void initialize_tasking();
@@ -130,7 +131,7 @@ void startIdleTask();
 extern void __set_default_allocator(Allocator *new_def);
 
 void timerRoutine(int vector) {
-	kout << "Timer - Soft IRQ (vector " << vector << ")." << endl;
+     // kout << "TIMER ROUTINE..." << endl;
 }
 
 #include "kernel/exe/bits.hh"
@@ -165,6 +166,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << " pages of RAM." << endl;
 	
 	kout << "Enabling initial paging..." << endl;
+
 	initialize_page_tables();
 	kout << "Paging enabled." << endl;
 
@@ -195,14 +197,27 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	Init::run(Init::LATE);
 	
 	kout << "Starting tasking..." << endl;
+
+	initSoftIrq();
+	registerSoftIrq(1, timerRoutine);
+        kout << " SoftIRQ, ";
+	
+	startIdleTask();
+        kout << " idle task done" << endl;
+
+	kout << "Initializing keyboard...";
+	if (! initKeyboard()) {
+		kout << " FAILED!" << endl;
+                kernelPanic("KB init failed");
+        }
+        kout << " done" << endl;
+
+	kout << "Starting init...";
 	tesmi.initialize(&_binary_example_zsx_start);
 	tesmi.setProcessId(1);
 	scheduler.addTask(&tesmi);
 
-	initSoftIrq();
-	registerSoftIrq(1, timerRoutine);
-
-	startIdleTask();
+	kout << " done\nNow entering init:\n";
 
 	scheduler.schedule();
 	kernelPanic("Fell out from scheduling loop!\n");

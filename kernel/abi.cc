@@ -20,4 +20,10 @@ int __cxa_atexit(void (*fp)(void *), void *vp1, void *vp2)
 	return 0;
 }
 
+
+// extern "C" void __stack_chk_fail(void)
+// {	
+//	kernelPanic("stack-protector: Kernel stack is corrupted");
+// }
+
 void *__dso_handle = &__dso_handle;

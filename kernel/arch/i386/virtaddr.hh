@@ -27,6 +27,10 @@ public:
 	}
 	
 	operator uint32_t() const { return address; }
+
+        void *to_ptr() const {
+                return (void*)address;
+        }
 };
 
 #endif

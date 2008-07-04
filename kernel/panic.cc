@@ -1,7 +1,7 @@
 #include <printk.h>
 #include <iostream>
 
-extern "C" void kernelPanic(char *message) 
+extern "C" void kernelPanic(const char *message) 
 {
 	kout << "KERNEL PANIC!!!" << endl;
 	kout << message;

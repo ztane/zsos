@@ -49,6 +49,12 @@ ostream& ostream::operator<<(unsigned char parm)
         return *this;
 }
 
+ostream& ostream::operator<<(char parm)
+{
+        printk("%c", parm);
+        return *this;
+}
+
 ostream& ostream::operator<<(signed char parm)
 {
         printk("%c", parm);

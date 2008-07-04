@@ -1,5 +1,6 @@
-vgaromimage: $BXSHARE/VGABIOS-elpin-2.40
-romimage: file=$BXSHARE/BIOS-bochs-latest, address=0xf0000
+vgaromimage: file=/usr/share/vgabios/vgabios.bin
+# vgaromimage: $BXSHARE/VGABIOS-elpin-2.40
+romimage: file=/usr/local/bochs/share/bochs/BIOS-bochs-latest, address=0xe0000
 ata0-master: type=disk, path="img/disk.img", mode=flat, cylinders=100, heads=16, spt=63
 floppya: 1_44=img/grubfloppy.img, status=inserted
 boot: a
@@ -10,6 +11,7 @@ debug: action=ignore
 panic: action=fatal
 error: action=report
 info:  action=report 
+cpu: reset_on_triple_fault=0
 
 # newharddrivesupport: enabled=1
 # , slot2=ne2k

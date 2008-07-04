@@ -106,6 +106,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 		goto error;
 	}
 
+        // BSS
 	m = new MemMapArea(
 		VirtAddr((void*)hdr->bssVirt), 
 		VirtAddr((void*)(hdr->bssVirt + hdr->bssLength)));
@@ -114,7 +115,9 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	if (rc != 0) {
 		goto error;
 	}
+        memmap->setBss(m);
 
+        // STACK. Does not (yet) grow!
 	m = new MemMapArea(
 		VirtAddr((void*)(0xC0000000 - 0x100000)), 
 		VirtAddr((void*)(0xC0000000)));
@@ -161,6 +164,7 @@ bool UserTask::handlePageFault(PageFaultInfo& f) {
 	MemMapArea *m = memmap->findAreaByAddr(f.address);
 
 	if (! m) {
+                kout << "-- Page fault --" << endl;
 		kout << "Invalid address: " << f.address << endl;
 		kernelPanic("User task killed...\n");
 	}

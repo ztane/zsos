@@ -1,8 +1,10 @@
 #ifndef __NEW__INCLUDED__
 #define __NEW__INCLUDED__
 
-inline void* operator new(unsigned int, void* p)   throw() { return p; }
-inline void* operator new[](unsigned int, void* p) throw() { return p; }
+#include <stddef.h>
+
+inline void* operator new(size_t, void* p)   throw() { return p; }
+inline void* operator new[](size_t, void* p) throw() { return p; }
 inline void  operator delete  (void*, void*) throw() { };
 inline void  operator delete[](void*, void*) throw() { };
 

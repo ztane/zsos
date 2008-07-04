@@ -1,19 +1,23 @@
+ARCH=i486-linux-gnu
+# i586-pc-elf
+
 ifeq ($(DEBUG),1) 
-	CC	= gcc
-	CXX	= g++
-	LD	= ld
-	STRIP   = strip
-	AR      = ar
+	CC	= $(ARCH)-gcc
+	CXX	= $(ARCH)-g++
+	LD	= $(ARCH)-ld
+	STRIP   = $(ARCH)-strip
+	AR      = $(ARCH)-ar
 else
-	CC      = @echo "  * GCC    $<" && /usr/bin/gcc
-	CXX     = @echo "  * G++    $<" && /usr/bin/g++
-	LD      = @echo "  * LD     $@" && /usr/bin/ld
-	STRIP   = @echo "  * STRIP  $<" && /usr/bin/strip
-	AR      = @echo "  * AR     `basename $@`" && /usr/bin/ar
+	CC      = @echo "  * GCC    $<" && $(ARCH)-gcc
+	CXX     = @echo "  * G++    $<" && $(ARCH)-g++
+	LD      = @echo "  * LD     $@" && $(ARCH)-ld
+	STRIP   = @echo "  * STRIP  $<" && $(ARCH)-strip
+	AR      = @echo "  * AR     `basename $@`" && ar
 	MAKE    = @make -s
 endif
 
-CFLAGS  = -Wall -Werror -Wno-unused -Wextra -Wno-conversion -fno-builtin -nostdinc -Wno-multichar -O3
+CFLAGS  = -Wall -Werror -Wno-unused -Wextra -Wno-conversion -fno-builtin \
+	-nostdinc -Wno-multichar -O3 -fno-stack-protector -fno-stack-check
 CCFLAGS = -fno-rtti -fno-exceptions -nostdlib
 ARFLAGS = rcs
 

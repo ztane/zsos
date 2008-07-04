@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -27,9 +28,14 @@ void chug(int beers)
 int main(int argc, char *argv[]) 
 {
 	int beers;
+	void *x;	
+
 	for(beers = MAXBEER; beers; chug(beers--))
   		puts("");
 
+	printf("%p\n", brk(0));
+	x = malloc(1000);
+	printf("%p\n", x);
 	puts("\nTime to buy more beer!\n");
 
 	exit(0);

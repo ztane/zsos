@@ -4,6 +4,6 @@
 #ifdef __cplusplus 
 extern "C" 
 #endif
-void kernelPanic(char *message) __attribute__ ((noreturn));
+void kernelPanic(const char *message) __attribute__ ((noreturn));
 
 #endif // __PANIC_INCLUDED__

@@ -195,12 +195,13 @@ C_ISR(IRQ_0)
 // IRQ1 - Keyboard
 C_ISR(IRQ_1)
 {
-	int val = inb(0x60);
+	triggerSoftIrq(2);
+//	int val = inb(0x60);
 
 #if MAGIC_SYSRQ_KEY
-	if (val == 225) {
-		print_kernel_state(*const_cast<Registers*>(&r));
-	}
+//	if (val == 225) {
+//		print_kernel_state(*const_cast<Registers*>(&r));
+//	}
 #endif
 	unlock_irq(2);
 }
@@ -228,7 +229,7 @@ C_ISR(fpu_not_avail)   { out_status(' A N'); }
 // There's no way to recover from double fault, so we
 // just 
 C_ISR_W_ECODE(double_fault) { 
-	out_status(' F D'); 
+//	out_status(' F D'); 
 	while (1) { __asm__ __volatile__("hlt"); }
 }
 
@@ -264,10 +265,10 @@ C_ISR_W_ECODE(page_fault)          {
 	}
 	else {
 		kout << "\nIllegal page fault at " << f.address << ".\n";
+		out_status(' F P');
 		kout << "Present: " << f.present << "\n";
 		kout << "Write:   " << f.write << "\n";
 	        print_kernel_state(*const_cast<Registers*>(&r));
-		out_status(' F P');
 	}
 }
 

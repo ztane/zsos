@@ -51,7 +51,7 @@ public:
 	inline void operator &= (int32_t val) volatile {
 		__asm__ __volatile__(
 			____LOCK "andl %1, %0"
-			:"=m"(value):"r"(val), "m"(value));
+			:"=m"(value): "r"(val), "m"(value));
 	}
 
 	inline void operator |= (int32_t val) volatile {

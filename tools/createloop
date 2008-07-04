@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 
 filename=$1
 cylinders=$2
@@ -34,6 +34,6 @@ read
 /sbin/losetup -d $loopdev
 /sbin/losetup -o32256 $loopdev $filename
 
-/usr/sbin/mkfs.vfat $loopdev
+mkfs.vfat $loopdev
 
 /sbin/losetup -d $loopdev

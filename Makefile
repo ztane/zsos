@@ -27,7 +27,7 @@ always :
 	@echo "================================="
 
 kernel.bin: kernel/boot.o exe/*.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/kernel.ld
-	ld -T kernel/kernel.ld -e _start -N -dn kernel/boot.o exe/*.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
+	ld --accept-unknown-input-arch -T kernel/kernel.ld -e _start -N -dn kernel/boot.o exe/*.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
 #	$(STRIP) kernel.bin
 
 clean:
@@ -46,7 +46,7 @@ depclean:
 	@# $(MAKE) -C libutil depclean
 
 diskimage: 
-	@sudo sh tools/createloop img/disk.img 100
+	@sudo tools/createloop img/disk.img 100
 	@sudo chown `id -nu`:`id -ng` img/disk.img
 
 mount:

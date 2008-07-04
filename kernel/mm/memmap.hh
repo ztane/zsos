@@ -17,16 +17,14 @@ class MemMap {
 			return a.inUserSpaceEx();
 		}
 
-		void *current_brk;
-		void *heap_start;
+                MemMapArea *bss;
+
 	public:
 		MemMap() : begin(), end() { 
 			end.base = VirtAddr((void*)0xFFFFFFFFUL); 
 			end.end = VirtAddr((void*)0xFFFFFFFFUL);
 			end.lower = &begin;
 			begin.upper = &end;
-			current_brk = 0;
-			heap_start = 0;
 		}
 		int addArea(MemMapArea *a);
 		int addAreaAt(MemMapArea *a);
@@ -34,37 +32,40 @@ class MemMap {
 		void dumpMemMap() const;
 		
 		void *setBrk(void *newBrk) {
-			if (newBrk < heap_start) {
-				return current_brk;
-			}
-			
-			MemMapArea *a = findAreaByAddr(VirtAddr(heap_start));
-			if (! a) {
+			if (! bss) {
 				kernelPanic("Tried to adjust heap when no available!");
 			}
 
+                        // shrink beyond beginning?
+                        // linux returns the beginning of area, so do we!
+			if (VirtAddr(newBrk) < bss->base) {
+                                kout << bss->end.to_ptr();
+				return bss->end.to_ptr();
+			}
+			
 			uintptr_t tmp = (uintptr_t)newBrk;
 			// round up
 			tmp +=  0xFFF;
 			tmp &= ~0xFFF;
-			a->setEnd(VirtAddr((void*)tmp));
-			current_brk = newBrk;
+
+			bss->setEnd(VirtAddr((void*)tmp));
 			return newBrk;
 		}
 
+                void setBss(MemMapArea *area) {
+                        bss = area; 
+                }
+
 		MemMapArea *findAreaByAddr(VirtAddr a) const {
-			kout << a.inUserSpace() << endl;
 			if (! a.inUserSpace()) 
 				return 0;
 
 			MemMapArea *cur = begin.upper;
 
 			while (cur->base <= a) {
-				kout << cur->base << " " 
-				     << a         << " "
-				     << cur->end  << "\n";
 				if (cur->contains(a))
 					return cur;
+
 				cur = cur->upper;
 			}
 			return 0;

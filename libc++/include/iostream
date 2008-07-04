@@ -44,6 +44,7 @@ class ostream : public ios_base
 public:
 	ostream& operator<<(char const *parm);
 
+	ostream& operator<<(char parm);
 	ostream& operator<<(signed char parm);
 	ostream& operator<<(unsigned char parm);
 
