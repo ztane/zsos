@@ -1,0 +1,77 @@
+diff -urpN binutils-2.17/bfd/config.bfd binutils/binutils-2.17/bfd/config.bfd
+--- binutils-2.17/bfd/config.bfd	2006-04-05 15:41:57.000000000 +0300
++++ binutils/binutils-2.17/bfd/config.bfd	2008-07-03 23:57:33.709679295 +0300
+@@ -623,6 +623,10 @@ case "${targ}" in
+     targ_defvec=bfd_elf32_i386_vec
+     targ_selfvecs=i386chaos_vec
+     ;;
++  i[3-7]86-*-zsos)
++    targ_defvec=bfd_elf32_i386_vec
++    targ_selfvecs=i386coff_vec
++    ;;
+ 
+   i860-*-mach3* | i860-*-osf1* | i860-*-coff*)
+     targ_defvec=i860coff_vec
+diff -urpN binutils-2.17/config.sub binutils/binutils-2.17/config.sub
+--- binutils-2.17/config.sub	2006-01-16 19:34:37.000000000 +0200
++++ binutils/binutils-2.17/config.sub	2008-07-04 09:30:57.406217747 +0300
+@@ -1196,7 +1196,7 @@ case $os in
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+-	      | -aos* \
++	      | -aos* | -zsos* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+ 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+ 	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
+diff -urpN binutils-2.17/gas/configure.tgt binutils/binutils-2.17/gas/configure.tgt
+--- binutils-2.17/gas/configure.tgt	2006-04-05 15:41:57.000000000 +0300
++++ binutils/binutils-2.17/gas/configure.tgt	2008-07-03 23:58:47.075158850 +0300
+@@ -214,6 +214,7 @@ case ${generic_target} in
+   i386-*-*nt*)				fmt=coff em=pe ;;
+   i386-*-chaos)				fmt=elf ;;
+   i386-*-rdos*)				fmt=elf ;;
++  i386-*-zsos*) 			fmt=elf ;;
+ 
+   i860-*-*)				fmt=elf endian=little ;;
+ 
+diff -urpN binutils-2.17/ld/configure.tgt binutils/binutils-2.17/ld/configure.tgt
+--- binutils-2.17/ld/configure.tgt	2006-04-05 15:41:57.000000000 +0300
++++ binutils/binutils-2.17/ld/configure.tgt	2008-07-04 00:01:19.961678537 +0300
+@@ -224,6 +224,7 @@ i[3-7]86-*-beos*)	targ_emul=elf_i386_be 
+ i[3-7]86-*-vxworks*)	targ_emul=elf_i386_vxworks ;;
+ i[3-7]86-*-chaos)	targ_emul=elf_i386_chaos
+ 			;;
++i[3-7]86-*-zsos*)	targ_emul=zsos_i386 ;;
+ i860-*-coff)		targ_emul=coff_i860 ;;
+ i860-stardent-sysv4* | i860-stardent-elf*)
+ 			targ_emul=elf32_i860
+diff -urpN binutils-2.17/ld/emulparams/zsos_i386.sh binutils/binutils-2.17/ld/emulparams/zsos_i386.sh
+--- binutils-2.17/ld/emulparams/zsos_i386.sh	1970-01-01 02:00:00.000000000 +0200
++++ binutils/binutils-2.17/ld/emulparams/zsos_i386.sh	2008-07-04 00:05:14.171708876 +0300
+@@ -0,0 +1,13 @@
++# Edit these to match proper!
++SCRIPT_NAME=elf
++OUTPUT_FORMAT="elf32-i386"
++TEXT_START_ADDR=0
++PAGE_SIZE=0x1000
++MAXPAGESIZE=0x1000
++NOP=0x90909090
++ARCH=i386
++TEMPLATE_NAME=elf32
++GENERATE_SHLIB_SCRIPT=yes
++GENERATE_PIE_SCRIPT=yes
++NO_SMALL_DATA=yes
++SEPARATE_GOTPLT=12
+diff -urpN binutils-2.17/ld/Makefile.in binutils/binutils-2.17/ld/Makefile.in
+--- binutils-2.17/ld/Makefile.in	2006-06-03 07:45:50.000000000 +0300
++++ binutils/binutils-2.17/ld/Makefile.in	2008-07-04 00:07:37.929677701 +0300
+@@ -2407,6 +2407,8 @@ ez8001.c: $(srcdir)/emulparams/z8001.sh 
+ ez8002.c: $(srcdir)/emulparams/z8002.sh \
+   $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/z8000.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} z8002 "$(tdir_z8002)"
++ezsos_i386.c: $(srcdir)/emulparams/zsos_i386.sh $(ELFDEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} zsos_i386 "$(tdir_zsos_i386)"
+ eelf32frvfd.c: $(srcdir)/emulparams/elf32frvfd.sh \
+   $(srcdir)/emulparams/elf32frv.sh \
+   $(srcdir)/emultempl/elf32.em $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}

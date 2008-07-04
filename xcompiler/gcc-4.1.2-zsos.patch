@@ -1,0 +1,71 @@
+diff -urp orig/gcc-4.1.2/config.sub gcc-4.1.2/config.sub
+--- orig/gcc-4.1.2/config.sub	2005-12-16 14:57:40.000000000 +0200
++++ gcc-4.1.2/config.sub	2008-07-04 00:08:34.299208896 +0300
+@@ -1185,7 +1185,7 @@ case $os in
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+-	      | -aos* \
++	      | -aos* | -zsos* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+ 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+ 	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* | -openbsd* \
+diff -urp orig/gcc-4.1.2/gcc/config.gcc gcc-4.1.2/gcc/config.gcc
+--- orig/gcc-4.1.2/gcc/config.gcc	2006-10-16 02:12:23.000000000 +0300
++++ gcc-4.1.2/gcc/config.gcc	2008-07-04 00:13:19.481678210 +0300
+@@ -542,6 +542,12 @@ case ${target} in
+     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
+   esac
+   ;;
++*-*-zsos*)
++  extra_parts="crtbegin.o crtend.o"
++  gas=yes
++  gnu_ld=yes
++  default_use_cxa_atexit=yes
++  ;;
+ esac
+ 
+ case ${target} in
+@@ -1272,6 +1278,11 @@ i[34567]86-*-kaos*)
+ 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h kaos.h i386/kaos-i386.h"
+ 	tmake_file="i386/t-i386elf t-svr4"
+ 	;;
++i[34567]86-*-zsos*)
++	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h zsos.h"
++	tmake_file="i386/t-i386elf t-svr4"
++	use_fixproto=yes
++	;;
+ ia64*-*-elf*)
+ 	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/elf.h"
+ 	tmake_file="ia64/t-ia64"
+diff -urp orig/gcc-4.1.2/libstdc++-v3/crossconfig.m4 gcc-4.1.2/libstdc++-v3/crossconfig.m4
+--- orig/gcc-4.1.2/libstdc++-v3/crossconfig.m4	2006-12-12 16:18:36.000000000 +0200
++++ gcc-4.1.2/libstdc++-v3/crossconfig.m4	2008-07-04 00:17:46.413676419 +0300
+@@ -477,6 +477,12 @@ case "${host}" in
+     AC_DEFINE(HAVE_TANHF)
+     AC_DEFINE(HAVE_TANHL)
+     ;;
++  *-zsos*)
++    AC_CHECK_HEADERS([sys/types.h locale.h float.h])
++    GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
++    GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
++    GLIBCXX_CHECK_STDLIB_SUPPORT
++    ;;
+   *)
+     AC_MSG_ERROR([No support for this host/target combination.])
+    ;;
+diff -urpN orig/gcc-4.1.2/gcc/config/zsos.h gcc-4.1.2/gcc/config/zsos.h
+--- orig/gcc-4.1.2/gcc/config/zsos.h	1970-01-01 02:00:00.000000000 +0200
++++ gcc-4.1.2/gcc/config/zsos.h	2008-07-04 00:47:18.369678216 +0300
+@@ -0,0 +1,11 @@
++#undef TARGET_OS_CPP_BUILTINS
++#define TARGET_OS_CPP_BUILTINS()	\
++  do {					\
++    builtin_define_std ("zsos");	\
++    builtin_define_std ("unix");	\
++    builtin_assert ("system=zsos");	\
++    builtin_assert ("system=unix");	\
++  } while (0);
++
++#undef TARGET_VERSION
++#define TARGET_VERSION fprintf(stderr, " (i386 zsos)");
