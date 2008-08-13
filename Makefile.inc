@@ -15,12 +15,16 @@ else
 	MAKE    = @make -s
 endif
 
+ARCH_PREFIX=/opt/zsos-gcc
+
+PATH := $(ARCH_PREFIX)/bin:$(PATH)
+
 CFLAGS  = -Wall -Werror -Wno-unused -Wextra -Wno-conversion -fno-builtin \
 	-nostdinc -Wno-multichar -O3 -fno-stack-protector -fno-stack-check
 CCFLAGS = -fno-rtti -fno-exceptions -nostdlib
 ARFLAGS = rcs
 
-GCCINCLUDEDIRS := $(shell gcc-config -L)/include
+GCCINCLUDEDIRS := $(shell $(ARCH_PREFIX)/bin/gcc-config -L)/include
 
 DEPS = $(CMODULES:%=.dep/%.dep) $(CCMODULES:%=.dep/%.dep) $(ASMMODULES:%=.dep/%.dep)
 
