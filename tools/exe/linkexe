@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 _xx=$1
 x=$2
 shift
@@ -9,8 +9,8 @@ then
 	exit 1
 fi
 
-ld -T exe.ld -o $x lib/crt0start.o $*
-echo ld -T exe.ld -o $x lib/crt0start.o $*
+i586-pc-zsos-ld -o $x $* ./libpython2.5.a /opt/zsos-gcc/i586-pc-zsos/lib/libfakesys.o -T exe.ld
+echo i586-pc-zsos-ld -o $x $* ./libpython2.5.a -T exe.ld 
 
-objcopy -I binary "$x" -O elf32-i386 "${x}.o"
-echo objcopy -I binary "$x" -O elf32-i386 "${x}.o"
+i586-pc-zsos-objcopy -I binary "$x" -O elf32-i386 "${x}.o"
+echo i586-pc-zsos-objcopy -I binary "$x" -O elf32-i386 "${x}.o"

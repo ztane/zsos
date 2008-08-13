@@ -20,13 +20,16 @@
 #include "kernel/mm/datapageloader.hh"
 
 #include "kernel/panic.hh"
+#include "kernel/consoledriver.hh"
 
 TssContents tssSegment __attribute__((aligned(4096)));
 
 UserTask::UserTask(const char *name, State state, int priority) 
 	: Task(name, state, priority) 
 {
-
+	for (int i = 0; i < MAX_FILEDES; i++) {
+		fileDescriptors[i] = NULL;
+	}
 }
 
 void UserTask::enable_io() {
@@ -37,6 +40,26 @@ void UserTask::enable_io() {
 }
 
 extern "C" void ____user_task_dispatch_new_asm(); 
+
+static void initialize_stdstreams(UserTask *task) {
+	for (int i = 0; i < Task::MAX_FILEDES; i++)
+		task->fileDescriptors[i] = NULL;
+
+	// create stdout
+        FileDescriptor *fd;
+        ErrnoCode errno = getConsoleDriver()->open(FileDescriptor::WRITE, fd);
+	if (errno != NOERROR) {
+		kernelPanic("Failed to open terminal for writing!");
+	}
+	task->fileDescriptors[1] = fd;
+
+	// create stderr
+        errno = getConsoleDriver()->open(FileDescriptor::WRITE, fd);
+	if (errno != NOERROR) {
+		kernelPanic("Failed to open terminal for writing!");
+	}
+	task->fileDescriptors[2] = fd;
+}
 
 void UserTask::initialize(ZsosExeHeader *hdr) {
 	unsigned int *tmp;
@@ -127,8 +150,9 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 		goto error;
 	}
 
-	memmap->dumpMemMap();
-	return;		
+	initialize_stdstreams(this);
+	return;
+
 error:
 	kernelPanic("Error in UserTask::initialize");
 }

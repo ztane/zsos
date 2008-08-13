@@ -1,5 +1,4 @@
-ARCH=i486-linux-gnu
-# i586-pc-elf
+ARCH=i586-pc-zsos
 
 ifeq ($(DEBUG),1) 
 	CC	= $(ARCH)-gcc

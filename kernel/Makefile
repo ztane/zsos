@@ -10,14 +10,15 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 	cpuid pageframe memarea pci kerneltask softirq     \
 	become_io_task console processes init idletask	   \
 	mm memmap zeropageloader textpageloader 	   \
-	datapageloader sysmm keyboard
+	datapageloader sysmm keyboard filelike filedescriptor \
+	consoledriver
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 DEPDIR=dep
 LIBDIR=.
-VPATH=.:mm:syscalls:ktasks
+VPATH=.:mm:syscalls:ktasks:fs
 TESTDIR=t
 
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)

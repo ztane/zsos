@@ -26,6 +26,10 @@
 #include "mutex.hh"
 #include "init.hh"
 
+#include "kernel/fs/filedescriptor.hh"
+
+extern FileLike *getConsoleDriver();
+
 void print_memmap(MultibootInfo *mbi) 
 {
 	int ct = mbi->number_of_mmap_entries();
@@ -218,7 +222,6 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	scheduler.addTask(&tesmi);
 
 	kout << " done\nNow entering init:\n";
-
 	scheduler.schedule();
 	kernelPanic("Fell out from scheduling loop!\n");
 }

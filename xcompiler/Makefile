@@ -1,4 +1,4 @@
-TARGET = i586-elf
+TARGET = i586-pc-zsos
 GCC_VERSION = 4.1.2
 BINUTILS_VERSION = 2.17
 PREFIX = /opt/zsos-gcc
@@ -62,7 +62,7 @@ src/gcc:
 	cd src/gcc && patch -p1 < ../../gcc-4.1.2-zsos.patch
 
 install-gcc:
-	cd build/gcc && sudo PATH="$(NEWPATH)" make install-gcc
+	cd build/gcc && sudo env PATH="$(NEWPATH)" make install-gcc
 
 ###############################################################################
 

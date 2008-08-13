@@ -23,6 +23,75 @@
 
 #define KB_ENABLE_INTERRUPT   0x01 // in Command Byte
 
+struct KEY {
+	uint32_t nonmodified;
+	uint32_t shifted;
+	uint32_t alted;
+	uint32_t shiftalted;
+};
+
+KEY keyTable[256] = {
+	{ 	0,	0,	0, 	0 },
+	{ 	0,	0,   	0, 	0 },
+	{ 	'1', 	'!', 	0, 	0 },
+	{ 	'2', 	'"', 	'@', 	0 },
+	{ 	'3', 	'#', 	'£', 	0 },
+	{ 	'4', 	'¤', 	'$', 	0 },
+	{ 	'5', 	'%', 	0, 	0 },
+	{ 	'6', 	'&', 	0, 	0 },
+	{ 	'7', 	'/', 	'{', 	0 },
+	{ 	'8', 	'(', 	'[', 	0 },
+	{ 	'9', 	')', 	']', 	0 },
+	{ 	'0', 	'=', 	'}', 	0 },
+	{ 	'+', 	'?', 	'\\', 	0 },
+	{ 	'\'', 	'`', 	0, 	0 },
+	{ 	0,	0,	0, 	0 },
+	{ 	'\t',	'\t',	0, 	0 },
+	{ 	'q', 	'Q', 	0, 	0 },
+	{ 	'w', 	'W', 	0, 	0 },
+	{ 	'e', 	'E', 	0, 	0 },
+	{ 	'r', 	'R', 	0, 	0 },
+	{ 	't', 	'T', 	0, 	0 },
+	{ 	'y', 	'Y', 	0, 	0 },
+	{ 	'u', 	'U', 	0, 	0 },
+	{ 	'i', 	'I', 	0, 	0 },
+	{ 	'o', 	'O', 	0, 	0 },
+	{ 	'p', 	'P', 	0, 	0 },
+	{ 	'\xe5', '\xc5', 0, 	0 },
+	{ 	0, 	'^', 	'~', 	0 },
+	{ 	'\n', 	'\n', 	0, 	0 },
+	{ 	0, 	0, 	0, 	0 },
+	{ 	'a', 	'A', 	0, 	0 },
+	{ 	's', 	'S', 	0, 	0 },
+	{ 	'd', 	'D', 	0, 	0 },
+	{ 	'f', 	'F', 	0, 	0 },
+	{ 	'g', 	'G', 	0, 	0 },
+	{ 	'h', 	'H', 	0, 	0 },
+	{ 	'j', 	'J', 	0, 	0 },
+	{ 	'k', 	'K', 	0, 	0 },
+	{ 	'l', 	'L', 	0, 	0 },
+	{ 	'ö', 	'Ö', 	0, 	0 },
+	{ 	'ä', 	'Ä', 	0, 	0 },
+	{ 	0, 	0, 	0, 	0 },
+	{ 	0, 	0, 	0, 	0 },
+	{ 	'\'', 	'*', 	0, 	0 },
+	{ 	'z', 	'Z', 	0, 	0 },
+	{ 	'x', 	'X', 	0, 	0 },
+	{ 	'c', 	'C', 	0, 	0 },
+	{ 	'v', 	'V', 	0, 	0 },
+	{ 	'b', 	'B', 	0, 	0 },
+	{ 	'n', 	'N', 	0, 	0 },
+	{ 	'm', 	'M', 	0, 	0 },
+	{ 	',', 	';', 	0, 	0 },
+	{ 	'.', 	':', 	0, 	0 },
+	{ 	'-', 	'_', 	0, 	0 },
+	{ 	0, 	0, 	0, 	0 },
+	{ 	0, 	0, 	0, 	0 },
+	{ 	0, 	0, 	0, 	0 },
+	{ 	' ', 	' ', 	0, 	0 },
+};
+
+
 static inline int readKb() {
     return inb(KB_INPUT);
 }
@@ -78,12 +147,49 @@ static volatile Atomic current_state = 0;
 static const int KEY_PAUSE        = 0xE1;
 static const int KEY_PRINT_SCREEN = 0xFF;
 
+static const int KEY_LEFT_SHIFT   = 42;
+static const int KEY_RIGHT_SHIFT  = 54;
+static const int KEY_RIGHT_ALT    = 184;
+
+static int modifiers = 0;
+
 static void queueKeyDown(int key) {
-    kout << "Key down: " << key << "\n";
+	if (key == KEY_LEFT_SHIFT) {
+		modifiers |= 1;
+	}
+	if (key == KEY_RIGHT_SHIFT) {
+		modifiers |= 2;
+	}
+	if (key == KEY_RIGHT_ALT) {
+		modifiers |= 4;
+	}
 }
 
 static void queueKeyUp(int key) {
-    kout << "Key up: " << key << "\n";
+	if (key == KEY_LEFT_SHIFT) {
+		modifiers &= ~1;
+	}
+	else if (key == KEY_RIGHT_SHIFT) {
+		modifiers &= ~2;
+	}
+	else if (key == KEY_RIGHT_ALT) {
+		modifiers &= ~4;
+	}
+	else {
+		int ascii;
+		if (modifiers & 0x4) {
+			ascii = keyTable[key].alted;
+		}
+		else if (modifiers & 0x3) {
+			ascii = keyTable[key].shifted;
+		}
+		else {
+			ascii = keyTable[key].nonmodified;
+		}
+
+		if (ascii)
+			kout << (char)ascii;
+	}
 }
 
 static void keyboardRoutine(int vector) {
@@ -137,7 +243,7 @@ static void keyboardRoutine(int vector) {
 
             current_state = 0;
         }
-    }    
+    }
 }
 
 // kbWrite:

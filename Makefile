@@ -1,12 +1,14 @@
 include Makefile.inc
 
-MOUNTCMD  = sudo mount -tvfat -oloop=/dev/loop7,offset=32256,uid=`id -u`,gid=`id -g` img/disk.img mnt
+MOUNTCMD  = sudo mount -tvfat -oloop,offset=32256,uid=`id -u`,gid=`id -g` img/disk.img mnt
 UMOUNTCMD = sudo umount mnt
 GRUBMOUNT = sudo mount -tvfat -oloop,uid=`id -u`,gid=`id -g` img/grubfloppy.img mnt
 
 .phony : all clean diskimage
 
-all : always kernel.bin
+all : buildall
+
+buildall : always kernel.bin
 
 always : 
 	@echo kernel:
@@ -58,13 +60,13 @@ umount:
 mount-grub: img/grubfloppy.img
 	@$(GRUBMOUNT)
 
-img/grubfloppy.img: img/grubfloppy.img.gz
-	@gzcat img/grubfloppy.img.gz > img/grubfloppy.img
+img/grubfloppy.img: img/grubfloppy.img.bz2
+	@bzcat img/grubfloppy.img.bz2 > img/grubfloppy.img
 
-run: always install img/grubfloppy.img
+run: buildall install img/grubfloppy.img
 	@bochs -qf etc/bochsrc-gui
 
-crun: always install img/grubfloppy.img
+crun: buildall install img/grubfloppy.img
 	@bochs -qf etc/bochsrc-console
 
 install:
