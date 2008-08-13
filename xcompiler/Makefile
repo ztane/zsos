@@ -3,6 +3,9 @@ GCC_VERSION = 4.1.2
 BINUTILS_VERSION = 2.17
 NEWLIB_VERSION = 1.16.0
 PREFIX = /opt/zsos-gcc
+MAKEOPTS = -j3
+
+MAKECMD = make $(MAKEOPTS)
 
 NEWPATH = $(PREFIX)/bin:$(PATH)
 
@@ -15,9 +18,12 @@ NEWLIB_CONFIG = --target=$(TARGET) --prefix=$(PREFIX)
 
 .PHONY : all clean cleanall
 
-all: gcc newlib fakesys
+all: gcc newlib fakesys install-gcc-config
 	echo "All done. You might additionally execute 'make linkopt'"
 	echo "to make symlinks in /opt/bin for commands."
+
+install-gcc-config: gcc-config
+	cp gcc-config $(PREFIX)/bin
 
 install: install-gcc
 
@@ -30,12 +36,13 @@ clean:
 ################################################################################
 
 binutils: binutils-configure
-	cd build/binutils && make all
+	cd build/binutils && $(MAKECMD) all
 
 binutils-configure: build/binutils/Makefile
 
 build/binutils/Makefile: src/binutils
 	mkdir -p build/binutils
+
 	cd build/binutils && ../../src/binutils/binutils-$(BINUTILS_VERSION)/configure \
                  $(BINUTILS_CONFIG)
 
@@ -45,7 +52,7 @@ src/binutils: binutils-$(BINUTILS_VERSION).tar.bz2
 
 binutils-install:
 	echo "Installing binutils, sudo rights needed."
-	cd build/binutils && sudo make install
+	cd build/binutils && sudo $(MAKECMD) install
 
 ################################################################################
 
@@ -54,7 +61,7 @@ gcc: binutils binutils-install gcc-build install-gcc
 gcc-configure: build/gcc/Makefile
 
 gcc-build: gcc-configure
-	cd build/gcc && PATH="$(NEWPATH)" make all-gcc
+	cd build/gcc && PATH="$(NEWPATH)" $(MAKECMD) all-gcc
 
 build/gcc/Makefile: src/gcc
 	mkdir -p build/gcc
@@ -67,18 +74,18 @@ src/gcc:
 	cd src/gcc && patch -p1 < ../../gcc-4.1.2-zsos.patch
 
 install-gcc:
-	cd build/gcc && sudo env PATH="$(NEWPATH)" make install-gcc
+	cd build/gcc && sudo env PATH="$(NEWPATH)" $(MAKECMD) install-gcc
 
 ###############################################################################
 
 newlib: newlib-make
-	cd build/newlib && sudo env PATH="$(NEWPATH)" make install
+	cd build/newlib && sudo env PATH="$(NEWPATH)" $(MAKECMD) install
 
 newlib-make: src/newlib
 	mkdir -p build/newlib
-	cd build/newlib && ../../src/newlib/newlib-$(NEWLIB_VERSION)/configure \
+	cd build/newlib && PATH=$(NEWPATH) ../../src/newlib/newlib-$(NEWLIB_VERSION)/configure \
                  $(NEWLIB_CONFIG)
-	cd build/newlib && make all
+	cd build/newlib && PATH="$(NEWPATH)" $(MAKECMD) all
 
 src/newlib:
 	mkdir -p src/newlib
