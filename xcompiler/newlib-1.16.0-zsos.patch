@@ -1,5 +1,5 @@
-diff -rpuN orig/newlib-1.16.0/config.sub newlib-1.16.0/config.sub
---- orig/newlib-1.16.0/config.sub	2007-12-05 05:27:21.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/config.sub newlib-1.16.0/config.sub
+--- orignewlib/newlib-1.16.0/config.sub	2007-12-05 05:27:21.000000000 +0200
 +++ newlib-1.16.0/config.sub	2008-07-04 19:36:52.000000000 +0300
 @@ -1235,7 +1235,7 @@ case $os in
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
@@ -10,8 +10,8 @@ diff -rpuN orig/newlib-1.16.0/config.sub newlib-1.16.0/config.sub
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
  	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
  	      | -hiux* | -386bsd* | -knetbsd* | -mirbsd* | -netbsd* \
-diff -rpuN orig/newlib-1.16.0/configure newlib-1.16.0/configure
---- orig/newlib-1.16.0/configure	2007-12-18 09:37:34.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/configure newlib-1.16.0/configure
+--- orignewlib/newlib-1.16.0/configure	2007-12-18 09:37:34.000000000 +0200
 +++ newlib-1.16.0/configure	2008-07-04 20:18:47.000000000 +0300
 @@ -1,25 +1,54 @@
  #! /bin/sh
@@ -12386,8 +12386,8 @@ diff -rpuN orig/newlib-1.16.0/configure newlib-1.16.0/configure
  
  { (exit 0); exit 0; }
  _ACEOF
-diff -rpuN orig/newlib-1.16.0/newlib/configure.host newlib-1.16.0/newlib/configure.host
---- orig/newlib-1.16.0/newlib/configure.host	2007-11-07 23:42:24.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/configure.host newlib-1.16.0/newlib/configure.host
+--- orignewlib/newlib-1.16.0/newlib/configure.host	2007-11-07 23:42:24.000000000 +0200
 +++ newlib-1.16.0/newlib/configure.host	2008-07-04 19:45:26.000000000 +0300
 @@ -422,6 +422,10 @@ case "${host}" in
  	##newlib_cflags="${newlib_cflags} -idirafter ${gcc_dir}include"
@@ -12400,8 +12400,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/configure.host newlib-1.16.0/newlib/configu
    m68hc11-*-*|m6811-*-*|m6812-*-*|m68hc12-*-*)
  	;;
  
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/configure newlib-1.16.0/newlib/libc/sys/configure
---- orig/newlib-1.16.0/newlib/libc/sys/configure	2007-05-24 20:33:36.000000000 +0300
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/configure newlib-1.16.0/newlib/libc/sys/configure
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/configure	2007-05-24 20:33:36.000000000 +0300
 +++ newlib-1.16.0/newlib/libc/sys/configure	2008-07-04 19:46:00.000000000 +0300
 @@ -1,25 +1,54 @@
  #! /bin/sh
@@ -22511,8 +22511,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/configure newlib-1.16.0/newlib/lib
        esac
  
        { echo "$as_me:$LINENO: running $SHELL $ac_sub_configure $ac_sub_configure_args --cache-file=$ac_sub_cache_file --srcdir=$ac_srcdir" >&5
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/configure.in newlib-1.16.0/newlib/libc/sys/configure.in
---- orig/newlib-1.16.0/newlib/libc/sys/configure.in	2007-05-24 20:33:37.000000000 +0300
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/configure.in newlib-1.16.0/newlib/libc/sys/configure.in
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/configure.in	2007-05-24 20:33:37.000000000 +0300
 +++ newlib-1.16.0/newlib/libc/sys/configure.in	2008-07-04 18:49:20.000000000 +0300
 @@ -45,6 +45,7 @@ if test -n "${sys_dir}"; then
  	tic80) AC_CONFIG_SUBDIRS(tic80) ;;
@@ -22522,8 +22522,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/configure.in newlib-1.16.0/newlib/
    esac;
  fi
  
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4 newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4	1970-01-01 02:00:00.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4 newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4	1970-01-01 02:00:00.000000000 +0200
 +++ newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4	2008-07-04 20:27:09.000000000 +0300
 @@ -0,0 +1,892 @@
 +# generated automatically by aclocal 1.10 -*- Autoconf -*-
@@ -23418,8 +23418,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/aclocal.m4 newlib-1.16.0/newl
 +]) # _AM_PROG_TAR
 +
 +m4_include([../../../acinclude.m4])
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/configure newlib-1.16.0/newlib/libc/sys/zsos/configure
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/configure	1970-01-01 02:00:00.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/configure newlib-1.16.0/newlib/libc/sys/zsos/configure
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/configure	1970-01-01 02:00:00.000000000 +0200
 +++ newlib-1.16.0/newlib/libc/sys/zsos/configure	2008-07-04 20:27:14.000000000 +0300
 @@ -0,0 +1,4813 @@
 +#! /bin/sh
@@ -28235,8 +28235,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/configure newlib-1.16.0/newli
 +  $ac_cs_success || { (exit 1); exit 1; }
 +fi
 +
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/configure.in newlib-1.16.0/newlib/libc/sys/zsos/configure.in
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/configure.in	1970-01-01 02:00:00.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/configure.in newlib-1.16.0/newlib/libc/sys/zsos/configure.in
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/configure.in	1970-01-01 02:00:00.000000000 +0200
 +++ newlib-1.16.0/newlib/libc/sys/zsos/configure.in	2008-07-04 19:57:10.000000000 +0300
 @@ -0,0 +1,7 @@
 +AC_PREREQ(2.59)
@@ -28246,14 +28246,27 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/configure.in newlib-1.16.0/ne
 +NEWLIB_CONFIGURE(../../..)
 +AC_CONFIG_FILES([Makefile])
 +AC_OUTPUT
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/crt0.c newlib-1.16.0/newlib/libc/sys/zsos/crt0.c
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/crt0.c	1970-01-01 02:00:00.000000000 +0200
-+++ newlib-1.16.0/newlib/libc/sys/zsos/crt0.c	2008-07-04 18:53:44.000000000 +0300
-@@ -0,0 +1,21 @@
-+#include "syscall.h"
-+
-+extern void (*__CTOR_LIST__)();
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/crt0.c newlib-1.16.0/newlib/libc/sys/zsos/crt0.c
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/crt0.c	1970-01-01 02:00:00.000000000 +0200
++++ newlib-1.16.0/newlib/libc/sys/zsos/crt0.c	2008-08-08 14:25:01.000000000 +0300
+@@ -0,0 +1,29 @@
 +extern int main(int argc, char *argv[]);
++extern void (*__CTOR_LIST__)();
++
++static void call_ctors();
++
++extern char **environ;
++char *__env[1] = { 0 };
++
++void _start() {
++	char *argv[] = { "exe", 0 };
++        environ = __env;
++
++	call_ctors();
++	exit(main(1, argv));
++}
++
++#include "syscall.h"
 +
 +static void call_ctors()
 +{
@@ -28266,13 +28279,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/crt0.c newlib-1.16.0/newlib/l
 +        }
 +}
 +
-+void __CRT_startup() {
-+	char *argv[] = { "exe", 0 };
-+	call_ctors();
-+	exit(main(1, argv));
-+}
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am	1970-01-01 02:00:00.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am	1970-01-01 02:00:00.000000000 +0200
 +++ newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am	2008-07-04 20:02:28.000000000 +0300
 @@ -0,0 +1,25 @@
 +AUTOMAKE_OPTIONS = cygnus
@@ -28300,8 +28308,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.am newlib-1.16.0/new
 +ACLOCAL_AMFLAGS = -I ../../..
 +CONFIG_STATUS_DEPENDENCIES = $(newlib_basedir)/configure.host
 +
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in	1970-01-01 02:00:00.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in	1970-01-01 02:00:00.000000000 +0200
 +++ newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in	2008-07-04 20:27:18.000000000 +0300
 @@ -0,0 +1,398 @@
 +# Makefile.in generated by automake 1.10 from Makefile.am.
@@ -28702,8 +28710,8 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/Makefile.in newlib-1.16.0/new
 +# Tell versions [3.59,3.63) of GNU make to not export all variables.
 +# Otherwise a system limit (for SysV at least) may be exceeded.
 +.NOEXPORT:
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/syscall.h newlib-1.16.0/newlib/libc/sys/zsos/syscall.h
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/syscall.h	1970-01-01 02:00:00.000000000 +0200
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/syscall.h newlib-1.16.0/newlib/libc/sys/zsos/syscall.h
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/syscall.h	1970-01-01 02:00:00.000000000 +0200
 +++ newlib-1.16.0/newlib/libc/sys/zsos/syscall.h	2008-07-04 20:33:11.000000000 +0300
 @@ -0,0 +1,15 @@
 +#ifndef __SYSCALL_H__
@@ -28721,12 +28729,14 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/syscall.h newlib-1.16.0/newli
 +static void *__sys_brk(void * newad) { long __res; __asm__ volatile ("push %%ebx ; movl %2,%%ebx ; int $0x80 ; pop %%ebx" : "=a" (__res) : "0" (45),"ri" ((long)(newad)) : "memory"); do { if ((unsigned long)(__res) >= (unsigned long)(-(128 + 1))) { errno = -(__res); __res = -1; } return (void *) (__res); } while (0); };
 +
 +#endif
-diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c
---- orig/newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c	1970-01-01 02:00:00.000000000 +0200
-+++ newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c	2008-07-04 20:10:28.000000000 +0300
-@@ -0,0 +1,97 @@
+diff -pNur orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c
+--- orignewlib/newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c	1970-01-01 02:00:00.000000000 +0200
++++ newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c	2008-08-08 14:23:17.000000000 +0300
+@@ -0,0 +1,147 @@
 +#include <sys/stat.h>
 +#include <sys/times.h>
++#include <stddef.h>
++#include <stdint.h>
 +#include "syscall.h"
 +
 +#include <errno.h>
@@ -28735,12 +28745,9 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c newlib-1.16.0/newl
 +extern int errno;
 +
 +void _exit(int status) {
-+         __exit(status);
++         __sys_exit(status);
 +         while (1) { };
 +}
-+
-+char *__env[1] = { 0 };
-+char **environ = __env;
 +
 +int close(int file){
 +        return -1;
@@ -28810,15 +28817,66 @@ diff -rpuN orig/newlib-1.16.0/newlib/libc/sys/zsos/syscalls.c newlib-1.16.0/newl
 +        return -1;
 +}
 +
-+int write(int file, void *ptr, int len){
-+        char *ptr2 = ptr;
-+        int todo;
++int write(int file, void *ptr, int len) {
++	// todo: handle errno.
++	return __sys_write(file, ptr, len);
 +
-+        for (todo = 0; todo < len; todo++) {
-+                __write_character(*ptr2++);
-+        }
++        // char *ptr2 = ptr;
++        // int todo;
 +
-+        return len;
++        // for (todo = 0; todo < len; todo++) {
++        //        __sys_write_character(*ptr2++);
++        // }
++
++        // return len;
 +}
 +
++static void *__brkptr = 0x0;
++int brk(void *newp) {
++        void *rv;
++
++        if (__brkptr == 0) {
++                __brkptr = __sys_brk(0);
++        }
++
++        rv = __sys_brk(newp);
++        if (newp != __brkptr && rv == __brkptr) {
++                errno = ENOMEM;
++                return -1;
++        }
++
++        // negative error?
++        if (((uintptr_t)rv) > (uintptr_t)-128) {
++                errno = ENOMEM;
++                return -1;
++        }
++
++        __brkptr = rv;
++        return 0;
++}
++
++void *sbrk(ptrdiff_t inc) {
++        void *rv;
++        void *res;
++
++        if (__brkptr == 0) {
++                __brkptr = __sys_brk(0);
++        }
++        rv = __brkptr;
++        res = __sys_brk((char*)rv + inc);
++
++        if (inc != 0 && res == __brkptr) {
++                errno = ENOMEM;
++                return (void*)-1;
++        }
++
++        // negative error?
++        if (((uintptr_t)res) > (uintptr_t)-128) {
++                errno = ENOMEM;
++                return (void*)-1;
++        }
++
++        __brkptr = res;
++        return rv;
++}
 +

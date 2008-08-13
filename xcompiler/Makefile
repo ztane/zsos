@@ -1,6 +1,7 @@
 TARGET = i586-pc-zsos
 GCC_VERSION = 4.1.2
 BINUTILS_VERSION = 2.17
+NEWLIB_VERSION = 1.16.0
 PREFIX = /opt/zsos-gcc
 
 NEWPATH = $(PREFIX)/bin:$(PATH)
@@ -10,9 +11,13 @@ GCC_CONFIG = --prefix=$(PREFIX) --disable-nls --without-headers \
 
 BINUTILS_CONFIG = --target=$(TARGET) --prefix=$(PREFIX) --disable-nls
 
+NEWLIB_CONFIG = --target=$(TARGET) --prefix=$(PREFIX)
+
 .PHONY : all clean cleanall
 
-all: gcc
+all: gcc newlib fakesys
+	echo "All done. You might additionally execute 'make linkopt'"
+	echo "to make symlinks in /opt/bin for commands."
 
 install: install-gcc
 
@@ -34,7 +39,7 @@ build/binutils/Makefile: src/binutils
 	cd build/binutils && ../../src/binutils/binutils-$(BINUTILS_VERSION)/configure \
                  $(BINUTILS_CONFIG)
 
-src/binutils:
+src/binutils: binutils-$(BINUTILS_VERSION).tar.bz2
 	mkdir -p src/binutils && cd src/binutils && tar xfj ../../binutils-$(BINUTILS_VERSION).tar.bz2
 	cd src/binutils && patch -p1 < ../../binutils-2.17-zsos.patch
 
@@ -44,7 +49,7 @@ binutils-install:
 
 ################################################################################
 
-gcc: binutils binutils-install gcc-build
+gcc: binutils binutils-install gcc-build install-gcc
 
 gcc-configure: build/gcc/Makefile
 
@@ -66,5 +71,25 @@ install-gcc:
 
 ###############################################################################
 
+newlib: newlib-make
+	cd build/newlib && sudo env PATH="$(NEWPATH)" make install
+
+newlib-make: src/newlib
+	mkdir -p build/newlib
+	cd build/newlib && ../../src/newlib/newlib-$(NEWLIB_VERSION)/configure \
+                 $(NEWLIB_CONFIG)
+	cd build/newlib && make all
+
+src/newlib:
+	mkdir -p src/newlib
+	cd src/newlib && tar xfj ../../newlib-$(NEWLIB_VERSION).tar.bz2
+	cd src/newlib && patch -p1 < ../../newlib-$(NEWLIB_VERSION)-zsos.patch
+
+fakesys:
+	cd libfakesys && $(TARGET)-gcc -c libfakesys.c
+	@echo "Copying libfakesys, sudo rights required"
+	sudo cp libfakesys/libfakesys.o $(PREFIX)/$(TARGET)/lib
+
 linkopt:
 	sudo ln -f -s $(PREFIX)/bin/$(TARGET)* /opt/bin
+
