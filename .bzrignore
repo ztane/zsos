@@ -2,3 +2,5 @@ zsos-src/kernel/.dep
 zsos-src/kernel/.dep/*
 zsos-src/img/*.img
 zsos-src/kernel.bin
+zsos-src/fat/joo.img
+zsos-src/fat/fattest

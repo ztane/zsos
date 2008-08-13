@@ -462,7 +462,7 @@ bool FatOrdinaryFile::get_next_sector(uint32_t current_sector, SectorHandle& han
 int main() {
 	FILE *fp;
 
-	BlockDevice dev("vittu.img");
+	BlockDevice dev("joo.img");
 	FatFileSystem f(dev);
 	FatDirectoryFile *root = f.get_root_directory();
 
@@ -476,11 +476,10 @@ int main() {
 	while (lfns.get_next_entry(e)) {
 		fprintf(stderr, "------------------\n");
 		fprintf(stderr, "filename: %s\n", e.filename);
-
 		fprintf(stderr, "filesize: %d\n", e.filesize);
 
 	        FatOrdinaryFile fil = FatOrdinaryFile(&f, e.first_cluster, e.filesize);
-	
+
 		SectorHandle sh;
 		bool res = fil.get_first_sector(sh);
 		while (res) {
