@@ -6,31 +6,31 @@
 namespace ide {
 
 /*
-const uint16_t CMD_BASE_0	= 0x1f0;
-const uint16_t CTRL_BASE_0	= 0x3f6;
-const uint16_t CMD_BASE_1	= 0x170;
-const uint16_t CTRL_BASE_1	= 0x376;
+static const uint16_t CMD_BASE_0	= 0x1f0;
+static const uint16_t CTRL_BASE_0	= 0x3f6;
+static const uint16_t CMD_BASE_1	= 0x170;
+static const uint16_t CTRL_BASE_1	= 0x376;
 */
 
 // port address offsets for Command Block registers
-const uint16_t DATA_OFFSET = 0; // read-write - data register
-const uint16_t ERROR_OFFSET = 1; // read-only - error register
-const uint16_t NSECTOR_OFFSET = 2; // read-write - sector count
-const uint16_t SECTOR_OFFSET = 3; // read-write - sector number (CHS mode)
-const uint16_t LCYL_OFFSET = 4; // read-write - cylinder low (CHS mode)
-const uint16_t HCYL_OFFSET = 5; // read-write - cylinder high (CHS mode)
-const uint16_t SELECT_OFFSET = 6; // read-write - drive/head
-const uint16_t STATUS_OFFSET = 7; // read-only - status register
-const uint16_t FEATURE_OFFSET = ERROR_OFFSET;  // write-only - Write Precompensation Cylinder divided by 4
-const uint16_t COMMAND_OFFSET = STATUS_OFFSET; // write-only - command register
+static const uint32_t DATA 	= 0; // read-write - data register
+static const uint32_t ERROR 	= 1; // read-only - error register
+static const uint32_t NSECTOR 	= 2; // read-write - sector count
+static const uint32_t SECTOR 	= 3; // read-write - sector number (CHS mode)
+static const uint32_t LCYL 	= 4; // read-write - cylinder low (CHS mode)
+static const uint32_t HCYL 	= 5; // read-write - cylinder high (CHS mode)
+static const uint32_t SELECT 	= 6; // read-write - drive/head
+static const uint32_t STATUS 	= 7; // read-only - status register
+static const uint32_t FEATURE 	= ERROR;  // write-only - Write Precompensation Cylinder divided by 4
+static const uint32_t COMMAND 	= STATUS; // write-only - command register
 
-const uint16_t LBCOUNT_OFFSET = SECTOR_OFFSET; //   7-0 in LBA28
-const uint16_t MBCOUNT_OFFSET = LCYL_OFFSET;   //  15-8 in LBA28
-const uint16_t HBCOUNT_OFFSET = HCYL_OFFSET;   // 23-16 in LBA28, 27-24 go in low half of SELECT
+static const uint32_t LBCOUNT 	= SECTOR; //   7-0 in LBA28
+static const uint32_t MBCOUNT 	= LCYL;   //  15-8 in LBA28
+static const uint32_t HBCOUNT 	= HCYL;   // 23-16 in LBA28, 27-24 go in low half of SELECT
 
 // port address offsets for Control Block registers
-const uint16_t ALTSTATUS_OFFSET = 0; // read-only
-const uint16_t CONTROL_OFFSET = ALTSTATUS_OFFSET; // write-only
+static const uint32_t ALTSTATUS = 0; // read-only
+static const uint32_t CONTROL	= ALTSTATUS; // write-only
 
 };
 

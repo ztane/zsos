@@ -23,7 +23,7 @@ all: gcc newlib fakesys install-gcc-config
 	echo "to make symlinks in /opt/bin for commands."
 
 install-gcc-config: gcc-config
-	cp gcc-config $(PREFIX)/bin
+	sudo cp gcc-config $(PREFIX)/bin
 
 install: install-gcc
 
@@ -93,7 +93,7 @@ src/newlib:
 	cd src/newlib && patch -p1 < ../../newlib-$(NEWLIB_VERSION)-zsos.patch
 
 fakesys:
-	cd libfakesys && $(TARGET)-gcc -c libfakesys.c
+	cd libfakesys && PATH="$(NEWPATH)" $(TARGET)-gcc -c libfakesys.c
 	@echo "Copying libfakesys, sudo rights required"
 	sudo cp libfakesys/libfakesys.o $(PREFIX)/$(TARGET)/lib
 
