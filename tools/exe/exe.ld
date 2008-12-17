@@ -2,7 +2,9 @@
 /* OUTPUT_FORMAT("elf32-i386") */
 
 OUTPUT_FORMAT("binary")
-ENTRY(__CRT_startup)
+ENTRY(_start)
+
+STARTUP(/opt/zsos-gcc/i586-pc-zsos/lib/crt0.o)
 
 virt     =   0x100000;
 virtdata = 0x80000000;
@@ -42,7 +44,7 @@ SECTIONS {
 	LONG(__SECTION_BSS);
 	LONG(bsslen);
 
-	LONG(__CRT_startup);
+	LONG(_start);
 
 	. = ALIGN(4096);
 	__HEADER_END = .;
@@ -93,3 +95,6 @@ SECTIONS {
 
      __END_OF_EXECUTABLE = .;
 }
+
+INPUT(-lc)
+INPUT(-lm)

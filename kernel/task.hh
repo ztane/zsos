@@ -8,9 +8,15 @@
 #include "kernel/paging.hh"
 #include "kernel/mm/memmap.hh"
 
+
+// Avoid including...
+class FileDescriptor;
+
 class Task {
 
 public:
+        static const int MAX_FILEDES = 64;
+
 	enum State {
 		READY = 0,
 		RUNNING = 1,
@@ -47,8 +53,6 @@ protected:
 
         unsigned int  kstack; //stacktop of kernel stack
 	unsigned int  esp;    //actual position of esp
-//	unsigned int  padding;
-//	unsigned char kernel_stack[4096];
 
 public:
 	Task(const char *name, State initial, int priority);
@@ -106,8 +110,12 @@ public:
 	virtual void dispatch(uint32_t* saved_eip) = 0;
 	virtual void terminate() = 0;
 	virtual void *setBrk(void *newBrk);
-	
+
 	friend class Scheduler;
+
+	// FIXME: SHOULD HAVE A PROCESS CLASS REALLY?!
+        FileDescriptor *fileDescriptors[MAX_FILEDES];
+	FileDescriptor *getFileDescriptor(int number);
 };
 
 #endif

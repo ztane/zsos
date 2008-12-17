@@ -6,6 +6,7 @@
 #include "kernel/memory.hh"
 #include "kernel/printk.h"
 #include "kernel/panic.hh"
+#include "kernel/fs/filedescriptor.hh"
 
 Task::Task(const char *_name, State state, int priority) {
 	esp = 0;
@@ -39,3 +40,12 @@ void Task::switchContexts(uint32_t *saved_esp) {
                 "2:\n\t"
                 : : "a"(esp), "b"(saved_esp));
 }
+
+FileDescriptor *Task::getFileDescriptor(int number) {
+         if (number < 0 || number >= MAX_FILEDES) {
+                  return NULL;
+         }
+
+         return fileDescriptors[number];
+}
+

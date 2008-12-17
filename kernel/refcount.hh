@@ -5,7 +5,7 @@
 
 class RefCount : private Atomic {
 public:
-	RefCount() : Atomic(0) {		
+	RefCount() : Atomic(0) {
 	}
 
 	inline operator int32_t() {
@@ -18,20 +18,27 @@ public:
 
 	inline void operator ++(int) {
 		++ *this;
-	} 
+	}
 
 	inline void acquire() {
 		++ *this;
 	}
 
-	inline bool operator --() 
-	{
+	inline bool operator --() {
 		return decAndIsZero();
 	}
 
 	inline bool release() {
 		return -- *this;
 	}
+
+	inline void clear() {
+		this->Atomic::operator=(0);
+	}
+
+	inline void set1() {
+		this->Atomic::operator=(1);
+	}
 };
 
-#endif 
+#endif

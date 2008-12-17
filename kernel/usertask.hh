@@ -5,6 +5,9 @@
 
 #include "task.hh"
 #include "kernel/exe/bits.hh"
+#include "kernel/fs/filedescriptor.hh"
+
+static const int MAX_FILEDES = 64;
 
 class UserTask : public Task {
 
@@ -12,7 +15,7 @@ protected:
        	uint32_t ustack; //stacktop of user stack
         uint32_t cr3;
 	uint8_t  kernel_stack[4096];
-	
+
 	ZsosExeHeader *header;
 
 public:
