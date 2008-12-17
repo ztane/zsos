@@ -51,6 +51,12 @@ diskimage:
 	@sudo tools/createloop img/disk.img 100
 	@sudo chown `id -nu`:`id -ng` img/disk.img
 
+userlandimage:
+	@env python tools/img.py # Creates img/userland.img from userland/ directory
+	@$(MOUNTCMD)
+	@cp img/userland.img mnt/.
+	@$(UMOUNTCMD)
+
 mount:
 	@$(MOUNTCMD)
 

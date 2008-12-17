@@ -1,3 +1,3 @@
 #include "etc/bochsrc"
 
-display_library: wx
+# display_library: wx
