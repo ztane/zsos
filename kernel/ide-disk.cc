@@ -19,7 +19,7 @@ static const int BLOCKSIZE = 512;
 void IdeDisk::read(void *dest, size_t count)
 {
 	while (count --) {
-		__pio_read_block(static_cast<uint16_t *>(dest));
+		__pio_read_block(dest);
 		// block sizes can vary from 512?
 		intptr_t tmp = reinterpret_cast<intptr_t>(dest);
 		tmp += BLOCKSIZE;
@@ -30,58 +30,17 @@ void IdeDisk::read(void *dest, size_t count)
 void IdeDisk::write(const void *src, size_t count)
 {
 	while (count --) {
-		__pio_write_block(static_cast<const uint16_t *>(src));
+		__pio_write_block(src);
 		intptr_t tmp = reinterpret_cast<intptr_t>(src);
 		tmp += BLOCKSIZE;
 		src = reinterpret_cast<const void *>(tmp);
 	}
+	// Clear cache!
 }
 
 void IdeDisk::command(struct ide_request_t request)
 {
 	__rw_command(request);
-}
-
-void IdeDisk::__pio_read_block(uint16_t *dest)
-{
-	for (int i = 0; i < BLOCKSIZE / 2; ++ i)
-		dest[i] = inw(regbase + DATA);
-	return;
-}
-
-void IdeDisk::__pio_write_block(const uint16_t *src)
-{
-	for (int i = 0; i < BLOCKSIZE / 2; ++ i)
-		outw(regbase + DATA, src[i]);
-	return;
-}
-
-void IdeDisk::__device_conf_identify()
-{
-	while (!inb(regbase + STATUS) & (1 << 6))
-		; // spin while DRDY not set
-	outb(regbase + FEATURE, 0xC2);
-	outb(regbase + SELECT, drive << 4);
-	outb(regbase + COMMAND, 0xB1);
-
-	uint8_t status;
-	while ((status = inb(regbase + STATUS)) & (1 << 7))
-		; // spin while BSY set
-	if (status & 1) // ERR set
-		// INDICATE ERROR SOMEHOW
-		return;
-	// issue READ command to get identifying data
-	return;
-}
-
-// FIXME: PACKET devices set ABORT and return PACKET signature
-void IdeDisk::__identify_drive()
-{
-	while (!inb(regbase + STATUS) & (1 << 6))
-		; // spin while DRDY not set
-	outb(regbase + SELECT, drive << 4);
-	outb(regbase + COMMAND, 0xEC);
-	return;
 }
 
 void IdeDisk::__rw_command(struct ide_request_t request)

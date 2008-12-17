@@ -23,10 +23,20 @@ static const size_t MAX_IDE_REQUESTS = 8; // make tunable
 class IdeInterface {
 private:
 	const int ifnum;
+
+	bool floating_bus;
+
 	IdeDrive *drives[MAX_DRIVES];
+	int drives_count;	
+	int selected_drive;
+	
 	// FIXME: Replace this ringbuffer with a linked list
 	RingBuffer<struct ide_request_t> *requests;
+	
 	WaitQueue wq;
+
+	void __select_drive(int num);
+
 public:
 	IdeInterface(int ifnum);
 	~IdeInterface();

@@ -40,15 +40,45 @@ int IdeController::init()
 IdeInterface::IdeInterface(int _ifnum) :
 	ifnum(_ifnum)
 {
+	floating_bus = inb(0x01F0 - _ifnum * 0x80 + 7) == 0xff;
+
+	// SKIP CONSTRUCTION, THIS BUS HAS NO DRIVES
+	if (floating_bus)
+		return;
+
 	requests = new RingBuffer<struct ide_request_t>(MAX_IDE_REQUESTS);
-	for (int i = 0; i < MAX_DRIVES; i ++)
+	for (int i = 0; i < MAX_DRIVES; i ++) {
 		drives[i] = new IdeDisk(ifnum, i);
+	}
+
+	// Issues SOFTWARE RESET, clears control register and selects drive0
+	drives[0]->__ata_soft_reset();
+	kout << "done soft reset" << endl;
+
+	for (int i = 0; i < MAX_DRIVES; i ++) {
+		kout << "selecting drive" << i << endl;
+		__select_drive(i);
+		drives[i]->__identify_drive();
+		if (drives[i]->get_exists())
+			drives[i]->__set_geometry();
+	}
 }
 
 /* For completeness sake */
 IdeInterface::~IdeInterface()
 {
 	delete requests; requests = 0;
+	for (int i = 0; i < MAX_DRIVES; i ++) {
+		if (drives[i] != 0) {
+			delete drives[i]; drives[i] = 0;
+		}
+	}
+}
+
+void IdeInterface::__select_drive(int num)
+{
+	drives[num]->__select();
+	selected_drive = num;
 }
 
 /* QUICK AND DIRTY */
@@ -68,6 +98,10 @@ void IdeInterface::add_request(int _rw, int _drive, void *_data, unsigned long l
 
 //	wq.addCurrentTask();
 	requests->put(request);
+
+	if (selected_drive != request.drive)
+		__select_drive(request.drive);
+
 	drives[request.drive]->command(request);
 }
 
