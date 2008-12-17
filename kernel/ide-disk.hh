@@ -17,6 +17,8 @@ namespace ide {
 class IdeDisk : public IdeDrive
 {
 private:
+	bool initialized;
+
 	enum {
 		NO_LBA,
 		LBA28,

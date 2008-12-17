@@ -77,8 +77,8 @@ directories = { '/' : root_dir }
 
 allfiles = [ root_dir ]
 
-root = "test/"
-outfile = "out.img"
+root = "userland/"
+outfile = "img/userland.img"
 
 root_dir.add_entry(DirectoryEntry('.',  root_dir))
 root_dir.add_entry(DirectoryEntry('..', root_dir))

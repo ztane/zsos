@@ -8,12 +8,10 @@ namespace ide {
 
 IdeDisk::IdeDisk(int _ifnum, int _drvnum) : IdeDrive(_ifnum, _drvnum)
 {
-
 }
 	
 IdeDisk::~IdeDisk()
 {
-
 }
 
 static const int BLOCKSIZE = 512;
@@ -111,6 +109,12 @@ void IdeDisk::__rw_command(struct ide_request_t request)
 		}
 	} else {
 		uint32_t tmpblock, cylinder, head, sector, tmp;
+
+		// Bail out if disk geometry is unknown
+		if (! (geometry.heads && geometry.sectors)) {
+			kout << "IdeDisk" << drive << ": Error: geometry not set!" << endl;
+			return;
+		}
 
 		tmpblock = block;
 		cylinder = tmpblock / (geometry.heads * geometry.sectors);

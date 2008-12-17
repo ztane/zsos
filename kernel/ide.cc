@@ -66,7 +66,7 @@ void IdeInterface::add_request(int _rw, int _drive, void *_data, unsigned long l
 	else
 		request.type = ide_request_t::WRITE;
 
-	wq.addCurrentTask();
+//	wq.addCurrentTask();
 	requests->put(request);
 	drives[request.drive]->command(request);
 }
@@ -83,7 +83,7 @@ void IdeInterface::softirq_handler()
 		drives[request.drive]->write(request.data, request.count);
 	}
 
-	wq.resumeFirst();
+//	wq.resumeFirst();
 }
 
 

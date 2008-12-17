@@ -38,6 +38,28 @@ struct multiboot_elf_t {
 
 class MultibootInfo;
 
+class MultibootModuleInfo {
+	unsigned long start;
+	unsigned long end;
+	const char   *string;
+	unsigned long reserved;
+
+public:
+	const unsigned long get_base() const {
+		return start;
+	}
+
+	const unsigned long get_length() const {
+		return end - start;
+	}
+
+	const char * get_string() const {
+		return string;
+	}
+
+	friend class MultibootInfo;
+};
+
 class MultibootMMapInfo {
 	unsigned long start;
 	unsigned long length;
@@ -61,8 +83,10 @@ private:
 	unsigned long mem_upper;
 	unsigned long boot_device;
 	const char* cmdline;
-	unsigned long mods_count;
-	unsigned long mods_addr;
+
+	MultibootModuleInfo *mods;
+	size_t               mods_count;
+	
 	union {
 		multiboot_aout_t aout;
 		multiboot_elf_t elf;
@@ -103,6 +127,16 @@ public:
 	size_t number_of_mmap_entries() const 
 	{
 		return mmap_length;	
+	}
+
+	const MultibootModuleInfo& get_module(int slot) const
+	{
+		return mods[slot];
+	}
+
+	size_t number_of_modules() const
+	{
+		return flags & MB_FLAG_MODS ? mods_count : 0;
 	}
 
 	unsigned int get_max_ram_address() const;
