@@ -87,9 +87,18 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 
 	for (int i = 0; i < nmods; i ++) {
 		kout << "\t\tmodule" << i << " args: " << multiboot_info->get_module(i).get_string() << endl;
+
+		char *data = (char *)multiboot_info->get_module(i).get_base();
+
+		printk("\t\t");
+		for (int j = 0; j < 16; j++) {
+			printk("%c", data[j]);
+		}
+		printk("\n");
 	}
 
 	kout << "--  --  --" << endl;
+	kernelPanic("stop");
 }
 
 extern void enable_keyboard();

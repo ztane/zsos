@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import os
 import struct
+import uuid
 
 class File:
 	def __init__(self):
@@ -67,9 +68,25 @@ class DirectoryFile(File):
 		return data
 
 PAGE_SIZE = 4096
+# major, minor
+VERSION = (1 << 16) + 0
+LABEL = "root"
 
 def next_padded_offset(current):
         return int((current + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE
+	
+
+def create_magic_sector():
+	id = uuid.uuid4();
+	
+	print "Writing magic sector:"
+        print "Version: %d.%d" % (VERSION >> 16, VERSION & 0xFFFF) 
+        print "Page size: %d" % PAGE_SIZE
+	print "Label: %s" % LABEL
+	print "UUID: %s" % id
+
+	return struct.pack("16sLL64s16s", "ZSOS RAMDISK TM", VERSION, PAGE_SIZE, LABEL, id.get_bytes())
+
 	
 
 root_dir = DirectoryFile()
@@ -113,6 +130,15 @@ for i in allfiles:
 outf = file(outfile, "wb")
 
 current_pos = 0
+
+magic_sector = create_magic_sector()
+outf.write(magic_sector)
+
+current_pos += len(magic_sector)
+next_pos = next_padded_offset(current_pos)
+outf.write('\0' * (next_pos - current_pos))
+current_pos = next_pos
+
 for i in allfiles:
 	data = i.get_data()
 	outf.write(data)
