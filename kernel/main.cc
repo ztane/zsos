@@ -81,6 +81,14 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	printk("\tMax usable ram address: 0x%08x\n", 
 		multiboot_info->get_max_ram_address());
 
+	int nmods = multiboot_info->number_of_modules();
+
+	kout << "\tnumber of modules: " << nmods << endl;
+
+	for (int i = 0; i < nmods; i ++) {
+		kout << "\t\tmodule" << i << " args: " << multiboot_info->get_module(i).get_string() << endl;
+	}
+
 	kout << "--  --  --" << endl;
 }
 
@@ -215,6 +223,10 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
                 kernelPanic("KB init failed");
         }
         kout << " done" << endl;
+
+	kout << "Testing IDE command" << endl;
+	char testdata[512];
+	ide::controller.ifs[0]->add_request(0, 0, 0, 0L, 1);
 
 	kout << "Starting init...";
 	tesmi.initialize(&_binary_example_zsx_start);

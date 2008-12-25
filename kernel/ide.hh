@@ -5,38 +5,71 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "kernel/printk.h"
 #include "kernel/init.hh"
-#include "kernel/pci.hh"
+#include "kernel/ide-drive.hh"
 #include "kernel/ide-disk.hh"
+#include "kernel/ringbuffer.hh"
+#include "kernel/waitqueue.hh"
 
 namespace ide {
 
-const int MAX_DRIVES = 2;
-const int MAX_INTERFACES = 2;
+static const int    MAX_DRIVES       = 2;
+static const int    MAX_INTERFACES   = 2;
+static const size_t MAX_IDE_REQUESTS = 8; // make tunable
+
+
+
 
 class IdeInterface {
 private:
-	char name[8];
+	const int ifnum;
 
-	IdeDrive drives[MAX_DRIVES];
+	bool floating_bus;
+
+	IdeDrive *drives[MAX_DRIVES];
+	int drives_count;	
+	int selected_drive;
+	
+	// FIXME: Replace this ringbuffer with a linked list
+	RingBuffer<struct ide_request_t> *requests;
+	
+	WaitQueue wq;
+
+	void __select_drive(int num);
+
 public:
-	IdeInterface();
+	IdeInterface(int ifnum);
 	~IdeInterface();
 
-	int init(int ifnum); // called by IDEController
+	void add_request(int rw, int drive, void *data, unsigned long long block, size_t count);
+	void softirq_handler();
 };
+
+
+
 
 class IdeController : public Init {
 private:
-	IdeInterface ifs[MAX_INTERFACES];
-	PCI::PCIDevice pci; // PCI IDE controller?
+	int softirq_vectors[MAX_INTERFACES];
 public:
+	IdeInterface *ifs[MAX_INTERFACES];
+
 	IdeController();
 	~IdeController();
 
 	int init();
+
+	friend void irq_handler(int ifnum);
+	friend void if0_softirq_handler(int vector);
+	friend void if1_softirq_handler(int vector);
 };
+
+
+
+
+void irq_handler(int ifnum);
+
+extern IdeController controller;
 
 };
 

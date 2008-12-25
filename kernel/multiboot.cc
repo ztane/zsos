@@ -17,6 +17,13 @@ typedef struct _multiboot_mmap {
 	unsigned long type;
 } multiboot_mmap_t;
 
+typedef struct _multiboot_module {
+	unsigned long start;
+	unsigned long end;
+	const char   *string;
+	unsigned long reserved;
+} multiboot_module_t;
+
 struct multiboot_info_t {
 	unsigned long flags;
 	unsigned long mem_lower;
@@ -151,5 +158,17 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 				i ++;
 			}
 	        }
+	}
+
+	if (flags & MB_FLAG_MODS && from.mods_count > 0) {
+		mods       = new (allocator) MultibootModuleInfo[from.mods_count];
+		mods_count = from.mods_count;
+
+		for (size_t i = 0; i < from.mods_count; i ++) {
+			mods[i].start    = ((multiboot_module_t*)from.mods_addr)[i].start;
+			mods[i].end      = ((multiboot_module_t*)from.mods_addr)[i].end;
+			mods[i].string   = dup_string(((multiboot_module_t*)from.mods_addr)[i].string, allocator);
+			mods[i].reserved = ((multiboot_module_t*)from.mods_addr)[i].reserved;
+		}
 	}
 }
