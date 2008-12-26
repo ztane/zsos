@@ -21,6 +21,8 @@
 
 #include "kernel/panic.hh"
 #include "kernel/consoledriver.hh"
+#include "kernel/printstate.hh"
+
 
 TssContents tssSegment __attribute__((aligned(4096)));
 
@@ -190,6 +192,8 @@ bool UserTask::handlePageFault(PageFaultInfo& f) {
 	if (! m) {
                 kout << "-- Page fault --" << endl;
 		kout << "Invalid address: " << f.address << endl;
+		print_kernel_state(*f.regs);
+		printk("EIP: %08x\n", f.eip);
 		kernelPanic("User task killed...\n");
 	}
 

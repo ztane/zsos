@@ -31,7 +31,7 @@ char *strchr(register const char *buf, int ch) {
 }
 
 // strsep with one delimiter char
-char *strsplit(register char **stringp, char delim) {
+char *strsplit(register char **stringp, int delim) {
 	if (! *stringp)
 		return NULL;
 

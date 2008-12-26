@@ -118,7 +118,7 @@ SYSCALL_VECTORS:
 	.long sys_BAD
 	.long sys_BAD
 	.long sys_stat
-	.long sys_lstat
+	.long sys_stat // LSTAT REALLY!
 	.long sys_fstat
 	.long sys_BAD
 SYSCALL_TABLE_SIZE=( . - SYSCALL_VECTORS )

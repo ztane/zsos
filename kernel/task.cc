@@ -49,3 +49,23 @@ FileDescriptor *Task::getFileDescriptor(int number) {
          return fileDescriptors[number];
 }
 
+bool Task::setFileDescriptor(int number, FileDescriptor* value) {
+        if (number < 0 || number >= MAX_FILEDES) {
+                  return false;
+        }
+
+        fileDescriptors[number] = value;
+	return true;
+}
+
+int Task::findFreeFdSlot(FileDescriptor* value) {
+	for (int i = 0; i < MAX_FILEDES; i++) {
+		if (! fileDescriptors[i]) {
+			fileDescriptors[i] = value;
+			return i;
+		}
+	}
+
+	return -1;
+}
+

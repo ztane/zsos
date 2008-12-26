@@ -62,6 +62,14 @@ public:
 
 		return fs->container->read(buf, to_read, off + base, read);
 	}
+
+	virtual int getInode() {
+		return inode;
+	}
+
+	virtual FileOffset getSize() {
+		return FileOffset(length);
+	}
 };
 
 bool ZsosRdFsSuperblock::isValid() {

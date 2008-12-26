@@ -83,6 +83,10 @@ public:
 	}
 
 	static ErrnoCode open(FileLike& file, int mode, FileDescriptor*& fd);
+
+	FileLike *getInode() const {
+		return this->target;
+	}
 };
 
 #endif

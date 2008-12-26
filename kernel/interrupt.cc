@@ -249,15 +249,18 @@ C_ISR_W_ECODE(page_fault)          {
 
         extern Scheduler scheduler;
         Task *task = scheduler.getCurrentTask();
-	
+
 	// true: in user mode
 	f.userMode = errorcode & 0x4; 
 
 	// the page was written
 	f.write    = errorcode & 0x2;
-	
+
 	// the page was present:
 	f.present  = errorcode & 0x1;
+
+	f.regs = &r;
+	f.eip  = eip;
 
 	if (f.address.inUserSpace() && task) {
 		task->handlePageFault(f);

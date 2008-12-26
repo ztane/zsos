@@ -72,6 +72,10 @@ public:
 	virtual ErrnoCode read (void *buf, size_t amount, FileOffset offset, size_t& read) = 0;
 	virtual ErrnoCode write(const void *buf, size_t amount, FileOffset offset, size_t& written) = 0;
 
+	virtual int getInode() {
+		return 0;
+	}
+
 	virtual ~FileLike() {
 	}
 };

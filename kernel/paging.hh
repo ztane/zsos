@@ -5,10 +5,13 @@
 
 #include "kernel/arch/current/virtaddr.hh"
 #include "kernel/mm/pageframe.hh"
+#include "kernel/interrupt.hh"
 #include <string.h>
 
 struct PageFaultInfo {
-	VirtAddr address;
+	VirtAddr   address;
+	Registers *regs;
+	uint32_t   eip;
 
 	bool userMode;
 	bool write;

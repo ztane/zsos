@@ -39,7 +39,6 @@ class MemMap {
                         // shrink beyond beginning?
                         // linux returns the beginning of area, so do we!
 			if (VirtAddr(newBrk) < bss->base) {
-                                kout << bss->end.to_ptr();
 				return bss->end.to_ptr();
 			}
 			
