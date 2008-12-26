@@ -36,47 +36,33 @@ public:
 
 	static FileDescriptor *findFree();
 
-	ErrnoCode open(FileLike *file, int mode) {
-		this->target = file;
+	ErrnoCode doOpen(FileLike *file, int mode);
 
-		// target is acquired, and opened with mode.
-		this->mode = mode;
-		this->counter.set1();
-
-		if (target->isSeekable()) {
-			mode |= SEEKABLE;
-		}
-
-		// fixme
-		this->offset = FileOffset(0);
-		return NOERROR;
-	}
-
-	ErrnoCode read(void *buf, size_t amount) {
+	ErrnoCode read(void *buf, size_t amount, size_t& read) {
 		if (! mode & FileDescriptor::READ) {
 			return EBADF;
 		}
 
-		ErrnoCode rc = this->target->read(buf, amount, offset);
+		ErrnoCode rc = this->target->read(buf, amount, offset, read);
 		if (rc != NO_ERROR) {
 			return rc;
 		}
 
-		this->offset += amount;
+		this->offset += read;
 		return rc;
 	}
 
-	ErrnoCode write(const void *buf, size_t amount) {
+	ErrnoCode write(const void *buf, size_t amount, size_t& written) {
 		if (! mode & FileDescriptor::WRITE) {
 			return EBADF;
 		}
 
-		ErrnoCode rc = this->target->write(buf, amount, offset);
+		ErrnoCode rc = this->target->write(buf, amount, offset, written);
 		if (rc != NO_ERROR) {
 			return rc;
 		}
 
-		this->offset += amount;
+		this->offset += written;
 		return rc;
 	}
 
@@ -92,7 +78,11 @@ public:
 		counter ++;
 	}
 
-	bool release();
+	bool release() {
+		return --counter;
+	}
+
+	static ErrnoCode open(FileLike& file, int mode, FileDescriptor*& fd);
 };
 
 #endif

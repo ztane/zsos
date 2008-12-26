@@ -24,15 +24,21 @@ SYSCALL(write)
 	Task *current = scheduler.getCurrentTask();
 	FileDescriptor *fd = current->getFileDescriptor(fdn);
 
-	int rc;
+	int rc = 0;
 
 	// FIXME: check for buffer for reading!
 
 	// Not open?
-	if (! fd)
+	if (! fd) {
 		rc = EBADF;
-	else
-		rc = fd->write(ptr, count);
+	}
+	else {
+		size_t written;
+		rc = -fd->write(ptr, count, written);
+		if (rc == 0) {
+			rc = written;
+		}
+	}
 
 	SYSCALL_RETURN(rc);
 }
@@ -46,20 +52,43 @@ SYSCALL(read)
 	Task *current = scheduler.getCurrentTask();
 	FileDescriptor *fd = current->getFileDescriptor(fdn);
 
-	int rc;
+	int rc = 0;
 
 	// FIXME: check buffer for writing!
 
 	// Not open?
 	if (! fd)
 		rc = EBADF;
-	else
-		rc = fd->read(ptr, count);
+	else {
+		size_t read;
+		rc -= fd->read(ptr, count, read);
 
+		if (rc == 0) {
+			rc = read;
+		}
+	}
         SYSCALL_RETURN(rc);
 }
 
-SYSCALL(hello_world)
+int ctr = 0;
+
+SYSCALL(stat)
 {
-	SYSCALL_RETURN(0);
+	kout << "syscall: stat - " << (char*)r.ebx << endl;
+	ctr ++;
+	if (ctr == 10)
+		kernelPanic("joojoo");
+	SYSCALL_RETURN(-EACCES);
+}
+
+SYSCALL(lstat)
+{
+	kout << "syscall: lstat" << endl;
+	SYSCALL_RETURN(-EACCES);
+}
+
+SYSCALL(fstat)
+{
+	kout << "syscall: fstat" << r.eax << " " << r.ebx << " " << r.ecx << " " << r.edx << endl;
+	SYSCALL_RETURN(-EACCES);
 }

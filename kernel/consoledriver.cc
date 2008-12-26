@@ -3,30 +3,25 @@
 #include "kernel/panic.hh"
 #include "initial_vga.h"
 
+
 ErrnoCode ConsoleDriver::open(int mode, FileDescriptor*& fd) {
 	if (mode & (FileDescriptor::READ)) {
 		return EPERM;
 	}
 
-	FileDescriptor *free = FileDescriptor::findFree();
-	if (! free) {
-		return ENFILE;
-	}
-
-	fd = free;
-	fd->open(this, mode);
-
+	FileDescriptor::open(*this, mode, fd);
         return NOERROR;
 }
 
-ErrnoCode ConsoleDriver::read(void *buf, size_t amount, FileOffset offset) {
+ErrnoCode ConsoleDriver::read(void *buf, size_t amount, FileOffset offset, size_t& read) {
 	kernelPanic("Read called on non-readable file?!");
 }
 
-ErrnoCode ConsoleDriver::write(const void *buf, size_t amount, FileOffset offset) {
+ErrnoCode ConsoleDriver::write(const void *buf, size_t amount, FileOffset offset, size_t& written) {
 	// offset ignored.
 
 	vga_buf_write(buf, amount);
+	written = amount;
 	return NOERROR;
 }
 

@@ -20,6 +20,34 @@ char *strncpy(register char *dest, register const char *src, register size_t n)
         return origdest;
 }
 
+char *strchr(register const char *buf, int ch) {
+	register char c = ch;
+
+	while (*buf != ch && *buf) buf ++;
+
+	if (*buf) return (char*)buf;
+
+	return NULL;
+}
+
+// strsep with one delimiter char
+char *strsplit(register char **stringp, char delim) {
+	if (! *stringp)
+		return NULL;
+
+	register char *ptr = strchr(*stringp, delim);
+	register char *orig = *stringp;
+
+	if (ptr) {
+		while (*ptr == delim) { *ptr = 0; ptr ++; }
+		*stringp = ptr;
+		return orig;
+	}
+
+	*stringp = NULL;
+	return orig;
+}
+
 int strncmp(const char *s1, const char *s2, size_t n)
 {
 	int diff = 0;

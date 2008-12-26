@@ -38,6 +38,7 @@ enum ErrnoCode {
         EPIPE = 32,
         EDOM = 33,
         ERANGE = 34,
+	ENAMETOOLONG = 36,
 };
 
 #endif

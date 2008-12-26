@@ -9,7 +9,7 @@ extern char g_code;
 
 
 void initializePageFrameTable(
-		const MultibootInfo& boot_info, 
+		MultibootInfo& boot_info, 
 		Allocator& alloc
 	)
 {
@@ -45,6 +45,18 @@ void initializePageFrameTable(
 	kout << "Reserving " << klength << " pages at " << kstart << " for kernel." << endl;
 
 	page_frames.setFlagsRange(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
+
+        int nmods = boot_info.number_of_modules();
+        for (int i = 0; i < nmods; i ++) {
+		const MultibootModuleInfo& m = boot_info.get_module(i);
+
+		pageaddr_t modstart = m.get_base()             / 0x1000;
+		pageaddr_t modlen   = (m.get_length() + 0xFFF) / 0x1000;
+
+                kout << "Reserving" << modlen << " pages at " << modstart << " for module " << m.get_string() << endl;
+		page_frames.setFlagsRange(modstart, modlen, PageFrame::LOCKED | PageFrame::KERNEL);
+        }
+
 }
 
 void PageFrameTable::acquireRange(pageaddr_t start, size_t length) 
