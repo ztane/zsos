@@ -74,10 +74,10 @@ int ctr = 0;
 
 SYSCALL(stat)
 {
-	kout << "syscall: stat - " << (char*)r.ebx << endl;
-	ctr ++;
-	if (ctr == 10)
-		kernelPanic("joojoo");
+//	kout << "syscall: stat - " << (char*)r.ebx << endl;
+//	ctr ++;
+//	if (ctr == 10)
+//		kernelPanic("joojoo");
 	SYSCALL_RETURN(-EACCES);
 }
 
@@ -91,4 +91,32 @@ SYSCALL(fstat)
 {
 	kout << "syscall: fstat" << r.eax << " " << r.ebx << " " << r.ecx << " " << r.edx << endl;
 	SYSCALL_RETURN(-EACCES);
+}
+
+SYSCALL(open)
+{
+	kout << "syscall: open \"" << (char*)r.ebx << "\", mode " << r.ecx << endl;
+	SYSCALL_RETURN(-EACCES);
+}
+
+SYSCALL(close)
+{
+	int fdn = r.ebx;
+
+	Task *current = scheduler.getCurrentTask();
+	FileDescriptor *fd = current->getFileDescriptor(fdn);
+
+	int rc = 0;
+
+	// Not open?
+	if (! fd) {
+		rc = EBADF;
+	}
+	else {
+		// todo: fix race! what happens if closed twice!
+		// and released!!! urgh
+		current->fileDescriptors[fdn] = 0;
+		fd->release();
+	}
+        SYSCALL_RETURN(rc);
 }

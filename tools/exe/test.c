@@ -5,7 +5,7 @@
 int main(int argc, char **argv) {
     Py_NoSiteFlag = 1;
     Py_Initialize();
-    PyRun_SimpleString("import re\n"
+    PyRun_SimpleString("open('/test.txt')\nimport re\n"
 	"print 'Hello world from python!'\n");
     Py_Finalize();
     return 0;
