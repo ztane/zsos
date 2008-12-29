@@ -1,0 +1,41 @@
+#!/bin/zsh
+
+CMP="$1"
+REF="$2"
+
+shift
+shift
+
+if [[ "$2" == "" ]]
+then
+	echo "Usage: ifnewer file-or-dir reference-file command"
+	exit 2
+fi
+
+found_files=`find $CMP`
+err=$?
+
+if [[ "$err" != '0' ]]
+then
+	echo "Errors during find..."
+	exit 3
+fi
+
+if [[ "$found_files" == "" ]]
+then
+	echo "No reference files found!"
+fi
+
+found_files=`find $CMP -newer $REF`
+err=$?
+
+if [[ "$err" != '0' ]]
+then
+	echo "Errors during find..."
+	exit 3
+fi
+
+if [[ "$found_files" != '' ]]
+then
+	$*
+fi

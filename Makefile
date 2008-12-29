@@ -53,9 +53,9 @@ diskimage:
 
 userlandimage:
 	@env python tools/img.py # Creates img/userland.img from userland/ directory
-	@$(MOUNTCMD)
-	@cp img/userland.img mnt/.
-	@$(UMOUNTCMD)
+
+conditional-userlandimage:
+	@tools/ifnewer userland/ img/userland.img env python tools/img.py
 
 mount:
 	@$(MOUNTCMD)
@@ -75,7 +75,8 @@ run: buildall install img/grubfloppy.img
 crun: buildall install img/grubfloppy.img
 	@bochs -qf etc/bochsrc-console
 
-install:
+install: conditional-userlandimage
 	@$(MOUNTCMD)
 	@cp kernel.bin mnt
+	@cp img/userland.img mnt
 	@$(UMOUNTCMD)
