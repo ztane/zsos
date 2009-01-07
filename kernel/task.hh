@@ -116,6 +116,8 @@ public:
 	// FIXME: SHOULD HAVE A PROCESS CLASS REALLY?!
         FileDescriptor *fileDescriptors[MAX_FILEDES];
 	FileDescriptor *getFileDescriptor(int number);
+        bool setFileDescriptor(int number, FileDescriptor* value);
+	int  findFreeFdSlot(FileDescriptor* value);
 };
 
 #endif

@@ -9,6 +9,10 @@
 #include "kernel/refcount.hh"
 #include "kernel/mm/memarea.hh"
 #include "kernel/ktasks/softirq.hh"
+#include "kernel/drivers/ramdisk/ramdiskdevice.hh"
+#include "kernel/fs/zsosrdfs/zsosrdfs.hh"
+#include "kernel/fs/path.hh"
+
 
 #include "kernel/syscall.hh"
 #include "kernel/printk.h"
@@ -88,6 +92,8 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	for (int i = 0; i < nmods; i ++) {
 		kout << "\t\tmodule" << i << " args: " << multiboot_info->get_module(i).get_string() << endl;
 
+		kout << "base address: " << multiboot_info->get_module(i).get_base() << endl;
+
 		char *data = (char *)multiboot_info->get_module(i).get_base();
 
 		printk("\t\t");
@@ -98,7 +104,6 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	}
 
 	kout << "--  --  --" << endl;
-	kernelPanic("stop");
 }
 
 extern void enable_keyboard();
@@ -144,7 +149,7 @@ void detectCpu() {
 UserTask tesmi("tesmi");
 Scheduler scheduler;
 
-void initializePageFrameTable(const MultibootInfo& boot_info, Allocator& allocator);
+void initializePageFrameTable(MultibootInfo& boot_info, Allocator& allocator);
 
 RingBuffer<int> *buf;
 void startIdleTask();
@@ -153,6 +158,25 @@ extern void __set_default_allocator(Allocator *new_def);
 
 void timerRoutine(int vector) {
      // kout << "TIMER ROUTINE..." << endl;
+}
+
+ZsosRdFs       root_filesystem;
+RamDiskDevice *root_blk_dev;
+
+void mountRoot() {
+        int nmods = multiboot_info->number_of_modules();
+	if (nmods < 1) {
+		kernelPanic("No modules loaded - no initrd");
+	}
+
+        char *data = (char *)multiboot_info->get_module(0).get_base();
+	uint32_t len = multiboot_info->get_module(0).get_length();
+
+	root_blk_dev    = new RamDiskDevice(data + 0xC0000000, len);
+	ErrnoCode rc = root_filesystem.initialize(*root_blk_dev);
+	if (rc != NOERROR) {
+		kernelPanic("The root file system is invalid!");
+	}
 }
 
 #include "kernel/exe/bits.hh"
@@ -185,9 +209,8 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
 	kout << page_frames.getLastPage();
 	kout << " pages of RAM." << endl;
-	
-	kout << "Enabling initial paging..." << endl;
 
+	kout << "Enabling initial paging..." << endl;
 	initialize_page_tables();
 	kout << "Paging enabled." << endl;
 
@@ -216,7 +239,9 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	Init::run(Init::EARLY);
 	Init::run(Init::LATE);
-	
+
+	mountRoot();
+
 	kout << "Starting tasking..." << endl;
 
 	initSoftIrq();
@@ -243,6 +268,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	scheduler.addTask(&tesmi);
 
 	kout << " done\nNow entering init:\n";
+
 	scheduler.schedule();
 	kernelPanic("Fell out from scheduling loop!\n");
 }

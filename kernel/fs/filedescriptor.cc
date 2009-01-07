@@ -17,3 +17,31 @@ FileDescriptor *FileDescriptor::findFree() {
 
 	return NULL;
 }
+
+
+ErrnoCode FileDescriptor::doOpen(FileLike *file, int mode) {
+	this->target = file;
+
+	// target is acquired, and opened with mode.
+	this->mode = mode;
+	this->counter.set1();
+
+	if (target->isSeekable()) {
+		mode |= SEEKABLE;
+	}
+
+	// fixme
+        this->offset = FileOffset(0);
+	return NOERROR;
+}
+
+ErrnoCode FileDescriptor::open(FileLike& file, int mode, FileDescriptor*& fd) {
+        FileDescriptor *free = FileDescriptor::findFree();
+        if (! free) {
+                return ENFILE;
+        }
+
+        fd = free;
+        fd->doOpen(&file, mode);
+        return NOERROR;
+}

@@ -34,11 +34,11 @@ SECTIONS {
        *(.bss*)                       /* wildcard for "gcc -fdata-sections" */
        *(.gnu.linkonce.b.*)
        *(COMMON)                      /* "common" variables */
+       . = ALIGN(4096);
+       _BOOT_HEAP_START = .;
+       . = . + 1048576;
+       _BOOT_HEAP_END   = .;
      }
      g_end = .;
      _END_OF_KERNEL = .;
-     . = ALIGN(4096);
-     _BOOT_HEAP_START = .;
-     . = . + 1048576;
-     _BOOT_HEAP_END   = .;
 }

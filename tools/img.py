@@ -6,7 +6,6 @@ import uuid
 class File:
 	def __init__(self):
 		self.offset = None
-		pass
 
 	def get_size(self):
 		raise NotImplementedError()
@@ -19,6 +18,12 @@ class File:
 
 	def set_offset(self, offset):
 		self.offset = offset
+
+	def set_inode(self, inode):
+		self.inode = inode
+
+	def get_inode(self):
+		return self.inode
 
 class RealFile(File):
 	def __init__(self, filename):
@@ -44,12 +49,26 @@ class DirectoryEntry:
 		self.name = name
 
 	def get_data(self):
-		return struct.pack("48sc3xLL4x", self.name, 
-			self.file.get_type(), self.file.get_size(), self.file.get_offset())
+		return struct.pack("48sc3xLLL", self.name, 
+			self.file.get_type(), self.file.get_size(), self.file.get_offset(), self.file.get_inode())
 
 class DirectoryFile(File):
 	def __init__(self):
 		self.entries = []
+
+	def add_inodes(self):
+		""" add inodes to every entry... """
+		base_inode = self.get_offset() >> 6
+		for i in self.entries:
+			if i.name in [ '.', '..' ]:
+				base_inode += 1
+				# do not override root inode ;)
+				continue
+			
+			i.file.set_inode(base_inode)
+			base_inode += 1
+			
+
 
 	def get_size(self):
 		return 64 * len(self.entries)
@@ -85,7 +104,15 @@ def create_magic_sector():
 	print "Label: %s" % LABEL
 	print "UUID: %s" % id
 
-	return struct.pack("16sLL64s16s", "ZSOS RAMDISK TM", VERSION, PAGE_SIZE, LABEL, id.get_bytes())
+	return struct.pack("16sLL64s16sLL", 
+		"ZSOS RAMDISK TM", 
+		VERSION, 
+		PAGE_SIZE, 
+		LABEL, 
+		id.get_bytes(),
+		PAGE_SIZE,           # root dir offset
+		root_dir.get_size()  # root dir length 
+	)
 
 	
 
@@ -99,6 +126,7 @@ outfile = "img/userland.img"
 
 root_dir.add_entry(DirectoryEntry('.',  root_dir))
 root_dir.add_entry(DirectoryEntry('..', root_dir))
+root_dir.set_inode(0)
 
 for i in os.walk(root):
         hostroot = i[0]
@@ -121,11 +149,15 @@ for i in os.walk(root):
 		dirfile.add_entry(DirectoryEntry(i, newfile))
 		allfiles.append(newfile)
 
-current_offset = 0
+# skip superblock
+current_offset = PAGE_SIZE
 for i in allfiles:
 	i.set_offset(current_offset)
 	current_offset += i.get_size()
 	current_offset  = next_padded_offset(current_offset)
+
+for k, v in directories.iteritems():
+	v.add_inodes();
 
 outf = file(outfile, "wb")
 
