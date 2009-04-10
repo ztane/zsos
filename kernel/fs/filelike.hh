@@ -7,7 +7,7 @@
 
 class FileOffset {
 private:
-	uint64_t pointer;
+	int64_t pointer;
 public:
 	FileOffset(uint64_t pointer) {
                 this->pointer = pointer;
@@ -55,7 +55,7 @@ public:
 		return this->pointer >= other.pointer;
 	}
 
-	uint64_t to_scalar() const {
+	int64_t to_scalar() const {
 		return this->pointer;
 	}
 };

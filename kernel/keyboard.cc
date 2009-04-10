@@ -1,6 +1,7 @@
 #include "kernel/arch/current/port.h"
 #include "kernel/ktasks/softirq.hh"
 #include "kernel/atomic.hh"
+#include <kernel/interrupt.hh>
 
 #include <iostream>
 #include "kernel/panic.hh"
@@ -22,6 +23,8 @@
 #define KB_AUX_WRITE_CMD_BYTE 0x60
 
 #define KB_ENABLE_INTERRUPT   0x01 // in Command Byte
+
+#define KEYBOARD_IRQ          0x01
 
 struct KEY {
 	uint32_t nonmodified;
@@ -45,7 +48,7 @@ KEY keyTable[256] = {
 	{ 	'0', 	'=', 	'}', 	0 },
 	{ 	'+', 	'?', 	'\\', 	0 },
 	{ 	'\'', 	'`', 	0, 	0 },
-	{ 	0,	0,	0, 	0 },
+	{ 	0177,	0177,	0177, 	0177 },
 	{ 	'\t',	'\t',	0, 	0 },
 	{ 	'q', 	'Q', 	0, 	0 },
 	{ 	'w', 	'W', 	0, 	0 },
@@ -70,8 +73,8 @@ KEY keyTable[256] = {
 	{ 	'j', 	'J', 	0, 	0 },
 	{ 	'k', 	'K', 	0, 	0 },
 	{ 	'l', 	'L', 	0, 	0 },
-	{ 	'ö', 	'Ö', 	0, 	0 },
-	{ 	'ä', 	'Ä', 	0, 	0 },
+	{ 	'\xf6', '\xd6', 0, 	0 },
+	{ 	'\xe4', '\xc4',	0, 	0 },
 	{ 	0, 	0, 	0, 	0 },
 	{ 	0, 	0, 	0, 	0 },
 	{ 	'\'', 	'*', 	0, 	0 },
@@ -294,6 +297,8 @@ bool initKeyboard() {
         writeKb(cmdbyte | KB_ENABLE_INTERRUPT);
 
 	registerSoftIrq(2, keyboardRoutine);
+
+	enableIrq(KEYBOARD_IRQ);
         return true;
 }
 

@@ -189,7 +189,7 @@ extern Scheduler scheduler;
 C_ISR(IRQ_0) 
 {
 	triggerSoftIrq(1);
-	unlock_irq(1);
+	unlock_irq(0);
 }
 
 // IRQ1 - Keyboard
@@ -203,7 +203,7 @@ C_ISR(IRQ_1)
 //		print_kernel_state(*const_cast<Registers*>(&r));
 //	}
 #endif
-	unlock_irq(2);
+	unlock_irq(1);
 }
 
 static inline void out_status(int code) 
@@ -279,26 +279,34 @@ C_ISR(floating_point_error) { out_status(' P F'); }
 C_ISR(alignment_check)      { out_status(' C A'); }
 C_ISR(machine_check)        { out_status(' C M'); }
 
-C_ISR(IRQ_2) { }
-C_ISR(IRQ_3) { }
-C_ISR(IRQ_4) { }
-C_ISR(IRQ_5) { }
-C_ISR(IRQ_6) { }
-C_ISR(IRQ_7) { }
-C_ISR(IRQ_8) { }
-C_ISR(IRQ_9) { }
-C_ISR(IRQ_A) { }
-C_ISR(IRQ_B) { }
-C_ISR(IRQ_C) { }
-C_ISR(IRQ_D) { }
-C_ISR(IRQ_E) { 
+C_ISR(IRQ_2) { unlock_irq(2);  }
+C_ISR(IRQ_3) { unlock_irq(3);  }
+C_ISR(IRQ_4) { unlock_irq(4);  }
+C_ISR(IRQ_5) { unlock_irq(5);  }
+C_ISR(IRQ_6) { unlock_irq(6);  }
+C_ISR(IRQ_7) { unlock_irq(7);  }
+C_ISR(IRQ_8) { unlock_irq(8);  }
+C_ISR(IRQ_9) { unlock_irq(9);  }
+C_ISR(IRQ_A) { unlock_irq(10); }
+C_ISR(IRQ_B) { unlock_irq(11); }
+C_ISR(IRQ_C) { unlock_irq(12); }
+C_ISR(IRQ_D) {
+	unlock_irq(13);
+	printk("IRQ 13");
+}
+C_ISR(IRQ_E) {
 #ifdef DEBUG
 	printk("ide0: interrupt\n");
 #endif
+	printk("ide0: interrupt\n");
+
 	// read request from mbox/mqueue
 	// inform request owner that we are done
 	unlock_irq(14);
 }
-C_ISR(IRQ_F) { printk("ide1: interrupt\n"); unlock_irq(15); }
+C_ISR(IRQ_F) {
+	printk("ide1: interrupt\n");
+	unlock_irq(15);
+}
 
 volatile int __critical_nest_depth = 0;

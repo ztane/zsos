@@ -87,6 +87,38 @@ public:
 	FileLike *getInode() const {
 		return this->target;
 	}
+
+	ErrnoCode lseek(FileOffset off, int whence, FileOffset new_off) {
+		FileOffset the_new(0);
+
+		// On Linux, using lseek() on a tty device returns ESPIPE.
+		// POSIX does not specify...
+		if (! this->mode & SEEKABLE) 
+			return ESPIPE;
+
+		if (whence == 0) {
+			// SEEK_SET
+			the_new = off;
+		}
+		else if (whence == 1) {
+			// SEEK_CUR
+			the_new = off + this->offset;
+		}
+		else if (whence == 2) {
+			// SEEK_END
+			the_new = target->getSize() + off;
+		}
+		else {
+			return EINVAL;
+		}
+
+		if (the_new < 0)
+			return EINVAL;
+
+		// EOVERFLOW?
+		new_off = the_new;
+		return NOERROR;
+	}
 };
 
 #endif

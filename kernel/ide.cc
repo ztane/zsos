@@ -1,6 +1,7 @@
 #include <iostream>
 #include "kernel/ide.hh"
 #include "kernel/ktasks/softirq.hh"
+#include <kernel/interrupt.hh>
 
 namespace ide {
 
@@ -27,6 +28,10 @@ int IdeController::init()
 	for (i = 0; !registerSoftIrq(i, if1_softirq_handler) && i < numSoftIrqVectors; i ++)
 		;
 	softirq_vectors[1] = i;
+
+	kout << "Enabling ide IRQs" << endl;
+	enableIrq(14);
+	enableIrq(15);
 
 	return 0;
 }
@@ -82,7 +87,7 @@ void IdeInterface::__select_drive(int num)
 }
 
 /* QUICK AND DIRTY */
-void IdeInterface::add_request(int _rw, int _drive, void *_data, unsigned long long _block, size_t _count)
+void IdeInterface::add_request(int _rw, int _drive, void *_data, uint64_t _block, size_t _count)
 {
 	struct ide_request_t request;
 

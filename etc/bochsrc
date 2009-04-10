@@ -15,5 +15,6 @@ cpu: reset_on_triple_fault=0
 
 # newharddrivesupport: enabled=1
 # , slot2=ne2k
-# debugger_log: debugger.out
-# debug: action=report
+#debugger_log: debugger.out
+#debug: action=report
+#log: debug.log

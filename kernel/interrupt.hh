@@ -146,18 +146,20 @@ void load_idt(const InterruptDescriptor *start, int num_descs);
 // void get_id_values(interrupt_descriptor *, const interrupt_info *);
 // void set_id_values(const interrupt_info *, interrupt_descriptor *);
 
-void init_pic();
+void initPic();
 
 static __inline__ bool interruptsEnabled() {
         volatile uint32_t flags;
         asm volatile ("pushfl; popl %0": "=a"(flags) : );
-        return (flags & 0x200) != 0;
+        return (flags & 0x200);
 }
 
 static __inline__ bool disableInterrupts() {
-	bool rv = interruptsEnabled();
-	asm volatile ("cli");	
-	return rv;
+	if (interruptsEnabled()) {
+		asm volatile ("cli");
+		return true;
+	}
+	return false;
 }
 
 static __inline__ void enableInterruptsIf(bool enable) {
@@ -165,5 +167,8 @@ static __inline__ void enableInterruptsIf(bool enable) {
 		asm volatile ("sti");
 	}
 }
+
+void enableIrq(int number);
+void disableIrq(int number);
 
 #endif

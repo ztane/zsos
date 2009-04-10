@@ -113,7 +113,7 @@ exit:
 	SYSCALL_RETURN(-rc);
 }
 
-SYSCALL(close)
+SYSCALL(close) 
 {
 	int fdn = r.ebx;
 
@@ -132,5 +132,41 @@ SYSCALL(close)
 		current->fileDescriptors[fdn] = 0;
 		fd->release();
 	}
+        SYSCALL_RETURN(-rc);
+}
+
+SYSCALL(lseek) 
+{
+	int fdn            = r.ebx;
+	FileOffset           off((uint32_t)r.ecx);
+	uint32_t whence    = r.edx;
+	FileOffset new_off(0);
+	Task *current;
+	FileDescriptor *fd;
+
+	ErrnoCode rc = NOERROR;
+
+	if (whence > 2) {
+		rc = EINVAL;
+		goto error_exit;
+	}
+
+	current = scheduler.getCurrentTask();
+	fd = current->getFileDescriptor(fdn);
+
+	// Not open?
+	if (! fd) {
+		rc = EBADF;
+		goto error_exit;
+	}
+	else {
+		rc = fd->lseek(off, whence, new_off);
+		if (rc != NOERROR) 
+			goto error_exit;
+	}
+
+	SYSCALL_RETURN((uint32_t)new_off.to_scalar());
+
+error_exit:
         SYSCALL_RETURN(-rc);
 }

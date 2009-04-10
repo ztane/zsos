@@ -21,7 +21,7 @@ SYSCALL_VECTORS:
 	.long sys_BAD
 	.long sys_BAD
 	.long sys_BAD
-	.long sys_BAD
+	.long sys_lseek
 
 	.long sys_BAD
 	.long sys_BAD

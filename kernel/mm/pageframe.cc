@@ -29,8 +29,9 @@ void initializePageFrameTable(
 		// does not handle alignment...
 		pageaddr_t start = inf.get_base() / 0x1000;
 		size_t length = inf.get_length() / 0x1000;
-		kout << "Mapping as ram: " << length << " pages ";
-		kout << " at " << start << "." << endl;
+
+		// kout << "Mapping as ram: " << length << " pages ";
+		// kout << " at " << start << "." << endl;
 		
 		page_frames.setFlagsRange(
 			start, length, PageFrame::IS_RAM);
@@ -42,7 +43,7 @@ void initializePageFrameTable(
 	pageaddr_t kstart  = ((uint32_t)&g_code - 0xC0000000) / 0x1000;
 	pageaddr_t kend    = ((uint32_t)&_BOOT_HEAP_END - 0xC0000000) / 0x1000;
 	pageaddr_t klength = kend - kstart + 1;
-	kout << "Reserving " << klength << " pages at " << kstart << " for kernel." << endl;
+	// kout << "Reserving " << klength << " pages at " << kstart << " for kernel." << endl;
 
 	page_frames.setFlagsRange(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
 
@@ -53,7 +54,7 @@ void initializePageFrameTable(
 		pageaddr_t modstart = m.get_base()             / 0x1000;
 		pageaddr_t modlen   = (m.get_length() + 0xFFF) / 0x1000;
 
-                kout << "Reserving" << modlen << " pages at " << modstart << " for module " << m.get_string() << endl;
+                // kout << "Reserving" << modlen << " pages at " << modstart << " for module " << m.get_string() << endl;
 		page_frames.setFlagsRange(modstart, modlen, PageFrame::LOCKED | PageFrame::KERNEL);
         }
 

@@ -44,7 +44,7 @@ bool IdeDrive::__poll_pio_ready()
 		error  = status & (0x01 | 0x20);
 		drq    = status & 0x08;
 	} while (busy && ! (drq || error));
-	return drq; 
+	return drq;
 }
 /**
  * FIXME: less agressive polling and timeout after 30s!

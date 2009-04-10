@@ -1,2 +1,1 @@
-print "Hello world from python userland"
-print "This is just nice... now im going to write 99 bottles of beer on the wall"
+print "\033[1;32mHello world from \033[31mpython\033[32m userland\033[m!"

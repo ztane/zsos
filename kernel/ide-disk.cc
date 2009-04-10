@@ -48,18 +48,25 @@ void IdeDisk::__rw_command(struct ide_request_t request)
 	unsigned long long block = request.block;
 	size_t count = request.count;
 	
+	kout << "doing ide command..." << endl;
 	if (lba) {
+		kout << "using lba";
 		if (lba == LBA48) {
+			kout << "48..." << endl;
 			outb(regbase + LBCOUNT, block >> 24);
 			outb(regbase + MBCOUNT, block >> 32);
 			outb(regbase + HBCOUNT, block >> 40);
+
+			outb(regbase + NSECTOR, count >> 8);
+
 			outb(regbase + LBCOUNT, block);
 			outb(regbase + MBCOUNT, block >> 8);
 			outb(regbase + HBCOUNT, block >> 16);
+
 			// bits: [ obs, LBA, obs, DEV, Reserved(3:0) ]
-			outb(regbase + SELECT, 0x40 | drive << 4);
-			outb(regbase + NSECTOR, count >> 8);
+			outb(regbase + SELECT, 0x40 | (drive << 4));
 		} else {
+			kout << "28..." << endl;
 			outb(regbase + LBCOUNT, block);
 			outb(regbase + MBCOUNT, block >> 8);
 			outb(regbase + HBCOUNT, block >> 16);

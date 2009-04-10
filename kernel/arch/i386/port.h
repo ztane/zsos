@@ -49,7 +49,7 @@ static __inline__ void unlock_irq(int number)
 {
     // unlock both?
     if (number >= 8)
-    { 
+    {
         outb(0x20,0xa0);
     }
     outb(0x20,0x20);

@@ -1,4 +1,5 @@
 #include <kernel/arch/current/port.h>
+#include <kernel/interrupt.hh>
 
 #define PIC1            0x20
 #define PIC2            0xA0
@@ -24,7 +25,7 @@
 /* remap the PIC controller interrupts to our vectors
    rather than the 8 + 70 as mapped by default */
 
-static void remap_pics(int pic1, int pic2)
+static void remapAndDisablePics(int pic1, int pic2)
 {
         unsigned char a1, a2;
 
@@ -53,21 +54,39 @@ static void remap_pics(int pic1, int pic2)
         outb(PIC2_DATA, ICW4_8086);
         io_wait();
 
-        outb(PIC1_DATA, a1);
+        outb(PIC1_DATA, 0xFF & ~ (1 << 2));
         io_wait();
-        outb(PIC2_DATA, a2);
+        outb(PIC2_DATA, 0xFF);
         io_wait();
 }
 
-void init_pic()
+void initPic()
 {
-        remap_pics(0x20, 0x28);
+        remapAndDisablePics(0x20, 0x28);
 }
 
-void enable_keyboard()
-{
-        outb(0x21,0xfc);
-        io_wait();
-        outb(0xa1,0xff);
-        io_wait();
+void enableIrq(int number) {
+	bool state = disableInterrupts();
+	if (number > 8) {
+		int mask = 1 << (number - 8);
+		outb(PIC2_DATA, inb(PIC2_DATA) & ~mask);
+	}
+	else {
+		int mask = 1 << number;
+		outb(PIC1_DATA, inb(PIC1_DATA) & ~mask);
+	}
+	enableInterruptsIf(state);
+}
+
+void disableIrq(int number) {
+	bool state = disableInterrupts();
+	if (number > 8) {
+		int mask = 1 << (number - 8);
+		outb(PIC2_DATA, inb(PIC2_DATA) | mask);
+	}
+	else {
+		int mask = 1 << number;
+		outb(PIC1_DATA, inb(PIC1_DATA) | mask);
+	}
+	enableInterruptsIf(state);
 }

@@ -52,8 +52,3 @@ SYSCALL(sem_wait)
 	buf->get(rv);
 	SYSCALL_RETURN(rv);
 }
-
-SYSCALL(testisys)
-{
-	SYSCALL_RETURN(5);
-}

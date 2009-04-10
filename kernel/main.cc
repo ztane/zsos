@@ -106,7 +106,6 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	kout << "--  --  --" << endl;
 }
 
-extern void enable_keyboard();
 extern bool initKeyboard();
 extern void init_idt();
 extern void init_gdt();
@@ -181,93 +180,105 @@ void mountRoot() {
 
 #include "kernel/exe/bits.hh"
 
+void ok() {
+	kout << "\033[65G\033[0;1m[\033[1;32mOK\033[0;1m]\033[m" << endl;
+}
+
+void epic_fail() {
+	kout << "\033[65G\033[0;1m[\033[1;32mEPIC FAIL\033[0;1m]\033[m" << endl;
+}
+
 extern "C" void kernel_main(unsigned int magic, void *mbd)
 {
-	kout << "Detecting CPU:" << endl;
+	kout << "Detecting CPU:";
 	detectCpu();
 
 	if (! cpuIdentity.getFlags() & CpuIdentity::FLAG_PSE) {
 		kernelPanic("The CPU does not support 4 MiB pages!");
 	}
+	ok();
 
-	kout << "Setting up GDT...";
+	kout << "Setting boot time dynamic memory allocator";	
+	__set_default_allocator(&boot_dynmem_alloc);
+	ok();
+
+	kout << "Setting up GDT:";
 	init_gdt();
-	kout << " done..." << endl;
+	ok();
 
 	kout << "Setting up IDT...";
 	init_idt();
-	kout << " done" << endl;
+	ok();
 
 	kout << "Remapping PIC...";
-	init_pic();
-	kout << " done" << endl;
+	initPic();
+	ok();
 
 	kout << "Multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
 
-	kout << "Initializing page frame structures: " << endl;
+	kout << "Initializing page frame structures: ";
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
-	kout << page_frames.getLastPage();
-	kout << " pages of RAM." << endl;
+	kout << page_frames.getLastPage() << " pages of RAM.";
+	ok();
 
-	kout << "Enabling initial paging..." << endl;
+	kout << "Enabling initial paging";
 	initialize_page_tables();
-	kout << "Paging enabled." << endl;
+	ok();
 
-	kout << "Disabling boot-time double paging...";
+	kout << "Disabling boot-time double paging";
 	disable_null_page();
-	kout << "done." << endl; 
+	ok();
 
-	kout << "Initializing tasking...";
+	kout << "Initializing tasking";
 	initialize_tasking();
-	kout << " done" << endl;
+	ok();
 
-	kout << "Initializing timer...";
+	kout << "Initializing timer";
 	initialize_timer();
-	kout << " done" << endl;
+	ok();
 
-	kout << "Enabling keyboard and timer interrupts...";
-	enable_keyboard();
-	kout << " done" << endl;
-
-	__set_default_allocator(&boot_dynmem_alloc);
-
-	kout << "Detecting PCI devices..." << endl;
+	kout << "Detecting PCI devices";
 	PCI::initialize();
+	ok();
 
-	buf = new RingBuffer<int>(10);
-
-	Init::run(Init::EARLY);
-	Init::run(Init::LATE);
-
-	mountRoot();
-
-	kout << "Starting tasking..." << endl;
-
+        kout << "Enabling SoftIRQs";	
 	initSoftIrq();
 	registerSoftIrq(1, timerRoutine);
-        kout << " SoftIRQ, ";
-	
-	startIdleTask();
-        kout << " idle task done" << endl;
+	ok();
 
-	kout << "Initializing keyboard...";
+	kout << "Starting idle task";
+	startIdleTask();
+	ok();
+
+	kout << "Initializing keyboard";
 	if (! initKeyboard()) {
-		kout << " FAILED!" << endl;
+		epic_fail();
                 kernelPanic("KB init failed");
         }
-        kout << " done" << endl;
+	ok();
 
-	kout << "Testing IDE command" << endl;
+	kout << "Running miscellaneous initialization hooks";
+	Init::run(Init::EARLY);
+	Init::run(Init::LATE);
+	ok();
+
+	kout << "Testing IDE commands";
 	char testdata[512];
-	ide::controller.ifs[0]->add_request(0, 0, 0, 0L, 1);
+	ide::controller.ifs[0]->add_request(0, 0, 0, 1L, 1);
+	ok();
 
-	kout << "Starting init...";
+	kout << "Mounting root filesystem";
+	mountRoot();
+	ok();
+
+	kout << "Preparing init process, pid 0";
 	tesmi.initialize(&_binary_example_zsx_start);
 	tesmi.setProcessId(1);
 	scheduler.addTask(&tesmi);
+	ok();
 
-	kout << " done\nNow entering init:\n";
+	kout << "Kernel initialization complete.\n";
 
 	scheduler.schedule();
 	kernelPanic("Fell out from scheduling loop!\n");
