@@ -7,6 +7,7 @@
 #include "kernel/mm/bits.hh"
 #include "kernel/mm/pageframe.hh"
 #include "kernel/panic.hh"
+#include <kernel/interrupt.hh>
 
 class PageAllocation {
 protected:
@@ -62,6 +63,7 @@ public:
 	{
 		pageaddr_t s;
 
+		bool state = disableInterrupts();
 		for (size_t i = 0; i < length; i ++) 
 		{
 			s = start + i;
@@ -77,17 +79,20 @@ public:
 					table.acquireRange(s, amt);
 					alloc.start = s;
 					alloc.amt = amt;
+					enableInterruptsIf(state);
 					return alloc;
 				}
 			}
 		}
+		enableInterruptsIf(state);
 
 		alloc.amt = 0;
-		return alloc;	
+		return alloc;
 	}
 
 	PageFrame *allocatePage() 
 	{
+		bool state = disableInterrupts();
 		for (size_t i = start; i < (start + length); i ++)
                 {
                 	PageFrame& f = table.page_frames[i];
@@ -96,16 +101,20 @@ public:
                                 continue;
 
 	                f.acquire();
+			enableInterruptsIf(state);
 			return &f;
                 }
 
+		enableInterruptsIf(state);
 		kernelPanic("Out of free pages in allocatePage");
 		return 0;
 	}
 
 	void releasePages(PageAllocation& alloc) {
+		bool state = disableInterrupts();
 		table.releaseRange(alloc.start, alloc.amt);
 		alloc.amt = 0;
+		enableInterruptsIf(state);
 	}
 };
 

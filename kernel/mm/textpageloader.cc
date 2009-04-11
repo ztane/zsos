@@ -10,7 +10,7 @@ int TextPageLoader::loadPage
 
 	char *physPos     = (char*)m->getPrivPointer();
 	physPos          += offset;
-	pageaddr_t phys_a = pageaddr_t::fromVirtual(physPos);		
+	pageaddr_t phys_a = pageaddr_t::fromLinear(physPos);		
 
 	if (access & MemMapArea::W) {
 		kout << "asdasdthus " << phys_a << endl;

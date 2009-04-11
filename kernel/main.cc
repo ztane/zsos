@@ -4,6 +4,7 @@
 #include <iostream>
 #include <new>
 
+#include "kernel/mm/kmalloc.h"
 #include "kernel/cpuid.hh"
 #include "kernel/atomic.hh"
 #include "kernel/refcount.hh"
@@ -272,7 +273,15 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	mountRoot();
 	ok();
 
-	kout << "Preparing init process, pid 0";
+	kout << "Initializing kmalloc...";
+	kmalloc_init();
+	ok();
+
+	kout << "Testing kmalloc...";
+	kmalloc_test();
+	ok();
+
+	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);
 	tesmi.setProcessId(1);
 	scheduler.addTask(&tesmi);
@@ -283,4 +292,3 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	scheduler.schedule();
 	kernelPanic("Fell out from scheduling loop!\n");
 }
-

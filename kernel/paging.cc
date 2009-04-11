@@ -84,7 +84,7 @@ uint32_t mapPage(PageDirectory *d, VirtAddr a, PageFrame *f, PageFlags fl) {
 			kernelPanic("Could not allocate PTE\n");
 		}
 
-		PageTable *ptr = (PageTable *)ac.getAddress().toVirtual();
+		PageTable *ptr = (PageTable *)ac.getAddress().toLinear();
 		ptr->clear();
 		
 		PageDirectoryEntry tmp;

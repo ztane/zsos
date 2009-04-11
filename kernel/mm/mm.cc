@@ -8,7 +8,7 @@ PageFrame * volatile MM::global0Page = 0;
 
 PageFrame *MM::allocateZeroPage() {
 	PageFrame *f = NormalMemory.allocatePage();
-	void *addr = f->getPageAddr().toVirtual();
+	void *addr = f->getPageAddr().toLinear();
 	memset(addr, 0, 4096);
 
 	return f;
@@ -19,7 +19,7 @@ PageFrame *MM::getGlobalZeroPage() {
 		global0Page->acquire();
 		return global0Page;
 	}
-	
+
 	bool save = disableInterrupts();
 
 	if (global0Page == 0) {

@@ -9,11 +9,11 @@ private:
 public:
 	pageaddr_t(uint32_t a = 0xFFFFFFFFUL) : addr(a) { };	
 	
-	void *toVirtual() {
+	void *toLinear() {
 		return (void*)(0xC0000000UL + (addr << 12));
 	}
 
-	static const pageaddr_t fromVirtual(void *a) {
+	static const pageaddr_t fromLinear(void *a) {
 		return (((intptr_t)a - 0xC0000000UL) >> 12);
 	}
 

@@ -39,6 +39,10 @@ public:
 	inline void set1() {
 		this->Atomic::operator=(1);
 	}
+
+	inline void operator=(int32_t value) {
+		this->Atomic::operator=(value);
+	}
 };
 
 #endif

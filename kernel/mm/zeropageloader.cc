@@ -14,11 +14,11 @@ int ZeroPageLoader::loadPage
 
 	PageFlags flags = PageFlags::PRESENT | PageFlags::USER;
 	if (access & MemMapArea::W) {
-		flags = 
-			PageFlags::PRESENT | PageFlags::USER | 
+		flags =
+			PageFlags::PRESENT | PageFlags::USER |
 			PageFlags::READWRITE;
 	}
- 
+
         mapPage(page_directory, addr, frm, flags);
 	return 0;
 }

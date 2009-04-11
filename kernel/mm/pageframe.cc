@@ -13,9 +13,9 @@ void initializePageFrameTable(
 		Allocator& alloc
 	)
 {
-	pageaddr_t last_page = 
+	pageaddr_t last_page =
 		boot_info.get_max_ram_address() / 0x1000l + 1l;
-	
+
 	page_frames.initialize(last_page, alloc);
 
         int ct = boot_info.number_of_mmap_entries();
@@ -24,7 +24,7 @@ void initializePageFrameTable(
         {
                 const MultibootMMapInfo& inf =
                         boot_info.mmap_entry(i);
-		
+
 
 		// does not handle alignment...
 		pageaddr_t start = inf.get_base() / 0x1000;
@@ -32,7 +32,7 @@ void initializePageFrameTable(
 
 		// kout << "Mapping as ram: " << length << " pages ";
 		// kout << " at " << start << "." << endl;
-		
+
 		page_frames.setFlagsRange(
 			start, length, PageFrame::IS_RAM);
 
@@ -60,7 +60,7 @@ void initializePageFrameTable(
 
 }
 
-void PageFrameTable::acquireRange(pageaddr_t start, size_t length) 
+void PageFrameTable::acquireRange(pageaddr_t start, size_t length)
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
@@ -68,26 +68,26 @@ void PageFrameTable::acquireRange(pageaddr_t start, size_t length)
 	}
 }
 
-void PageFrameTable::releaseRange(pageaddr_t start, size_t length) 
+void PageFrameTable::releaseRange(pageaddr_t start, size_t length)
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
 		page_frames[i].release();
-	}	
+	}
 }
 
-void PageFrameTable::setFlagsRange(pageaddr_t start, size_t length, int32_t flag) 
+void PageFrameTable::setFlagsRange(pageaddr_t start, size_t length, int32_t flag)
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
 		page_frames[i].setFlag(flag);
-	}	
+	}
 }
 
-void PageFrameTable::clearFlagsRange(pageaddr_t start, size_t length, int32_t flag) 
+void PageFrameTable::clearFlagsRange(pageaddr_t start, size_t length, int32_t flag)
 {
 	int end = start + length;
 	for (int i = start; i < end; i ++) {
 		page_frames[i].clearFlag(flag);
-	}	
+	}
 }

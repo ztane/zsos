@@ -6,8 +6,13 @@
 #include "kernel/atomic.hh"	
 #include "kernel/refcount.hh"
 #include "kernel/mm/bits.hh"
+#include "kernel/panic.hh"
 
 class MemoryArea;
+class SlabCache;
+
+#define __SLAB_CACHE_HEAD (pte_refs)
+#define __SLAB_NEXT_PAGE  (privdata)
 
 class PageFrame {
 private:
@@ -16,6 +21,7 @@ private:
 	RefCount   pte_refs;
 	Atomic     privdata;
 	pageaddr_t addr;
+
 public:
 	enum {
 		IS_RAM = 1,
@@ -23,6 +29,7 @@ public:
 		KERNEL = 4,
 		HIGH   = 8,
 		COW    = 16,
+		SLAB   = 32,
 	};
 
 	PageFrame() : refs(), pte_refs(), privdata() {
@@ -53,6 +60,55 @@ public:
 		return addr;
 	}
 
+	inline uint32_t getFirstFreeSlab() {
+		// get first free slab index
+		if (! (flags & SLAB)) {
+			kernelPanic("getFirstFreeSlab on non-slab!");
+		}
+
+		int index = (flags & 0xFF800000) >> (32 - 9);
+		return index;
+	}
+
+	inline void setFirstFreeSlab(uint32_t index) {
+		// get first free slab index
+		if (! (flags & SLAB)) {
+			kernelPanic("setFirstFreeSlab on non-slab!");
+		}
+
+		index &= 0x1FF;
+		index <<= 32 - 9;
+		flags &= ~ 0xFF800000;
+		flags |= index;
+	}
+
+	inline uint32_t getFreeSlabs() {
+		return __SLAB_NEXT_PAGE & 0xFFF;
+	}
+
+	inline void setFreeSlabs(uint32_t newValue) {
+		__SLAB_NEXT_PAGE = (__SLAB_NEXT_PAGE & ~0xFFF) | newValue;
+	}
+
+	PageFrame *getNextPage();
+
+	inline void setNextPage(PageFrame *_nextPage) {
+		void *pageAddr = 0;
+
+		if (_nextPage != 0)
+			 pageAddr = _nextPage->getPageAddr().toLinear();
+
+		__SLAB_NEXT_PAGE = (__SLAB_NEXT_PAGE & 0xFFF) | ((uint32_t)pageAddr & ~0xFFF);
+	}
+
+	inline SlabCache *getSlabHead() {
+		return (SlabCache*)(uint32_t)__SLAB_CACHE_HEAD;
+	}
+
+	inline void setSlabHead(SlabCache *cacheHead) {
+		__SLAB_CACHE_HEAD = (uint32_t)cacheHead;
+	}
+
 	friend class PageFrameTable;
 	friend class MemoryArea;
 };
@@ -79,9 +135,13 @@ public:
 		if (a <= max_page) {
 			return page_frames[a];
 		}
-		
+
 		// a bug?
 		return page_frames[0];
+	}
+
+	inline PageFrame& getByLinear(void *linear) const {
+		return getByFrame(pageaddr_t::fromLinear(linear));
 	}
 
 	inline pageaddr_t getLastPage() const {
@@ -97,4 +157,14 @@ public:
 };
 
 extern PageFrameTable page_frames;
+
+inline PageFrame *PageFrame::getNextPage() {
+	void *addr = (void*)((uint32_t)(__SLAB_NEXT_PAGE) & ~0xFFF);
+
+	if (addr == 0)
+		return 0;
+
+	return &(page_frames.getByLinear(addr));
+}
+
 #endif

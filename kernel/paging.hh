@@ -97,7 +97,7 @@ public:
 	}
 
 	inline void* getVirtAddr() {
-		return getPageAddr().toVirtual();
+		return getPageAddr().toLinear();
 	}
 
 	inline void setPageAddr(pageaddr_t a) {
@@ -106,7 +106,7 @@ public:
 	}
 
 	inline void setVirtAddr(void *offset) {
-		setPageAddr(pageaddr_t::fromVirtual(offset));
+		setPageAddr(pageaddr_t::fromLinear(offset));
 	}
 
 	inline void clear() {
