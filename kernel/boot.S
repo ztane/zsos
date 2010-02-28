@@ -124,14 +124,15 @@ gdt_48:
 
 	.globl __page_directory
 __page_directory:
-	.long  0x83
-
-	.rept  767
-	.long  0
+	# identity map first 3G. 4M pagesize
+	.equ   PDT_ENTRY, 0x83
+	.rept  768
+	.long  PDT_ENTRY
+	.set   PDT_ENTRY, PDT_ENTRY + 0x400000
 	.endr
 
+	# map first 1G to higher half. 4M pagesize
 	.equ   PDT_ENTRY, 0x83
-
 	.rept  256
 	.long  PDT_ENTRY
 	.set   PDT_ENTRY, PDT_ENTRY + 0x400000
