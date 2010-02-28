@@ -87,7 +87,7 @@ newlib-make: src/newlib
                  $(NEWLIB_CONFIG)
 	cd build/newlib && PATH="$(NEWPATH)" $(MAKECMD) all
 
-src/newlib:
+src/newlib: newlib-$(NEWLIB_VERSION).tar.bz2
 	mkdir -p src/newlib
 	cd src/newlib && tar xfj ../../newlib-$(NEWLIB_VERSION).tar.bz2
 	cd src/newlib && patch -p1 < ../../newlib-$(NEWLIB_VERSION)-zsos.patch

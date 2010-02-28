@@ -172,9 +172,10 @@ void mountRoot() {
         char *data = (char *)multiboot_info->get_module(0).get_base();
 	uint32_t len = multiboot_info->get_module(0).get_length();
 
-	root_blk_dev    = new RamDiskDevice(data + 0xC0000000, len);
+	root_blk_dev = new RamDiskDevice(data + 0xC0000000, len);
 	ErrnoCode rc = root_filesystem.initialize(*root_blk_dev);
 	if (rc != NOERROR) {
+		kout << "Nonzero status while mounting root file system " << rc << endl;
 		kernelPanic("The root file system is invalid!");
 	}
 }
@@ -277,9 +278,9 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kmalloc_init();
 	ok();
 
-	kout << "Testing kmalloc...";
-	kmalloc_test();
-	ok();
+	//kout << "Testing kmalloc...";
+	//kmalloc_test();
+	//ok();
 
 	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);

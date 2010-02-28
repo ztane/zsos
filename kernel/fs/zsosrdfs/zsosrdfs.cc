@@ -1,4 +1,4 @@
-	#include "zsosrdfs.hh"
+#include "zsosrdfs.hh"
 #include <iostream>
 #include <string.h>
 
@@ -73,14 +73,20 @@ public:
 };
 
 bool ZsosRdFsSuperblock::isValid() {
-	if (strncmp(magic, "ZSOS RAMDISK TM", 16) != 0)
+	if (strncmp(magic, "ZSOS RAMDISK TM", 16) != 0) {
+		kout << "wrong magic" << endl;
 		return false;
+        }
 
-	if (version.minor != 0 || version.major != 1)
+	if (version.minor != 0 || version.major != 1) { 
+		kout << "wrong version" << endl;
 		return false;
+        }
 
-	if (page_size != 0x1000)
+	if (page_size != 0x1000) {
+		kout << "wrong pagesize" << endl;
 		return false;
+        }
 
 	return true;
 }
