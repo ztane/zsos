@@ -12,10 +12,6 @@
 #define BOOT_PHYS         0x100000
                       //0x40100000
 
-#define PRESENT_AND_RW  3
-#define PAGE_DIR_ENTRY  \
-	(LOG_TO_PHYS(__page_tables) + PRESENT_AND_RW)
-
 #define LOG_TO_PHYS(x)  (x - BOOT_LOG + BOOT_PHYS)
 
 #ifdef HAVE_ASM_USCORE
@@ -37,25 +33,15 @@ _start:
 	/* save arguments! */
 	movl    %eax, %edx
 
-	movl    $PAGE_DIR_ENTRY, %eax
-	movl    %eax, LOG_TO_PHYS(__page_directory)
-	movl    %eax, LOG_TO_PHYS(__page_directory) + 0xC00
-
-	movl    $0x400, %ecx
-	movl    $3, %eax
-	movl 	$LOG_TO_PHYS(__page_tables), %edi
-	cld
-
-_loop:
-	stosl
-	addl    $0x1000, %eax
-	loop _loop
-
 /**************************/
 /* INITIALIZE PAGE TABLE! */
 /**************************/
 	mov     $LOG_TO_PHYS(__page_directory), %eax
 	mov	%eax, %cr3
+        
+        mov     %cr4, %ecx
+        or      $0x00000010, %ecx  
+        mov     %ecx, %cr4
 
 	mov	%cr0, %eax
 	or	$0x80000000, %eax // Set PG bit
@@ -102,6 +88,7 @@ _halt:
 halt_message:
 	.asciz	"Halted.\n"
 
+	.data
         .align 32
 gdt:
 	.word   0
@@ -132,9 +119,23 @@ gdt_48:
 	/* boot.S stack */
 	.comm stack, STACK_SIZE
 
-	.align 4096
-	.comm __page_directory, 4096, 4096
-	.align 4096
-	.comm __page_tables,    4096, 4096
+	.data
+        .align 4096
+
+	.globl __page_directory
+__page_directory:
+	.long  0x83
+
+	.rept  767
+	.long  0
+	.endr
+
+	.equ   PDT_ENTRY, 0x83
+
+	.rept  256
+	.long  PDT_ENTRY
+	.set   PDT_ENTRY, PDT_ENTRY + 0x400000
+	.endr
 
 _END_OF_BOOTLOADER:
+

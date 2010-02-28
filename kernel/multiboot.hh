@@ -23,17 +23,17 @@
 #define MB_MMAP_TYPE_AVAIL  0x00000001
 
 struct multiboot_aout_t {
-	unsigned long tabsize;
-	unsigned long strsize;
-	unsigned long addr;
-	unsigned long reserved;
+	uint32_t tabsize;
+	uint32_t strsize;
+	uint32_t addr;
+	uint32_t reserved;
 };
 
 struct multiboot_elf_t {
-	unsigned long num;
-	unsigned long size;
-	unsigned long addr;
-	unsigned long shndx;
+	uint32_t num;
+	uint32_t size;
+	uint32_t addr;
+	uint32_t shndx;
 };
 
 class MultibootInfo;

@@ -72,10 +72,13 @@ mount-grub: img/grubfloppy.img
 img/grubfloppy.img: img/grubfloppy.img.bz2
 	@bzcat img/grubfloppy.img.bz2 > img/grubfloppy.img
 
-run: buildall install img/grubfloppy.img
+img/grub2floppy.img: img/grub2floppy.img.bz2
+	@bzcat img/grub2floppy.img.bz2 > img/grub2floppy.img
+
+run: buildall install img/grub2floppy.img
 	@bochs -qf etc/bochsrc-gui
 
-crun: buildall install img/grubfloppy.img
+crun: buildall install img/grub2floppy.img
 	@bochs -qf etc/bochsrc-console
 
 install: conditional-userlandimage

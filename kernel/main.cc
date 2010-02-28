@@ -93,9 +93,8 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	for (int i = 0; i < nmods; i ++) {
 		kout << "\t\tmodule" << i << " args: " << multiboot_info->get_module(i).get_string() << endl;
 
-		kout << "base address: " << multiboot_info->get_module(i).get_base() << endl;
-
 		char *data = (char *)multiboot_info->get_module(i).get_base();
+		kout << "base address: " << (void*)data << endl;
 
 		printk("\t\t");
 		for (int j = 0; j < 16; j++) {
