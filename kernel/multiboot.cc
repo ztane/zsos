@@ -98,7 +98,6 @@ unsigned int MultibootInfo::get_max_ram_address() const
 MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 {
 	const multiboot_info_t& from = *(const multiboot_info_t *)construct_from;
-        kout << "Here we are..." << endl;
 	flags     = from.flags;
         mem_lower = from.mem_lower;
         mem_upper = from.mem_upper;
@@ -107,7 +106,6 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 
         // todo: add others:
 
-        kout << "Here we are..." << endl;
 	if (flags & MB_FLAG_CMDLINE) {
         	cmdline = dup_string((const char*)from.cmdline, allocator);
         }
@@ -122,11 +120,9 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
                 boot_loader_name = "";
         }
 
-        kout << "Here we are..." << endl;
 	mmap	    = 0;
 	mmap_length = 0;
 
-        kout << "Here we are..." << endl;
 	if (flags & MB_FLAG_MMAP) {
 		char *mmap_old  = (char *)from.mmap_addr;
 		char *mmap_save = mmap_old;
@@ -164,9 +160,7 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 	        }
 	}
 
-        kout << "Here we are..." << endl;
 	if (flags & MB_FLAG_MODS && from.mods_count > 0) {
-                kout << "having modules... number: " << from.mods_count << endl;
 		mods       = new (allocator) MultibootModuleInfo[from.mods_count];
 		mods_count = from.mods_count;
 
@@ -179,5 +173,4 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 			mods[i].reserved = mod_table[i].reserved;
 		}
 	}
-        kout << "Here we are..." << endl;
 }

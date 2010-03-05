@@ -13,7 +13,8 @@
 #include "kernel/drivers/ramdisk/ramdiskdevice.hh"
 #include "kernel/fs/zsosrdfs/zsosrdfs.hh"
 #include "kernel/fs/path.hh"
-
+#include "kernel/arch/current/halt.hh"
+#include "kernel/arch/current/stacktrace.hh"
 
 #include "kernel/syscall.hh"
 #include "kernel/printk.h"
@@ -91,10 +92,10 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	kout << "\tnumber of modules: " << nmods << endl;
 
 	for (int i = 0; i < nmods; i ++) {
-		kout << "\t\tmodule" << i << " args: " << multiboot_info->get_module(i).get_string() << endl;
+		kout << "\t\tmodule " << (i + 1) << " args: " << multiboot_info->get_module(i).get_string() << endl;
 
 		char *data = (char *)multiboot_info->get_module(i).get_base();
-		kout << "base address: " << (void*)data << endl;
+		kout << "\t\t\tbase address: " << (void*)data << endl;
 
 		printk("\t\t");
 		for (int j = 0; j < 16; j++) {
@@ -272,7 +273,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Mounting root filesystem";
 	mountRoot();
 	ok();
-
+	
 	kout << "Initializing kmalloc...";
 	kmalloc_init();
 	ok();
@@ -290,5 +291,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Kernel initialization complete.\n";
 
 	scheduler.schedule();
+	halt();
+
 	kernelPanic("Fell out from scheduling loop!\n");
 }
