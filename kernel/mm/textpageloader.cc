@@ -13,11 +13,12 @@ int TextPageLoader::loadPage
 	pageaddr_t phys_a = pageaddr_t::fromLinear(physPos);		
 
 	if (access & MemMapArea::W) {
-		kout << "asdasdthus " << phys_a << endl;
+		kout << "Tryint to write to text area " << phys_a << endl;
 		return -1;
 	}
 
 	PageFlags flags = PageFlags::PRESENT | PageFlags::USER;
+
         mapPage(page_directory, addr, &page_frames.getByFrame(phys_a), flags);
 	return 0;
 }

@@ -14,7 +14,10 @@
 #include "kernel/fs/zsosrdfs/zsosrdfs.hh"
 #include "kernel/fs/path.hh"
 #include "kernel/arch/current/halt.hh"
+#include "kernel/arch/current/fpu.hh"
 #include "kernel/arch/current/stacktrace.hh"
+
+
 
 #include "kernel/syscall.hh"
 #include "kernel/printk.h"
@@ -224,12 +227,8 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << page_frames.getLastPage() << " pages of RAM.";
 	ok();
 
-	kout << "Enabling initial paging";
+	kout << "Building kernel page table";
 	initialize_page_tables();
-	ok();
-
-	kout << "Disabling boot-time double paging";
-	disable_null_page();
 	ok();
 
 	kout << "Initializing tasking";
@@ -239,6 +238,10 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Initializing timer";
 	initialize_timer();
 	ok();
+
+        kout << "Initializing FPU";
+        initialize_FPU();
+        ok();
 
 	kout << "Detecting PCI devices";
 	PCI::initialize();

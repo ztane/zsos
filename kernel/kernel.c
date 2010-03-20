@@ -13,8 +13,9 @@ static void call_ctors()
 	int count = ((int *)(&__CTOR_LIST__))[0];
 	printk("Executing %d static C++ initializers...", count);
 
-	while (count--)
+	while (count--) {
 		(*fptr++)();
+        }
 
 	printk(" done\n");
 }

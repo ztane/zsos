@@ -9,6 +9,7 @@
 
 #include "tss.hh"
 
+#include "kernel/arch/current/fpu.hh"
 #include "kernel/exe/bits.hh"
 #include "kernel/paging.hh"
 
@@ -109,6 +110,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 
         text_address = (char*)&_binary_example_zsx_start
 		+ _binary_example_zsx_start.textPhys;
+
 	m->setPrivPointer((void*)text_address);
 	m->setLoader(&textPageLoader);
 
@@ -153,6 +155,8 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	}
 
 	initialize_stdstreams(this);
+
+        fpu_used = true;
 	return;
 
 error:
@@ -163,6 +167,9 @@ UserTask::~UserTask() {
 }
 
 void ____user_task_dispatch_new() {
+        /* clear task switched as we are going fresh
+           and doing fninit */ 
+        clear_TS_in_CR0();
 	__asm__ __volatile__(
 		".globl ____user_task_dispatch_new_asm\n"
 		"____user_task_dispatch_new_asm:\n\t"
@@ -170,13 +177,25 @@ void ____user_task_dispatch_new() {
         	"popl %%fs\n\t"
         	"popl %%es\n\t"
         	"popl %%ds\n\t"
+                "fninit\n\t"
 	        "iret\n\t"
 	: : );
 }
 
 void UserTask::dispatch(uint32_t *saved_esp) {
+        /* change TSS ESP0 to our kernel stack base */
 	tssSegment.esp0 = kstack;
-	Task::switchContexts(saved_esp);
+
+        /* set task switched for our new task... this is rather complicated, 
+           but it is run before our actual context switch. This will 
+           fail all FPU operations... */
+        set_TS_in_CR0();
+	
+        /* Ok... change our contexts */
+        Task::switchContexts(saved_esp);
+
+        /* NEVER EXECUTE ANYTHING HERE, AS THE CODE IS RUN AFTER THE TASK HAS BEEN SWITCHED OFF,
+           IN THE CONTEXT OF THE TASK THAT DISPATCHED US FOR THE LAST QUANTA. */
 }
 
 void UserTask::terminate() {
@@ -188,12 +207,12 @@ void UserTask::terminate() {
 
 bool UserTask::handlePageFault(PageFaultInfo& f) {
 	MemMapArea *m = memmap->findAreaByAddr(f.address);
-
+       
 	if (! m) {
                 kout << "-- Page fault --" << endl;
 		kout << "Invalid address: " << f.address << endl;
 		print_kernel_state(*f.regs);
-		printk("EIP: %08x\n", f.eip);
+		printk("EIP: 0x%08x\n", f.eip);
 		kernelPanic("User task killed...\n");
 	}
 
@@ -225,10 +244,8 @@ void TssContents::setup() {
 	ss = 
 	ds = 
 	fs = 
-	gs = USER_DATA_DESCRIPTOR + 3;
-
-        cs = USER_CODE_DESCRIPTOR + 3;
-
+	gs = USER_DATA_DESCRIPTOR | 3;
+        cs = USER_CODE_DESCRIPTOR | 3;
 	eflags = 2;
 	bitmap = 104;
 
@@ -240,5 +257,26 @@ void initialize_tasking() {
 
 	uint16_t tss_desc = TSS_DESCRIPTOR;
 	__asm__ __volatile__ ("ltr %0" : : "r"(tss_desc));
+}
+
+void (*_save_FPU_state)(uint8_t *ptr)    = FPU_save_with_FNSAVE;
+void (*_restore_FPU_state)(uint8_t *ptr) = FPU_restore_with_FRSTOR;
+
+void UserTask::handleNMException() {
+       kout << "user task got NM exception" << endl;
+       clear_TS_in_CR0();
+
+        _restore_FPU_state(getFpuStatePtr());
+       fpu_used = true;
+}
+
+void UserTask::prepareContextSwitch() { 
+       kout << "Preparing context switch...";
+       if (fpu_used) {
+           kout << " and saving FPU";
+           _save_FPU_state(getFpuStatePtr());
+           fpu_used = false;
+       }
+       kout << "done" << endl;
 }
 
