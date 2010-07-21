@@ -30,9 +30,6 @@ void initializePageFrameTable(
 		pageaddr_t start = inf.get_base() / 0x1000;
 		size_t length = inf.get_length() / 0x1000;
 
-		// kout << "Mapping as ram: " << length << " pages ";
-		// kout << " at " << start << "." << endl;
-
 		page_frames.setFlagsRange(
 			start, length, PageFrame::IS_RAM);
 

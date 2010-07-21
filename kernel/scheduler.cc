@@ -120,14 +120,18 @@ void Scheduler::dispatchNew(Task *old, Task *nu) {
 	uint32_t *esp_ptr;
 	uint32_t dummy;
 
-	if (old == nu)
+	if (old == nu) {
 		return;	
+	}
 
-	if (old == NULL)
+	if (old == NULL) {
 		esp_ptr = &dummy;
-	else
+	}
+	else {
 		esp_ptr = &(old->esp);
-	
+                old->prepareContextSwitch();
+	}
+
 	nu->dispatch(esp_ptr);
 }
 

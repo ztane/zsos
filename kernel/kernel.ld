@@ -12,6 +12,8 @@ SECTIONS {
        *(.rodata*)                    /* read-only data */
        *(.gnu.linkonce.r.*)
        . = ALIGN(4096);
+       *(.zsosinitexe*)
+       . = ALIGN(4096);
      }
 
      .data : AT(phys + (g_data - g_code)) {

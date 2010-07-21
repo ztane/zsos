@@ -1,7 +1,8 @@
 #include "kernel/arch/current/port.h"
 #include "kernel/ktasks/softirq.hh"
 #include "kernel/atomic.hh"
-#include <kernel/interrupt.hh>
+#include "kernel/interrupt.hh"
+#include "kernel/ringbuffer.hh"
 
 #include <iostream>
 #include "kernel/panic.hh"
@@ -35,14 +36,14 @@ struct KEY {
 
 KEY keyTable[256] = {
 	{ 	0,	0,	0, 	0 },
-	{ 	0,	0,   	0, 	0 },
+	{       033,	033,  033,    033 },
 	{ 	'1', 	'!', 	0, 	0 },
-	{ 	'2', 	'"', 	'@', 	0 },
-	{ 	'3', 	'#', 	'£', 	0 },
-	{ 	'4', 	'¤', 	'$', 	0 },
-	{ 	'5', 	'%', 	0, 	0 },
+	{ 	'2', 	'"',   '@', 	0 },
+	{ 	'3', 	'#',   '£', 	0 },
+	{ 	'4', 	'¤',   '$', 	0 },
+	{ 	'5', 	'%',    0, 	0 },
 	{ 	'6', 	'&', 	0, 	0 },
-	{ 	'7', 	'/', 	'{', 	0 },
+	{ 	'7', 	'/',    '{', 	0 },
 	{ 	'8', 	'(', 	'[', 	0 },
 	{ 	'9', 	')', 	']', 	0 },
 	{ 	'0', 	'=', 	'}', 	0 },
@@ -155,6 +156,7 @@ static const int KEY_RIGHT_SHIFT  = 54;
 static const int KEY_RIGHT_ALT    = 184;
 
 static int modifiers = 0;
+static RingBuffer<int> *keyBuffer;
 
 static void queueKeyDown(int key) {
 	if (key == KEY_LEFT_SHIFT) {
@@ -190,8 +192,9 @@ static void queueKeyUp(int key) {
 			ascii = keyTable[key].nonmodified;
 		}
 
-		if (ascii)
-			kout << (char)ascii;
+		if (ascii) {
+                        keyBuffer->tryPut(ascii);
+		}
 	}
 }
 
@@ -199,6 +202,12 @@ static void keyboardRoutine(int vector) {
     while (inb(KB_STATUS) & KB_DATA_AVAILABLE) {
         uint8_t byte = readKb();
         acknowledge();
+        keyBuffer->tryPut(byte);
+    }
+    return;
+
+    if (0) {
+        uint32_t byte;
 
         // stupid idiocy - handle pause!
         if (current_state & PAUSE) {
@@ -239,14 +248,34 @@ static void keyboardRoutine(int vector) {
             }
             int key = current_state & EXTENDED ? 0x80 | byte : byte;
 
-            if (current_state & BREAK)
+            if (current_state & BREAK) {
                queueKeyUp(key);
-            else
+	    }
+            else {
                queueKeyDown(key);
+            }
 
             current_state = 0;
         }
     }
+}
+
+ssize_t readKeyBuffer(char *buf, ssize_t max) {
+    if (max == 0) {
+        return 0;
+    }
+    int c;
+    ssize_t size = 1;
+    keyBuffer->get(c);
+    *(buf++) = c;
+    max --;
+    
+    while (max-- > 0 && keyBuffer->tryGet(c)) {
+        size ++;
+        *(buf++) = c;
+    }
+
+    return size;
 }
 
 // kbWrite:
@@ -297,6 +326,9 @@ bool initKeyboard() {
         writeKb(cmdbyte | KB_ENABLE_INTERRUPT);
 
 	registerSoftIrq(2, keyboardRoutine);
+
+
+        keyBuffer = new RingBuffer<int>(256);
 
 	enableIrq(KEYBOARD_IRQ);
         return true;

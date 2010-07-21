@@ -38,18 +38,18 @@ static void _enable_pse()
 	);
 }
 
-static void _reenable_paging() {
-	__asm__ __volatile__ (
-"	 movl %%cr0, %%eax;		"
-"	 orl  $0x80000000, %%eax;	"
-"	 movl %%eax, %%cr0;		"
-"	 jmp 1f;			"
-"1:;					"
-	: 
-	: 
-	: "%eax"); 
-        /* segment registers actually haven't changed... */
-}
+// static void _reenable_paging() {
+// 	__asm__ __volatile__ (
+// "	 movl %%cr0, %%eax;		"
+// "	 orl  $0x80000000, %%eax;	"
+// "	 movl %%eax, %%cr0;		"
+// "	 jmp 1f;			"
+// "1:;					"
+//	: 
+//	: 
+//	: "%eax"); 
+//        /* segment registers actually haven't changed... */
+// }
 
 struct __MemoryArea {
 	unsigned long base;
@@ -125,9 +125,9 @@ void initialize_page_tables()
 	page_directory->getPDE(VirtAddr(0U))->setFlags(flags);
 	page_directory->getPDE(VirtAddr(0U))->setPageAddr(0);
  
-	// map fisrt 1 GiB of physmem starting from 3 GiB,
+	// map first 1 GiB of physmem starting from 3 GiB,
 	// using 4 MiB pages
-	int ptr = 0;
+	uint32_t ptr = 0;
 	for (uint32_t i = 0xC0000000UL; i < 0xF0000000UL; 
 		i += 0x400000, ptr += 0x400) 
 	{
@@ -141,12 +141,5 @@ void initialize_page_tables()
 		page_directory->getPDE(VirtAddr((void*)i))->clear();
 	}
 
-	_set_cr3(LOG_TO_PHYS(page_directory));
-	_reenable_paging();
-}
-
-void disable_null_page() 
-{
-	page_directory->getPDE(VirtAddr(0U))->clear();
 	_set_cr3(LOG_TO_PHYS(page_directory));
 }

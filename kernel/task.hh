@@ -108,8 +108,10 @@ public:
 
 	virtual bool handlePageFault(PageFaultInfo& f);
 	virtual void dispatch(uint32_t* saved_eip) = 0;
+        virtual void prepareContextSwitch() { }
 	virtual void terminate() = 0;
 	virtual void *setBrk(void *newBrk);
+        virtual void handleNMException();
 
 	friend class Scheduler;
 

@@ -49,7 +49,7 @@ class DirectoryEntry:
 		self.name = name
 
 	def get_data(self):
-		return struct.pack("48sc3xLLL", self.name, 
+		return struct.pack("<48sc3xLLL", self.name, 
 			self.file.get_type(), self.file.get_size(), self.file.get_offset(), self.file.get_inode())
 
 class DirectoryFile(File):
@@ -104,7 +104,7 @@ def create_magic_sector():
 	print "Label: %s" % LABEL
 	print "UUID: %s" % id
 
-	return struct.pack("16sLL64s16sLL", 
+	return struct.pack("<16sLL64s16sLL", 
 		"ZSOS RAMDISK TM", 
 		VERSION, 
 		PAGE_SIZE, 

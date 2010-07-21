@@ -4,10 +4,10 @@
 
 namespace ide {
 
-IdeDrive::IdeDrive(int _ifnum, int _drvnum) :
+IdeDrive::IdeDrive(int regbase, int _drvnum) :
 		drive(_drvnum),
-		regbase(0x01F0 - _ifnum * 0x80),
-		ctlbase(0x01F0 - _ifnum * 0x80 + 0x206)
+		regbase(regbase),
+		ctlbase(regbase + 0x206)
 {
 
 }

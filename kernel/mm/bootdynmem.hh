@@ -7,12 +7,21 @@
 #include <printk.h>
 
 class BootDynMemAllocator : public Allocator {
-	int   bytes_left;
-	char *next_free;
+	int32_t   bytes_left;
+	char      *next_free;
 public:
-	BootDynMemAllocator(void *start, int max_bytes) {
-		next_free  = (char*)start;
-		bytes_left = max_bytes;
+	BootDynMemAllocator(void *start, uint32_t max_bytes, uint32_t skip = 0) {
+		printk("%08x", start);
+		intptr_t startaddr = (intptr_t)start + skip;
+		if (startaddr % 16) {
+			startaddr += 15;
+			startaddr &= ~0xF;
+			max_bytes -= 16;
+		}
+
+		printk("%08x", startaddr);
+		next_free  = ((char*)startaddr);
+		bytes_left = max_bytes - skip - 16;
 	}
 
 	void *allocate(size_t size) {

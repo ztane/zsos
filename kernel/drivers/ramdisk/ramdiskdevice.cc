@@ -5,6 +5,7 @@
 RamDiskDevice::RamDiskDevice(void *buffer, uint32_t size) {
 	this->buffer = buffer;
 	this->size   = size;
+	this->sector_size = 4096;
 }
 
 ErrnoCode RamDiskDevice::open(int mode, FileDescriptor*& fd) {

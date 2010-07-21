@@ -29,7 +29,7 @@ always :
 	@echo "================================="
 
 kernel.bin: kernel/boot.o exe/*.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/kernel.ld
-	ld --accept-unknown-input-arch -T kernel/kernel.ld -e _start -N -dn kernel/boot.o exe/*.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
+	$(LD) --accept-unknown-input-arch -T kernel/kernel.ld -e _start -N -dn kernel/boot.o exe/*.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
 #	$(STRIP) kernel.bin
 
 clean:
@@ -54,8 +54,11 @@ diskimage:
 userlandimage:
 	@env python tools/img.py # Creates img/userland.img from userland/ directory
 
-conditional-userlandimage:
+conditional-userlandimage: img/userland.img
 	@tools/ifnewer userland/ img/userland.img env python tools/img.py
+
+img/userland.img:
+	env python tools/img.py
 
 mount:
 	@$(MOUNTCMD)
@@ -69,10 +72,13 @@ mount-grub: img/grubfloppy.img
 img/grubfloppy.img: img/grubfloppy.img.bz2
 	@bzcat img/grubfloppy.img.bz2 > img/grubfloppy.img
 
-run: buildall install img/grubfloppy.img
+img/grub2floppy.img: img/grub2floppy.img.bz2
+	@bzcat img/grub2floppy.img.bz2 > img/grub2floppy.img
+
+run: buildall install img/grub2floppy.img
 	@bochs -qf etc/bochsrc-gui
 
-crun: buildall install img/grubfloppy.img
+crun: buildall install img/grub2floppy.img
 	@bochs -qf etc/bochsrc-console
 
 install: conditional-userlandimage

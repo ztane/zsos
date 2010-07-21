@@ -11,8 +11,14 @@
 #include "kernel/mm/memarea.hh"
 #include "kernel/ktasks/softirq.hh"
 #include "kernel/drivers/ramdisk/ramdiskdevice.hh"
+#include "kernel/drivers/harddisk/harddiskdevice.hh"
 #include "kernel/fs/zsosrdfs/zsosrdfs.hh"
 #include "kernel/fs/path.hh"
+#include "kernel/fs/harddisk.hh"
+#include "kernel/arch/current/halt.hh"
+#include "kernel/arch/current/fpu.hh"
+#include "kernel/arch/current/stacktrace.hh"
+#include "kernel/keyboard.hh"
 
 
 #include "kernel/syscall.hh"
@@ -24,26 +30,28 @@
 #include "kerneltask.hh"
 #include "init_vga.hh"
 #include "ide.hh"
+#include "simpleide.hh"
 #include "scheduler.hh"
 #include "timer.hh"
 #include "panic.hh"
 #include "pci.hh"
 #include "mutex.hh"
 #include "init.hh"
+#include "hexdump.hh"
 
 #include "kernel/fs/filedescriptor.hh"
 
 extern FileLike *getConsoleDriver();
 
-void print_memmap(MultibootInfo *mbi) 
+void print_memmap(MultibootInfo *mbi)
 {
 	int ct = mbi->number_of_mmap_entries();
-	
+
 	for (int i = 0; i < ct; i++) {
 		const MultibootMMapInfo& inf =
 			mbi->mmap_entry(i);
-		
-		
+
+
 		printk("\tbase: 0x%08x - length: 0x%08x\n",
                       	inf.get_base(),
                        	inf.get_length());
@@ -52,7 +60,7 @@ void print_memmap(MultibootInfo *mbi)
 
 MultibootInfo *multiboot_info = NULL;
 
-void extract_multiboot_info(unsigned int magic, void *mbd) 
+void extract_multiboot_info(unsigned int magic, void *mbd)
 {
 	/* there's no hex printing in kout yet */
 	printk("\tmagic: 0x%x, mbd: 0x%x\n", magic, mbd);
@@ -82,7 +90,7 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 
 	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
 		print_memmap(multiboot_info);
-	
+
 	printk("\tMax usable ram address: 0x%08x\n", 
 		multiboot_info->get_max_ram_address());
 
@@ -91,11 +99,10 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	kout << "\tnumber of modules: " << nmods << endl;
 
 	for (int i = 0; i < nmods; i ++) {
-		kout << "\t\tmodule" << i << " args: " << multiboot_info->get_module(i).get_string() << endl;
-
-		kout << "base address: " << multiboot_info->get_module(i).get_base() << endl;
+		kout << "\t\tmodule " << (i + 1) << " args: " << multiboot_info->get_module(i).get_string() << endl;
 
 		char *data = (char *)multiboot_info->get_module(i).get_base();
+		kout << "\t\t\tbase address: " << (void*)data << endl;
 
 		printk("\t\t");
 		for (int j = 0; j < 16; j++) {
@@ -107,7 +114,6 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	kout << "--  --  --" << endl;
 }
 
-extern bool initKeyboard();
 extern void init_idt();
 extern void init_gdt();
 extern void initialize_tasking();
@@ -172,9 +178,10 @@ void mountRoot() {
         char *data = (char *)multiboot_info->get_module(0).get_base();
 	uint32_t len = multiboot_info->get_module(0).get_length();
 
-	root_blk_dev    = new RamDiskDevice(data + 0xC0000000, len);
+	root_blk_dev = new RamDiskDevice(data + 0xC0000000, len);
 	ErrnoCode rc = root_filesystem.initialize(*root_blk_dev);
 	if (rc != NOERROR) {
+		kout << "Nonzero status while mounting root file system " << rc << endl;
 		kernelPanic("The root file system is invalid!");
 	}
 }
@@ -187,6 +194,32 @@ void ok() {
 
 void epic_fail() {
 	kout << "\033[65G\033[0;1m[\033[1;32mEPIC FAIL\033[0;1m]\033[m" << endl;
+}
+
+char databuf[513];
+HardDisk *rootHardDisk;
+HardDiskDevice *rootHdDevice;
+Partition *rootPartition;
+
+void initializeHardDisk() {
+	kout << "Initializing HD...";
+	reset_ide_disk();
+	// todo fillin actual parms
+	rootHdDevice = new HardDiskDevice(55000000);
+	rootHardDisk = new HardDisk(*rootHdDevice);
+	rootHardDisk->initialize();
+	int numpart = rootHardDisk->getNumPartitions();
+	kout << "Root Hard Disk - " << numpart << " partitions";
+	ok();
+
+	if (numpart == 0) {
+		kernelPanic("No partitions on hard disk??");
+	}
+
+	rootPartition = rootHardDisk->getPartition(0);
+	size_t read;
+	rootPartition->read(databuf, 512, FileOffset(0), read);
+	hexdump(databuf, 512);
 }
 
 extern "C" void kernel_main(unsigned int magic, void *mbd)
@@ -215,8 +248,16 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Initializing MM: ";
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
+<<<<<<< TREE
 	kout << "page frames";
+=======
+	kout << page_frames.getLastPage() << " pages of RAM.";
+	ok();
+
+	kout << "Building kernel page table";
+>>>>>>> MERGE-SOURCE
 	initialize_page_tables();
+<<<<<<< TREE
 	kout << ", page tables";
 	disable_null_page();
 	kout << ", null page";
@@ -232,12 +273,25 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Initializing timer";
 	initialize_timer();
+=======
+>>>>>>> MERGE-SOURCE
 	ok();
 
 	kout << "Initializing tasking";
 	initialize_tasking();
 	ok();
 
+<<<<<<< TREE
+=======
+	kout << "Initializing timer";
+	initialize_timer();
+	ok();
+
+        kout << "Initializing FPU";
+        initialize_FPU();
+        ok();
+
+>>>>>>> MERGE-SOURCE
 	kout << "Detecting PCI devices";
 	PCI::initialize();
 	ok();
@@ -259,18 +313,29 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	ok();
 
 	kout << "Running miscellaneous initialization hooks";
-	Init::run(Init::EARLY);
-	Init::run(Init::LATE);
+//	Init::run(Init::EARLY);
+//	Init::run(Init::LATE);
 	ok();
 
-	kout << "Testing IDE commands";
+/*	kout << "Testing IDE commands";
 	char testdata[512];
 	ide::controller.ifs[0]->add_request(0, 0, 0, 1L, 1);
+	ok(); */
+
+	kout << "Initializing kmalloc...";
+	kmalloc_init();
 	ok();
 
 	kout << "Mounting root filesystem";
 	mountRoot();
 	ok();
+
+	//initializeHardDisk();
+	//halt();
+
+	//kout << "Testing kmalloc...";
+	//kmalloc_test();
+	//ok();
 
 	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);
@@ -281,5 +346,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Kernel initialization complete. Entering init.\n";
 
 	scheduler.schedule();
+	halt();
+
 	kernelPanic("Fell out from scheduling loop!\n");
 }

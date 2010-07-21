@@ -69,3 +69,6 @@ int Task::findFreeFdSlot(FileDescriptor* value) {
 	return -1;
 }
 
+void Task::handleNMException() {
+    kernelPanic("Non-user task got FPU not present exception");
+}

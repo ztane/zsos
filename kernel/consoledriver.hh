@@ -10,7 +10,7 @@ private:
 	VgaBuffer *buffer;
 public:
 	ConsoleDriver();
-	virtual bool isSeekable() { return false; };
+	virtual bool isSeekable() const { return false; };
 
         virtual ErrnoCode open(int mode, FileDescriptor*& fd);
         virtual ErrnoCode read(void *buf, size_t amount, FileOffset offset, size_t& read);

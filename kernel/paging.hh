@@ -20,7 +20,7 @@ struct PageFaultInfo {
 
 class PageFlags {
 protected:
-	unsigned long flags;
+	uint32_t flags;
 public:
 	enum {
 		PRESENT = 1,
@@ -78,7 +78,7 @@ public:
 
 class CommonPDE {
 protected:
-	unsigned long data;
+	uint32_t data;
 
 public:
 	inline PageFlags getFlags() {
@@ -118,7 +118,7 @@ class PageTable;
 
 class PageDirectoryEntry : public CommonPDE {
 public:
-	PageDirectoryEntry() {	data = 0; }
+	PageDirectoryEntry() { data = 0; }
 	PageDirectoryEntry(PageFlags flags, void *base_addr) {
 		data = (unsigned long)base_addr & ~ 0xFFFFF000;
 		data |= flags.getFlags();
@@ -136,7 +136,7 @@ public:
 
 class PageTableEntry : public CommonPDE {
 public:
-	PageTableEntry() {	data = 0; }
+	PageTableEntry() { data = 0; }
 	PageTableEntry(PageFlags flags, void *base_addr) {
 		data = (unsigned long)base_addr & ~ 0xFFFFF000;
 		data |= flags.getFlags();

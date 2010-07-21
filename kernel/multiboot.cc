@@ -3,52 +3,53 @@
 #include <cstring>
 #include <iostream>
 #include <printk.h>
+#include <inttypes.h>
 
 #include "multiboot.hh"
 
 #define MB_MMAP_TYPE_AVAIL  0x00000001
 
 typedef struct _multiboot_mmap {
-	unsigned long size;
-	unsigned long base_addr_low;
-	unsigned long base_addr_high;
-	unsigned long length_low;	
-	unsigned long length_high;
-	unsigned long type;
+	uint32_t size;
+	uint32_t base_addr_low;
+	uint32_t base_addr_high;
+	uint32_t length_low;	
+	uint32_t length_high;
+	uint32_t type;
 } multiboot_mmap_t;
 
 typedef struct _multiboot_module {
-	unsigned long start;
-	unsigned long end;
-	const char   *string;
-	unsigned long reserved;
+	uint32_t start;
+	uint32_t end;
+	uint32_t string;
+	uint32_t reserved;
 } multiboot_module_t;
 
 struct multiboot_info_t {
-	unsigned long flags;
-	unsigned long mem_lower;
-	unsigned long mem_upper;
-	unsigned long boot_device;
-	const char* cmdline;
-	unsigned long mods_count;
-	unsigned long mods_addr;
+	uint32_t flags;
+	uint32_t mem_lower;
+	uint32_t mem_upper;
+	uint32_t boot_device;
+	uint32_t cmdline;
+	uint32_t mods_count;
+	uint32_t mods_addr;
 	union {
 		multiboot_aout_t aout;
 		multiboot_elf_t elf;
 	} boot_table;
-	unsigned long mmap_length;
-	unsigned long mmap_addr;
-	unsigned long drives_length;
-	unsigned long drives_addr;
-	unsigned long config_table;
-	const char* boot_loader_name;
-	unsigned long apm_table;
-	unsigned long vbe_control_info;
-	unsigned long vbe_mode_info;
-	unsigned short vbe_mode;
-	unsigned short vbe_interface_seg;
-	unsigned short vbe_interface_off;
-	unsigned short vbe_interface_len;
+	uint32_t mmap_length;
+	uint32_t mmap_addr;
+	uint32_t drives_length;
+	uint32_t drives_addr;
+	uint32_t config_table;
+	uint32_t boot_loader_name;
+	uint32_t apm_table;
+	uint32_t vbe_control_info;
+	uint32_t vbe_mode_info;
+	uint16_t vbe_mode;
+	uint16_t vbe_interface_seg;
+	uint16_t vbe_interface_off;
+	uint16_t vbe_interface_len;
 };
 
 
@@ -97,7 +98,6 @@ unsigned int MultibootInfo::get_max_ram_address() const
 MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 {
 	const multiboot_info_t& from = *(const multiboot_info_t *)construct_from;
-
 	flags     = from.flags;
         mem_lower = from.mem_lower;
         mem_upper = from.mem_upper;
@@ -106,18 +106,18 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 
         // todo: add others:
 
-        if (flags & MB_FLAG_CMDLINE) {
-        	cmdline = dup_string(from.cmdline, allocator);
+	if (flags & MB_FLAG_CMDLINE) {
+        	cmdline = dup_string((const char*)from.cmdline, allocator);
         }
         else {
-                cmdline = 0;
+                cmdline = "";
         }
 
         if (flags & MB_FLAG_LOADER_NAME) {
-                boot_loader_name = dup_string(from.boot_loader_name, allocator);
+                boot_loader_name = dup_string((const char*)from.boot_loader_name, allocator);
         }
         else {
-                boot_loader_name = 0;
+                boot_loader_name = "";
         }
 
 	mmap	    = 0;
@@ -151,7 +151,7 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 				mmap[i].length = ((multiboot_mmap_t*)mmap_old)->length_low;
 				
 				// avoid overflow when 4GB RAM :)
-				unsigned long new_max = mmap[i].start + (mmap[i].length - 1);
+				uint32_t new_max = mmap[i].start + (mmap[i].length - 1);
 				if (max_ram_address < new_max)
 					max_ram_address = new_max;
 
@@ -164,11 +164,13 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 		mods       = new (allocator) MultibootModuleInfo[from.mods_count];
 		mods_count = from.mods_count;
 
+		multiboot_module_t *mod_table = (multiboot_module_t*)from.mods_addr;
+
 		for (size_t i = 0; i < from.mods_count; i ++) {
-			mods[i].start    = ((multiboot_module_t*)from.mods_addr)[i].start;
-			mods[i].end      = ((multiboot_module_t*)from.mods_addr)[i].end;
-			mods[i].string   = dup_string(((multiboot_module_t*)from.mods_addr)[i].string, allocator);
-			mods[i].reserved = ((multiboot_module_t*)from.mods_addr)[i].reserved;
+			mods[i].start    = mod_table[i].start;
+			mods[i].end      = mod_table[i].end;
+			// mods[i].string   = dup_string((const char*)mod_table[i].string, allocator);
+			mods[i].reserved = mod_table[i].reserved;
 		}
 	}
 }
