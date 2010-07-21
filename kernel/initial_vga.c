@@ -84,6 +84,14 @@ void vga_buf_write_char(char ch) {
 		cursor_offset        = offset;
 	}
 
+        else if (ch == '\b') {
+                if (cursor_offset > 0) {
+                        *(--charmem) = current_attributes;
+                        *(--charmem) = ' ';
+                        cursor_offset--;
+                }
+	}
+
 	else
 	{
 		*charmem++ = ch;

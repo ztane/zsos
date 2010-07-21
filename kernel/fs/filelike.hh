@@ -65,9 +65,9 @@ class FileDescriptor;
 class FileLike {
 private:
 public:
-	virtual bool isSeekable() = 0;
-	virtual bool isDir() { return false; }
-	virtual FileOffset getSize() { return FileOffset(0); };
+	virtual bool isSeekable() const = 0;
+	virtual bool isDir() const { return false; }
+	virtual FileOffset getSize() const { return FileOffset(0); };
 	virtual ErrnoCode open(int mode, FileDescriptor*& fd) = 0;
 	virtual ErrnoCode read (void *buf, size_t amount, FileOffset offset, size_t& read) = 0;
 	virtual ErrnoCode write(const void *buf, size_t amount, FileOffset offset, size_t& written) = 0;

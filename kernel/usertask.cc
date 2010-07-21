@@ -45,12 +45,16 @@ void UserTask::enable_io() {
 extern "C" void ____user_task_dispatch_new_asm(); 
 
 static void initialize_stdstreams(UserTask *task) {
-	for (int i = 0; i < Task::MAX_FILEDES; i++)
-		task->fileDescriptors[i] = NULL;
+	// create stdin
+        FileDescriptor *fd;
+        ErrnoCode errno = getConsoleDriver()->open(FileDescriptor::READ, fd);
+	if (errno != NOERROR) {
+		kernelPanic("Failed to open terminal for reading!");
+	}
+	task->fileDescriptors[0] = fd;
 
 	// create stdout
-        FileDescriptor *fd;
-        ErrnoCode errno = getConsoleDriver()->open(FileDescriptor::WRITE, fd);
+        errno = getConsoleDriver()->open(FileDescriptor::WRITE, fd);
 	if (errno != NOERROR) {
 		kernelPanic("Failed to open terminal for writing!");
 	}
@@ -263,7 +267,6 @@ void (*_save_FPU_state)(uint8_t *ptr)    = FPU_save_with_FNSAVE;
 void (*_restore_FPU_state)(uint8_t *ptr) = FPU_restore_with_FRSTOR;
 
 void UserTask::handleNMException() {
-       kout << "user task got NM exception" << endl;
        clear_TS_in_CR0();
 
         _restore_FPU_state(getFpuStatePtr());
@@ -271,12 +274,9 @@ void UserTask::handleNMException() {
 }
 
 void UserTask::prepareContextSwitch() { 
-       kout << "Preparing context switch...";
        if (fpu_used) {
-           kout << " and saving FPU";
            _save_FPU_state(getFpuStatePtr());
            fpu_used = false;
        }
-       kout << "done" << endl;
 }
 

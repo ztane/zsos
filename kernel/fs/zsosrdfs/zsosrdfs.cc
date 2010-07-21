@@ -32,11 +32,11 @@ public:
 		this->flags  = isdir;
 	}
 
-	virtual bool isSeekable() {
+	virtual bool isSeekable() const {
 		return true;
 	}
 
-	virtual bool isDir() {
+	virtual bool isDir() const {
 		return flags & 1;
 	}
 

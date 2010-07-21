@@ -18,3 +18,6 @@ cpu: reset_on_triple_fault=0
 #debugger_log: debugger.out
 #debug: action=report
 #log: debug.log
+
+keyboard_mapping: enabled=1, map=etc/x11-pc-fi.map
+

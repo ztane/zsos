@@ -1,13 +1,9 @@
-print "\033[1;32mHello world from \033[31mpython\033[32m userland\033[m!"
-print "Hienoa, python userland jopa toimii!!"
+import sys
 
-print "Userlandia muutettu"
+# -*- coding: utf8 -*-
+print "\033[1;32mWelcome to ZSOS interactive \033[31mPython\033[32m Shell\033[m!"
 
-print 4 / 3
-print 4.0 / 3.5
+import interactive
 
-import re
-
-file = open("/init/test.txt")
-print file.read()
-
+console = interactive.Console()
+console.interact()

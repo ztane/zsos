@@ -2,19 +2,16 @@
 #include "kernel/fs/filedescriptor.hh"
 #include "kernel/panic.hh"
 #include "initial_vga.h"
-
+#include "keyboard.hh"
 
 ErrnoCode ConsoleDriver::open(int mode, FileDescriptor*& fd) {
-	if (mode & (FileDescriptor::READ)) {
-		return EPERM;
-	}
-
 	FileDescriptor::open(*this, mode, fd);
         return NOERROR;
 }
 
 ErrnoCode ConsoleDriver::read(void *buf, size_t amount, FileOffset offset, size_t& read) {
-	kernelPanic("Read called on non-readable file?!");
+        read = (size_t)readKeyBuffer((char *)buf, amount);
+        return NOERROR;
 }
 
 ErrnoCode ConsoleDriver::write(const void *buf, size_t amount, FileOffset offset, size_t& written) {

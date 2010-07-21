@@ -10,8 +10,11 @@ private:
 public:
 	RamDiskDevice(void *buffer, uint32_t size);
 
-	virtual FileOffset getSize() {
+	virtual FileOffset getSize() const {
 		return size;
+	}
+	virtual uint32_t getTotalSectors() const {
+		return size / sector_size;
 	}
 
         virtual ErrnoCode open(int mode, FileDescriptor*& fd);

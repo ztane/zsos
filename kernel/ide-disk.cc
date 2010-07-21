@@ -9,7 +9,7 @@ namespace ide {
 IdeDisk::IdeDisk(int _ifnum, int _drvnum) : IdeDrive(_ifnum, _drvnum)
 {
 }
-	
+
 IdeDisk::~IdeDisk()
 {
 }
@@ -47,7 +47,7 @@ void IdeDisk::__rw_command(struct ide_request_t request)
 {
 	unsigned long long block = request.block;
 	size_t count = request.count;
-	
+
 	kout << "doing ide command..." << endl;
 	if (lba) {
 		kout << "using lba";
