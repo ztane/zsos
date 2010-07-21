@@ -203,47 +203,46 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	__set_default_allocator(&boot_dynmem_alloc);
 	ok();
 
-	kout << "Setting up GDT:";
+	kout << "Setting up descriptor tables: ";
 	init_gdt();
-	ok();
-
-	kout << "Setting up IDT...";
+	kout << "GDT";
 	init_idt();
-	ok();
-
-	kout << "Remapping PIC...";
-	initPic();
+	kout << ", IDT";
 	ok();
 
 	kout << "Multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
 
-	kout << "Initializing page frame structures: ";
+	kout << "Initializing MM: ";
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
-	kout << page_frames.getLastPage() << " pages of RAM.";
-	ok();
-
-	kout << "Enabling initial paging";
+	kout << "page frames";
 	initialize_page_tables();
-	ok();
-
-	kout << "Disabling boot-time double paging";
+	kout << ", page tables";
 	disable_null_page();
+	kout << ", null page";
 	ok();
 
-	kout << "Initializing tasking";
-	initialize_tasking();
+	kout << "Initializing kmalloc";
+	kmalloc_init();
+	ok();
+
+	kout << "Initializing PIC";
+	initPic();
 	ok();
 
 	kout << "Initializing timer";
 	initialize_timer();
 	ok();
 
+	kout << "Initializing tasking";
+	initialize_tasking();
+	ok();
+
 	kout << "Detecting PCI devices";
 	PCI::initialize();
 	ok();
 
-        kout << "Enabling SoftIRQs";	
+        kout << "Enabling SoftIRQs";
 	initSoftIrq();
 	registerSoftIrq(1, timerRoutine);
 	ok();
@@ -273,21 +272,13 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	mountRoot();
 	ok();
 
-	kout << "Initializing kmalloc...";
-	kmalloc_init();
-	ok();
-
-	kout << "Testing kmalloc...";
-	kmalloc_test();
-	ok();
-
 	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);
 	tesmi.setProcessId(1);
 	scheduler.addTask(&tesmi);
 	ok();
 
-	kout << "Kernel initialization complete.\n";
+	kout << "Kernel initialization complete. Entering init.\n";
 
 	scheduler.schedule();
 	kernelPanic("Fell out from scheduling loop!\n");

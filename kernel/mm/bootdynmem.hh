@@ -33,6 +33,8 @@ public:
 	}
 
 	void release(void *ptr) {
+		printk("Accessed at %08x", ptr);
+		kernelPanic("Tried to release memory allocated from boot memory pool");
 	}
 };
 
