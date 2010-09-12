@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "kmalloc.h"
+#include <kernel/printk.h>
 #include <panic.hh>
 #include <kernel/mm/slab/slab.hh>
 #include <iostream>
@@ -44,8 +45,10 @@ void *kmalloc(size_t size)
 		kernelPanic("FATAL: kmalloc not yet initialized\n");
 
 	int first_bit = _get_first_bit_set(size);
-	if (first_bit >= N_KMALLOC_SLABS)
-		return NULL;
+	if (first_bit >= N_KMALLOC_SLABS) {
+		printk("kmalloc was unable to allocate a block of %d bytes", size);
+		kernelPanic("Kernel halted");
+	}
 
 	return kmallocSlabs[first_bit]->allocate();
 }
@@ -100,6 +103,25 @@ void kfree(void *ptr)
 	}
 }
 
+
+
+extern void __set_default_allocator(Allocator *new_def);
+
+#include <allocator>
+
+class KMallocAllocator : public Allocator {
+public:
+        virtual ~KMallocAllocator() { };
+
+        virtual void *allocate(size_t size) {
+		return kmalloc(size);
+	};
+
+        virtual void release(void *ptr) {
+		kfree(ptr);
+	};
+};
+
 /**
  * Initialize the heap to contain basic structures.
  * returns -1 on failure, 0 on success
@@ -121,5 +143,6 @@ int kmalloc_init()
 	kmallocSlabs[6] = new SlabCache(1024, 1, "kmalloc-1024");
 	kmallocSlabs[7] = new SlabCache(2048, 1, "kmalloc-2048");
 
+	__set_default_allocator(new KMallocAllocator());
 	return 1;
 }

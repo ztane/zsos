@@ -237,29 +237,39 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	__set_default_allocator(&boot_dynmem_alloc);
 	ok();
 
-	kout << "Setting up GDT:";
+	kout << "Setting up descriptor tables: ";
 	init_gdt();
-	ok();
-
-	kout << "Setting up IDT...";
+	kout << "GDT";
 	init_idt();
-	ok();
-
-	kout << "Remapping PIC...";
-	initPic();
+	kout << ", IDT";
 	ok();
 
 	kout << "Multiboot information:" << endl;
 	extract_multiboot_info(magic, mbd);
 
-	kout << "Initializing page frame structures: ";
+	kout << "Initializing MM: ";
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
 	kout << page_frames.getLastPage() << " pages of RAM.";
 	ok();
 
 	kout << "Building kernel page table";
 	initialize_page_tables();
+	kout << ", page tables";
+	disable_null_page();
+	kout << ", null page";
 	ok();
+
+	kout << "Initializing kmalloc";
+	kmalloc_init();
+	ok();
+
+	kout << "Initializing PIC";
+	initPic();
+	ok();
+
+        kout << "Initializing FPU";
+        initialize_FPU();
+        ok();
 
 	kout << "Initializing tasking";
 	initialize_tasking();
@@ -268,10 +278,6 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Initializing timer";
 	initialize_timer();
 	ok();
-
-        kout << "Initializing FPU";
-        initialize_FPU();
-        ok();
 
 	kout << "Detecting PCI devices";
 	PCI::initialize();
@@ -314,6 +320,12 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Initializing hard disk";
 	initializeHardDisk();
 	halt();
+	//initializeHardDisk();
+	//halt();
+
+	//kout << "Testing kmalloc...";
+	//kmalloc_test();
+	//ok();
 
 	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);
@@ -321,10 +333,9 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	scheduler.addTask(&tesmi);
 	ok();
 
-	kout << "Kernel initialization complete.\n";
+	kout << "Kernel initialization complete. Entering init.\n";
 
 	scheduler.schedule();
 	halt();
-
 	kernelPanic("Fell out from scheduling loop!\n");
 }

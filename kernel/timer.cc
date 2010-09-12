@@ -8,7 +8,7 @@
 void initialize_timer() {
 	int counter = 0x1234DD / TIMER_TICKS_PER_SECOND;
 
-	printk("Setting timer: %08x\n", counter);
+	printk(" at %d Hz", TIMER_TICKS_PER_SECOND);
 	// program timer channel 0
 	outb(0x43, 0x36);
 	io_wait();
