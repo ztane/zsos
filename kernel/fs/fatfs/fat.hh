@@ -1,9 +1,9 @@
 #ifndef __FAT_H__
 #define __FAT_H__
 
+#include "kernel/drivers/block.hh"
+#include "kernel/printk.h"
 #include <inttypes.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 typedef uint32_t fat_off_t;
@@ -48,7 +48,7 @@ public:
 public:
 	FatInfo() { }
 
-	bool initialize(BlockDevice& dev);
+	ErrnoCode initialize(BlockDevice& dev);
 	void print_info() const;
 
 	uint32_t fat12_16_root_dir_start() const {
@@ -94,6 +94,7 @@ class FatDirectoryFile {
 public:
 	virtual bool get_first_sector(SectorHandle& handle) = 0;
 	virtual bool get_next_sector(uint32_t current_sector, SectorHandle& handle) = 0;
+        virtual ~FatDirectoryFile() { }
 };
 
 class FatFixedRootDirFile : public FatDirectoryFile {
@@ -187,6 +188,7 @@ protected:
 public:
 	FileAllocationTable(FatFileSystem& filesystem) : fs(filesystem) { }
 	virtual cluster_t get_next_cluster(cluster_t current) = 0;
+	virtual ~FileAllocationTable() { }
 };
 
 class FileAllocationTable16 : public FileAllocationTable
@@ -331,7 +333,7 @@ public:
 		);
 	}
 
-	char *get_filename(char buf[256]) {
+	char *get_filename(char *buf) {
 		int i;
 		char *tmp = buf;
 		for (i = 0; i < 8; i++) {

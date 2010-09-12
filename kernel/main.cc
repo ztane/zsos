@@ -15,6 +15,7 @@
 #include "kernel/fs/zsosrdfs/zsosrdfs.hh"
 #include "kernel/fs/path.hh"
 #include "kernel/fs/harddisk.hh"
+#include "kernel/fs/fatfs/fat.hh"
 #include "kernel/arch/current/halt.hh"
 #include "kernel/arch/current/fpu.hh"
 #include "kernel/arch/current/stacktrace.hh"
@@ -197,9 +198,11 @@ void epic_fail() {
 }
 
 char databuf[513];
-HardDisk *rootHardDisk;
-HardDiskDevice *rootHdDevice;
-Partition *rootPartition;
+HardDisk        *rootHardDisk;
+HardDiskDevice  *rootHdDevice;
+Partition       *rootPartition;
+FatFileSystem   *rootFileSystem;
+
 
 void initializeHardDisk() {
 	kout << "Initializing HD...";
@@ -217,9 +220,7 @@ void initializeHardDisk() {
 	}
 
 	rootPartition = rootHardDisk->getPartition(0);
-	size_t read;
-	rootPartition->read(databuf, 512, FileOffset(0), read);
-	hexdump(databuf, 512);
+	rootFileSystem = new FatFileSystem(*rootPartition);
 }
 
 extern "C" void kernel_main(unsigned int magic, void *mbd)
@@ -310,12 +311,9 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	mountRoot();
 	ok();
 
-//	initializeHardDisk();
-//	halt();
-
-	//kout << "Testing kmalloc...";
-	//kmalloc_test();
-	//ok();
+	kout << "Initializing hard disk";
+	initializeHardDisk();
+	halt();
 
 	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);

@@ -1,9 +1,6 @@
-#include "fat.h"
-#include <stdio.h>
+#include "fat.hh"
+#include "kernel/drivers/block.hh"
 #include <iostream>
-#include <linux/fs.h>
-#include <sys/ioctl.h>
-
 using namespace std;
 
 #define U8(offset)  (data[offset])
@@ -36,21 +33,22 @@ using namespace std;
 
 #define DIRENTRY_SIZE 32
 
-bool FatInfo::initialize(BlockDevice& dev)
+ErrnoCode FatInfo::initialize(BlockDevice& dev)
 {
 	bool fat16_32 = false;
 	uint32_t tmp;
 
 	SectorHandle bpb;
+	ErrnoCode rc;
 
-	if (! dev.acquire_sector(0, bpb)) {
-		fprintf(stderr, "Failed to read first sector\n");
-		return false;
+	if ((rc = dev.acquire_sector(0, bpb)) != NOERROR) {
+		printk("Failed to read first sector\n");
+		return rc;
 	}
 
 	uint8_t *data = bpb.get_data();
 	if (U16(OMAGIC) != MAGIC) {
-		fprintf(stderr, "bytes per sector INVLID MAKING\n");
+		printk("bytes per sector INVLID MAKING\n");
 		goto error_exit;
 	}
 
@@ -77,11 +75,9 @@ bool FatInfo::initialize(BlockDevice& dev)
 			break;
 
 		default:
-			fprintf(stderr, "bytes per sector not a power of 2\n");
+			printk("bytes per sector not a power of 2\n");
 			goto error_exit;
 	}
-
-	dev.setSectorSize(bytes_per_sector);
 
 	secs_per_cluster = U8(OSPC);
 	switch (secs_per_cluster) {
@@ -95,7 +91,7 @@ bool FatInfo::initialize(BlockDevice& dev)
 		case 128:
 			break;
 		default:
-			fprintf(stderr, "secs per cluster not a power of 2\n");
+			printk("secs per cluster not a power of 2\n");
 			goto error_exit;
 	}
 
@@ -111,7 +107,7 @@ bool FatInfo::initialize(BlockDevice& dev)
 	}
 
 	if (total_sectors > dev.getTotalSectors()) {
-		fprintf(stderr, "Total sectors on BPB > size of partition\n");
+		printk("Total sectors on BPB > size of partition\n");
 		goto error_exit;
 	}
 
@@ -164,75 +160,36 @@ bool FatInfo::initialize(BlockDevice& dev)
 	}
 
 	bpb.release();
-	return true;
+	return NOERROR;
 
 error_exit:
 	bpb.release();
-	return false;
+	return 	EINVAL;
 }
 
 void FatInfo::print_info() const {
-	cout << "Bytes per sector: " << bytes_per_sector << endl;
-	cout << "Secs per cluster: " << secs_per_cluster << endl;
-	cout << "Total reserved:   " << total_reserved_sectors << endl;
-	cout << "Number of FATs:   " << num_fats << endl;
-	cout << "Root entries:     " << num_root_entries << endl;
-	cout << "Total sectors:    " << total_sectors << endl;
-	cout << "Media type:       " << media_type << endl;
-	cout << "Sectors per fat:  " << sectors_per_fat << endl;
-	cout << "Sectors:          " << num_sectors << endl;
-	cout << "Heads:            " << num_heads << endl;
-	cout << "Hidden sectors:   " << hidden_sectors << endl;
-	cout << "Num clusters:     " << n_clusters << endl;
-	cout << "File system type: FAT" << fat_size << endl;
-        cout << "Fat start:        " << fat_start_sector << endl;
-	cout << "Root dir start:   " << root_dir_start << endl;
-        cout << "Data area start:  " << data_area_start << endl;
-	printf("Cluster offset bits: %d - cluster offset mask %08X\n", 
+	kout << "Bytes per sector: " << bytes_per_sector << endl;
+	kout << "Secs per cluster: " << secs_per_cluster << endl;
+	kout << "Total reserved:   " << total_reserved_sectors << endl;
+	kout << "Number of FATs:   " << num_fats << endl;
+	kout << "Root entries:     " << num_root_entries << endl;
+	kout << "Total sectors:    " << total_sectors << endl;
+	kout << "Media type:       " << media_type << endl;
+	kout << "Sectors per fat:  " << sectors_per_fat << endl;
+	kout << "Sectors:          " << num_sectors << endl;
+	kout << "Heads:            " << num_heads << endl;
+	kout << "Hidden sectors:   " << hidden_sectors << endl;
+	kout << "Num clusters:     " << n_clusters << endl;
+	kout << "File system type: FAT" << fat_size << endl;
+        kout << "Fat start:        " << fat_start_sector << endl;
+	kout << "Root dir start:   " << root_dir_start << endl;
+        kout << "Data area start:  " << data_area_start << endl;
+	printk("Cluster offset bits: %d - cluster offset mask %08X\n", 
 		cluster_bits, cluster_offset_mask);
-	printf("Sector offset bits: %d - sector offset mask %08X\n", 
+	printk("Sector offset bits: %d - sector offset mask %08X\n", 
 		sector_bits, sector_offset_mask);
 
-	cout << endl << endl;
-}
-
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-BlockDevice::BlockDevice(const char *filename)
-{
-	struct stat s;
-	
-	fp = fopen(filename, "r");
-	if (! fp) {
-		goto error;
-        }
-
-	filedes = fileno(fp);
-	if (fstat(filedes, &s) != 0)
-		goto error;
-
-	uint32_t nblocks;
-	if (s.st_mode & S_IFBLK) {
-		cout << "Block device opened..." << endl;
-
-		ioctl(filedes, BLKGETSIZE, &nblocks);
-
-	        setSectorSize(512);
-	        setTotalSectors(nblocks);
-	}
-	else {
-		nblocks = s.st_size;
-		cout << "Regular file opened..." << endl;
-	        setSectorSize(512);
-	        setTotalSectors(nblocks / 512);
-        }
-	return;
-error:
-	perror("BlockDevice construction failed");
-	exit(1);
+	kout << endl << endl;
 }
 
 void FatFileSystem::create_fat_reader() {
@@ -375,7 +332,7 @@ public:
 			}
 			else {
 				if (lfn_started && lfn_seq_no == 0 && checksum_match()) {
-					for (int i = 0; i < sizeof(long_filename) / 2; i++) {
+					for (size_t i = 0; i < sizeof(long_filename) / 2; i++) {
 						e.filename[i] = (char)(uint8_t)(long_filename[i]);
 					}
 				}
@@ -390,7 +347,7 @@ public:
 		}
 	}
 
-	bool rewind() {
+	void rewind() {
 		long_filename[0] = 0;
 		lfn_pos = 0;
 		cksum = 0;
@@ -405,7 +362,6 @@ bool FatOrdinaryFile::get_first_sector(SectorHandle& handle) {
                 return false;
         }
 
-	fprintf(stderr, "sector: %d\n", filesystem->get_info().cluster_to_sector(first_cluster));
         return filesystem->get_device().acquire_sector(
                 filesystem->get_info().cluster_to_sector(first_cluster), handle);
 }
@@ -434,40 +390,4 @@ bool FatOrdinaryFile::get_next_sector(uint32_t current_sector, SectorHandle& han
                 return filesystem->get_device().acquire_sector
                         (current_sector + 1, handle);
         }
-}
-
-
-
-int main() {
-	FILE *fp;
-
-	BlockDevice dev("joo.img");
-	FatFileSystem f(dev);
-	FatDirectoryFile *root = f.get_root_directory();
-
-	FatDirPointer p;
-	p.open(root);
-
-	fprintf(stderr, "root dir contents\n");
-
-	DirEntry e;
-	LFNScanner lfns = LFNScanner(&p);
-	while (lfns.get_next_entry(e)) {
-		fprintf(stderr, "------------------\n");
-		fprintf(stderr, "filename: %s\n", e.filename);
-		fprintf(stderr, "filesize: %d\n", e.filesize);
-
-	        FatOrdinaryFile fil = FatOrdinaryFile(&f, e.first_cluster, e.filesize);
-
-		SectorHandle sh;
-		bool res = fil.get_first_sector(sh);
-		while (res) {
-			uint8_t *data = sh.get_data();
-			fwrite(data, sh.sector_size(), 1, stderr);
-			res = fil.get_next_sector(sh.get_sector_number(), sh);
-		}
-		sh.release();
-		fprintf(stderr, "<end>\n");
-	}
-	p.close();
 }

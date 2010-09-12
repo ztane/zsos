@@ -36,15 +36,13 @@ private:
 	FileOffset maxOffset;
 public:
 
-	ZsosRdFs() : super(0), container(0), maxOffset(0) {
-	};
+	ZsosRdFs() : super(0), container(0), maxOffset(0) { };
 
 	ErrnoCode initialize(FileLike& container);
 	ErrnoCode uninitialize();
 
 	ErrnoCode findInode(uint32_t inode, FileLike*& file);
 	ErrnoCode findPath(char *path, uint32_t& inode);
-//	ErrnoCode 
 
 	ErrnoCode openDir(FileLike& directory, FileDescriptor*& desc);
 	ErrnoCode readDir(FileDescriptor& desc, DirEntry& entry);
