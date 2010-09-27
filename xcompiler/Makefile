@@ -12,7 +12,10 @@ NEWPATH = $(PREFIX)/bin:$(PATH)
 GCC_CONFIG = --prefix=$(PREFIX) --disable-nls --without-headers \
         --target=$(TARGET) --enable-languages=c,c++
 
-BINUTILS_CONFIG = --target=$(TARGET) --prefix=$(PREFIX) --disable-nls
+# if -Werror, will have one error in GAS... 
+# "app.c:566: error: array subscript is below array bounds"
+# search net for better alternatives...
+BINUTILS_CONFIG = --target=$(TARGET) --prefix=$(PREFIX) --disable-nls --disable-werror
 
 NEWLIB_CONFIG = --target=$(TARGET) --prefix=$(PREFIX)
 
@@ -47,8 +50,12 @@ build/binutils/Makefile: src/binutils
                  $(BINUTILS_CONFIG)
 
 src/binutils: binutils-$(BINUTILS_VERSION).tar.bz2
-	mkdir -p src/binutils && cd src/binutils && tar xfj ../../binutils-$(BINUTILS_VERSION).tar.bz2
+	mkdir -p src/binutils && touch src/binutils && cd src/binutils && tar xfj ../../binutils-$(BINUTILS_VERSION).tar.bz2
 	cd src/binutils && patch -p1 < ../../binutils-2.17-zsos.patch
+
+binutils-$(BINUTILS_VERSION).tar.bz2:
+	echo "Download binutils-"$(BINUTILS_VERSION)".tar.bz2."
+	@false
 
 binutils-install:
 	echo "Installing binutils, sudo rights needed."
@@ -67,11 +74,16 @@ build/gcc/Makefile: src/gcc
 	mkdir -p build/gcc
 	cd build/gcc && PATH="$(NEWPATH)" ../../src/gcc/gcc-$(GCC_VERSION)/configure $(GCC_CONFIG)
 
-src/gcc:
+src/gcc: gcc-core-$(GCC_VERSION).tar.bz2 gcc-g++-$(GCC_VERSION).tar.bz2
 	mkdir -p src/gcc
 	cd src/gcc && tar xfj ../../gcc-core-$(GCC_VERSION).tar.bz2
 	cd src/gcc && tar xfj ../../gcc-g++-$(GCC_VERSION).tar.bz2
-	cd src/gcc && patch -p1 < ../../gcc-4.1.2-zsos.patch
+	cd src/gcc/gcc-4.1.2 && patch -p1 < ../../../gcc-4.1.2-zsos.patch
+
+gcc-core-$(GCC_VERSION).tar.bz2:
+gcc-g++-$(GCC_VERSION).tar.bz2:
+	@echo "Download both gcc-core-$(GCC_VERSION).tar.bz2 and gcc-g++-$(GCC_VERSION).tar.bz2"
+	@false
 
 install-gcc:
 	cd build/gcc && sudo env PATH="$(NEWPATH)" $(MAKECMD) install-gcc
@@ -81,16 +93,31 @@ install-gcc:
 newlib: newlib-make
 	cd build/newlib && sudo env PATH="$(NEWPATH)" $(MAKECMD) install
 
-newlib-make: src/newlib
+newlib-make: patch-newlib
 	mkdir -p build/newlib
 	cd build/newlib && PATH=$(NEWPATH) ../../src/newlib/newlib-$(NEWLIB_VERSION)/configure \
                  $(NEWLIB_CONFIG)
 	cd build/newlib && PATH="$(NEWPATH)" $(MAKECMD) all
 
-src/newlib: newlib-$(NEWLIB_VERSION).tar.bz2
+newlib-src: src/newlib/newlib-$(NEWLIB_VERSION)
+
+src/newlib/newlib-$(NEWLIB_VERSION): newlib-$(NEWLIB_VERSION).tar.gz
 	mkdir -p src/newlib
-	cd src/newlib && tar xfj ../../newlib-$(NEWLIB_VERSION).tar.bz2
-	cd src/newlib && patch -p1 < ../../newlib-$(NEWLIB_VERSION)-zsos.patch
+	cd src/newlib && tar xfz ../../newlib-$(NEWLIB_VERSION).tar.gz
+
+patch-newlib: do-patch-newlib link-lib-zsos-sys
+
+do-patch-newlib: newlib-src newlib-$(NEWLIB_VERSION)-zsos.patch
+	cd src/newlib/newlib-$(NEWLIB_VERSION) && patch -p1 < ../../../newlib-$(NEWLIB_VERSION)-zsos.patch
+
+link-lib-zsos-sys: src/newlib/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/zsos
+
+src/newlib/newlib-$(NEWLIB_VERSION)/newlib/libc/sys/zsos:
+	cp -r libc-sys-zsos src/newlib/newlib-1.16.0/newlib/libc/sys/zsos
+
+newlib-$(NEWLIB_VERSION).tar.gz:
+	echo "Download newlib-$(NEWLIB_VERSION).tar.gz from http://sourceware.org/newlib/" 
+	@false
 
 fakesys:
 	cd libfakesys && PATH="$(NEWPATH)" $(TARGET)-gcc -c libfakesys.c
