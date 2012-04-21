@@ -1,6 +1,6 @@
 include Makefile.inc
 
-MOUNTCMD  = sudo mount -tvfat -oloop,offset=32256,uid=`id -u`,gid=`id -g` img/disk.img mnt
+MOUNTCMD  = sudo mount -tvfat -oloop,offset=1048576,uid=`id -u`,gid=`id -g` img/disk.img mnt
 UMOUNTCMD = sudo umount mnt
 GRUBMOUNT = sudo mount -tvfat -oloop,uid=`id -u`,gid=`id -g` img/grubfloppy.img mnt
 
@@ -76,10 +76,10 @@ img/grub2floppy.img: img/grub2floppy.img.bz2
 	@bzcat img/grub2floppy.img.bz2 > img/grub2floppy.img
 
 run: buildall install img/grub2floppy.img
-	@bochs -qf etc/bochsrc-gui
+	@$(BOCHS) -qf etc/bochsrc-gui
 
 crun: buildall install img/grub2floppy.img
-	@bochs -qf etc/bochsrc-console
+	@$(BOCHS) -qf etc/bochsrc-console
 
 install: conditional-userlandimage
 	@$(MOUNTCMD)

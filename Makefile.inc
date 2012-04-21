@@ -1,4 +1,5 @@
 ARCH=i586-pc-zsos
+BOCHS=/opt/zsos-bochs/bin/bochs
 
 ifeq ($(DEBUG),1) 
 	CC	= $(ARCH)-gcc

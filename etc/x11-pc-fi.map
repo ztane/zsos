@@ -28,7 +28,7 @@
 # ugly.
 #
 # Xwin_Keysym is the X windows equivalent of the key combination.  These
-# codes should match whatever you find in /usr/X11R6/include/X11/keysymdef.h.
+# codes should match whatever you find in /opt/zsos-bochs/X11R6/include/X11/keysymdef.h.
 # If you're running X windows, Bochs will take each of these Xwin_Keysyms,
 # pull off the XK_ in front, and use XStringToKeysym() to change them into
 # numerical codes.  If this lookup fails, you will get a panic and you need

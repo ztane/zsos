@@ -255,8 +255,8 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	kout << "Building kernel page table";
 	initialize_page_tables();
 	kout << ", page tables";
-	disable_null_page();
-	kout << ", null page";
+//	disable_null_page();
+//	kout << ", null page";
 	ok();
 
 	kout << "Initializing kmalloc";
