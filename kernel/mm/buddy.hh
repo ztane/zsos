@@ -4,7 +4,7 @@
 class BuddyZone {
 private:
 	pageaddr_t __get_free_pages(int n);
-public:	
+public:
 	BuddyZone(pageaddr_t start, pageaddr_t end);
 	pageaddr_t get_free_page() {
 		return __get_free_pages(1);

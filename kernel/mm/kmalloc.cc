@@ -4,11 +4,13 @@
 #include <kernel/printk.h>
 #include <panic.hh>
 #include <kernel/mm/slab/slab.hh>
+#include <kernel/mm/memarea.hh>
+#include <kernel/mm/pageframe.hh>
 #include <iostream>
 
 static const int N_KMALLOC_SLABS = 8;
-
-static bool kmalloc_initialized = true;
+static const int MAX_PAGE_ORDER  = 5;
+static bool kmallocInitialized = false;
 
 SlabCache *kmallocSlabs[N_KMALLOC_SLABS];
 
@@ -32,7 +34,7 @@ static inline int _get_first_bit_set(size_t value)
 /**
  * Allocate a block of memory of given size. Return a pointer
  * to start of usable block.
- * 
+ *
  * @param size_t size
  * @return void pointer to start of block
  */
@@ -41,13 +43,26 @@ void *kmalloc(size_t size)
 	if (!size)
 		return NULL;
 
-	if (! kmalloc_initialized)
+	if (! kmallocInitialized) {
 		kernelPanic("FATAL: kmalloc not yet initialized\n");
+        }
 
 	int first_bit = _get_first_bit_set(size);
 	if (first_bit >= N_KMALLOC_SLABS) {
-		printk("kmalloc was unable to allocate a block of %d bytes", size);
-		kernelPanic("Kernel halted");
+		int pageOrder = first_bit - 9;
+		if (pageOrder > MAX_PAGE_ORDER) {
+			printk("kmalloc was unable to allocate a block of %d bytes", size);
+			kernelPanic("Kernel halted");
+		}
+
+		int pagesToAllocate = 1 << first_bit;
+                PageAllocation allocation;
+		NormalMemory.allocatePages(pagesToAllocate, allocation);
+                pageaddr_t addr = allocation.getAddress();
+		PageFrame& frame = page_frames.getByFrame(addr);
+		frame.setFlag(PageFrame::KMALLOC_BIG);
+
+		return addr.toLinear();
 	}
 
 	return kmallocSlabs[first_bit]->allocate();
@@ -61,14 +76,16 @@ void *kcalloc(size_t n, size_t size)
 {
 	void *rval = NULL;
 
-	if (!size || !n)
+	if (!size || !n) {
 		return NULL;
+        }
 
 	size *= n;
 	rval = kmalloc(size);
 
-	if (!rval)
+	if (!rval) {
 		return NULL;
+        }
 
 	memset(rval, 0, size);
 	return rval;
@@ -99,7 +116,19 @@ void *krealloc(void *ptr, size_t size)
 void kfree(void *ptr)
 {
 	if (ptr != NULL) {
-		SlabCache::release(ptr);
+                PageFrame& frame = page_frames.getByLinear(ptr);
+		uint32_t flags = frame.get_flags();
+		if (flags & PageFrame::SLAB) {
+			SlabCache::release(ptr);
+		}
+		else if (flags & PageFrame::KMALLOC_BIG) {
+			size_t size = frame.getKMallocSize();
+			frame.clearFlag(PageFrame::KMALLOC_BIG);
+			NormalMemory.releasePages(frame.getPageAddr(), size);
+		}
+		else {
+		        kernelPanic("tried to kfree memory not kmalloced");
+		}
 	}
 }
 
@@ -131,17 +160,17 @@ public:
  * the moment the code tries to honour this, but if you
  * add something, then remember to honour this behaviour!
  */
-int kmalloc_init()
+int kmallocInit()
 {
-	kmalloc_initialized = true;
-	kmallocSlabs[0] = new SlabCache(16,   1, "kmalloc-16");
-	kmallocSlabs[1] = new SlabCache(32,   1, "kmalloc-32");
-	kmallocSlabs[2] = new SlabCache(64,   1, "kmalloc-64");
-	kmallocSlabs[3] = new SlabCache(128,  1, "kmalloc-128");
-	kmallocSlabs[4] = new SlabCache(256,  1, "kmalloc-256");
-	kmallocSlabs[5] = new SlabCache(512,  1, "kmalloc-512");
-	kmallocSlabs[6] = new SlabCache(1024, 1, "kmalloc-1024");
-	kmallocSlabs[7] = new SlabCache(2048, 1, "kmalloc-2048");
+	kmallocInitialized = true;
+	kmallocSlabs[0]  = new SlabCache(16,      1, "kmalloc-16");
+	kmallocSlabs[1]  = new SlabCache(32,      1, "kmalloc-32");
+	kmallocSlabs[2]  = new SlabCache(64,      1, "kmalloc-64");
+	kmallocSlabs[3]  = new SlabCache(128,     1, "kmalloc-128");
+	kmallocSlabs[4]  = new SlabCache(256,     1, "kmalloc-256");
+	kmallocSlabs[5]  = new SlabCache(512,     1, "kmalloc-512");
+	kmallocSlabs[6]  = new SlabCache(1024,    1, "kmalloc-1024");
+	kmallocSlabs[7]  = new SlabCache(2 << 11, 1, "kmalloc-2048");
 
 	__set_default_allocator(new KMallocAllocator());
 	return 1;

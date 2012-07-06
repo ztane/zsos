@@ -13,6 +13,7 @@ class SlabCache;
 
 #define __SLAB_CACHE_HEAD (pte_refs)
 #define __SLAB_NEXT_PAGE  (privdata)
+#define __KMALLOC_SIZE    (privdata)
 
 class PageFrame {
 private:
@@ -24,12 +25,13 @@ private:
 
 public:
 	enum {
-		IS_RAM = 1,
-		LOCKED = 2,
-		KERNEL = 4,
-		HIGH   = 8,
-		COW    = 16,
-		SLAB   = 32,
+		IS_RAM      = 1,
+		LOCKED      = 2,
+		KERNEL      = 4,
+		HIGH        = 8,
+		COW         = 16,
+		SLAB        = 32,
+		KMALLOC_BIG = 64
 	};
 
 	PageFrame() : refs(), pte_refs(), privdata() {
@@ -82,7 +84,11 @@ public:
 		flags |= index;
 	}
 
-	inline uint32_t getFreeSlabs() {
+	inline uint32_t getKMallocSize() const {
+		return __KMALLOC_SIZE;
+	}
+
+	inline uint32_t getFreeSlabs() const {
 		return __SLAB_NEXT_PAGE & 0xFFF;
 	}
 
@@ -101,7 +107,7 @@ public:
 		__SLAB_NEXT_PAGE = (__SLAB_NEXT_PAGE & 0xFFF) | ((uint32_t)pageAddr & ~0xFFF);
 	}
 
-	inline SlabCache *getSlabHead() {
+	inline SlabCache *getSlabHead() const {
 		return (SlabCache*)(uint32_t)__SLAB_CACHE_HEAD;
 	}
 

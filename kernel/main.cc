@@ -223,6 +223,13 @@ void initializeHardDisk() {
 	rootFileSystem = new FatFileSystem(*rootPartition);
 }
 
+void kmallocTest() {
+    void *memory = kmalloc(1024);
+    //void *memory2 = kmalloc(4096);
+    kfree(memory);
+    //kfree(memory2);
+}
+
 extern "C" void kernel_main(unsigned int magic, void *mbd)
 {
 	kout << "Detecting CPU:";
@@ -260,7 +267,11 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	ok();
 
 	kout << "Initializing kmalloc";
-	kmalloc_init();
+	kmallocInit();
+	ok();
+
+	kout << "Testing kmalloc... ";
+	kmallocTest();
 	ok();
 
 	kout << "Initializing PIC";
@@ -279,7 +290,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	initialize_timer();
 	ok();
 
-	kout << "Detecting PCI devices";
+	kout << "Detecting PCI devices" << endl;
 	PCI::initialize();
 	ok();
 
@@ -309,23 +320,12 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	ide::controller.ifs[0]->add_request(0, 0, 0, 1L, 1);
 	ok(); */
 
-	kout << "Initializing kmalloc...";
-	kmalloc_init();
-	ok();
-
 	kout << "Mounting root filesystem";
 	mountRoot();
 	ok();
 
 	kout << "Initializing hard disk";
 	initializeHardDisk();
-	halt();
-	//initializeHardDisk();
-	//halt();
-
-	//kout << "Testing kmalloc...";
-	//kmalloc_test();
-	//ok();
 
 	kout << "Preparing init process, pid 1";
 	tesmi.initialize(&_binary_example_zsx_start);

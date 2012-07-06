@@ -8,7 +8,7 @@ public:
 	RefCount() : Atomic(0) {
 	}
 
-	inline operator int32_t() {
+	inline operator int32_t() const {
 		return Atomic::operator int32_t();
 	}
 

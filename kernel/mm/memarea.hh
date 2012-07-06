@@ -116,6 +116,12 @@ public:
 		alloc.amt = 0;
 		enableInterruptsIf(state);
 	}
+
+	void releasePages(pageaddr_t start, size_t amt) {
+		bool state = disableInterrupts();
+		table.releaseRange(start, amt);
+		enableInterruptsIf(state);
+	}
 };
 
 extern MemoryArea    DMAMemory;
