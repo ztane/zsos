@@ -57,12 +57,12 @@ void *kmalloc(size_t size)
 
 		int pagesToAllocate = 1 << first_bit;
                 PageAllocation allocation;
-		NormalMemory.allocatePages(pagesToAllocate, allocation);
-                pageaddr_t addr = allocation.getAddress();
-		PageFrame& frame = page_frames.getByFrame(addr);
-		frame.setFlag(PageFrame::KMALLOC_BIG);
 
-		return addr.toLinear();
+		NormalMemory.allocatePages(pagesToAllocate, allocation);
+                PageFrame *frame = allocation.getAddress();
+		frame->setFlag(PageFrame::KMALLOC_BIG);
+
+		return frame->toLinear();
 	}
 
 	return kmallocSlabs[first_bit]->allocate();
@@ -116,15 +116,15 @@ void *krealloc(void *ptr, size_t size)
 void kfree(void *ptr)
 {
 	if (ptr != NULL) {
-                PageFrame& frame = page_frames.getByLinear(ptr);
-		uint32_t flags = frame.get_flags();
+                PageFrame* frame = frames.getFrameByLinear(ptr);
+		uint32_t flags = frame->getFlags();
 		if (flags & PageFrame::SLAB) {
 			SlabCache::release(ptr);
 		}
 		else if (flags & PageFrame::KMALLOC_BIG) {
-			size_t size = frame.getKMallocSize();
-			frame.clearFlag(PageFrame::KMALLOC_BIG);
-			NormalMemory.releasePages(frame.getPageAddr(), size);
+			size_t size = frame->getKMallocSize();
+			frame->clearFlag(PageFrame::KMALLOC_BIG);
+			NormalMemory.releasePages(frame, size);
 		}
 		else {
 		        kernelPanic("tried to kfree memory not kmalloced");
@@ -163,15 +163,29 @@ public:
 int kmallocInit()
 {
 	kmallocInitialized = true;
+	printk("here1");
+	new int[16];
+	printk("here1");
+	new SlabCache(16,      1, "kmalloc-16");
+	printk("here1");
 	kmallocSlabs[0]  = new SlabCache(16,      1, "kmalloc-16");
+	printk("here1");
 	kmallocSlabs[1]  = new SlabCache(32,      1, "kmalloc-32");
+	printk("here1");
 	kmallocSlabs[2]  = new SlabCache(64,      1, "kmalloc-64");
+	printk("here1");
 	kmallocSlabs[3]  = new SlabCache(128,     1, "kmalloc-128");
+	printk("here1");
 	kmallocSlabs[4]  = new SlabCache(256,     1, "kmalloc-256");
+	printk("here1");
 	kmallocSlabs[5]  = new SlabCache(512,     1, "kmalloc-512");
+	printk("here1");
 	kmallocSlabs[6]  = new SlabCache(1024,    1, "kmalloc-1024");
+	printk("here1");
 	kmallocSlabs[7]  = new SlabCache(2 << 11, 1, "kmalloc-2048");
 
+	printk("here2");
 	__set_default_allocator(new KMallocAllocator());
+	printk("here3");
 	return 1;
 }

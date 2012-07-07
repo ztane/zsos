@@ -31,7 +31,7 @@
 	ASM_ISR(name);           \
 
 
-extern "C" { 
+extern "C" {
 	ISR_PROTOS(divide_by_zero)
 	ISR_PROTOS(debug_exception)
 	ISR_PROTOS(nmi)
@@ -41,15 +41,15 @@ extern "C" {
 	ISR_PROTOS(invalid_opcode)
 	ISR_PROTOS(fpu_not_avail)
 
-	ISR_PROTOS_W_ECODE(double_fault)         
+	ISR_PROTOS_W_ECODE(double_fault)
 
 	ISR_PROTOS(cop_segment_overrun)
 
-	ISR_PROTOS_W_ECODE(invalid_tss)          
+	ISR_PROTOS_W_ECODE(invalid_tss)
 	ISR_PROTOS_W_ECODE(segment_not_present)
 	ISR_PROTOS_W_ECODE(stack_exception)
 	ISR_PROTOS_W_ECODE(general_prot_fault)
-	ISR_PROTOS_W_ECODE(page_fault)            
+	ISR_PROTOS_W_ECODE(page_fault)
 
 	ISR_PROTOS(floating_point_error)
 	ISR_PROTOS(alignment_check)
@@ -79,10 +79,10 @@ extern "C" {
 };
 
 #define I(name) 	__ISR_ ## name ## _asm
-#define ID		InterruptDescriptor 
+#define ID		InterruptDescriptor
 #define INTR_GATE	INTR_TYPE_386_INTR_GATE
 
-ID interrupt_table[256] = 
+ID interrupt_table[256] =
 {
 	// 0x00 - 0x1F: CPU Exceptions
 
@@ -91,38 +91,38 @@ ID interrupt_table[256] =
 	ID( I(nmi),                 INTR_GATE 	),
 	ID( I(breakpoint),          INTR_GATE, INTR_ACCESS_RING_3 ),
 	ID( I(overflow),            INTR_GATE, INTR_ACCESS_RING_3 ),
-	ID( I(bound_exception),     INTR_GATE, INTR_ACCESS_RING_3 ), 
+	ID( I(bound_exception),     INTR_GATE, INTR_ACCESS_RING_3 ),
 	ID( I(invalid_opcode),      INTR_GATE 	),
 	ID( I(fpu_not_avail),       INTR_GATE 	),
 	ID( I(double_fault),        INTR_GATE 	), // 08
 	ID( I(cop_segment_overrun), INTR_GATE 	),
-	ID( I(invalid_tss),         INTR_GATE 	), 
-	ID( I(segment_not_present), INTR_GATE 	),		
+	ID( I(invalid_tss),         INTR_GATE 	),
+	ID( I(segment_not_present), INTR_GATE 	),
 	ID( I(stack_exception),     INTR_GATE 	),
 	ID( I(general_prot_fault),  INTR_GATE 	),
 	ID( I(page_fault),          INTR_GATE 	),
-	ID(				 	), 
+	ID(				 	),
 	ID( I(floating_point_error),INTR_GATE	), // 10
 	ID( I(alignment_check),     INTR_GATE 	),
 	ID( I(machine_check),       INTR_GATE 	),
 	ID(					),
 	ID(					),
 	ID(					),
-	ID(					), 
+	ID(					),
 	ID(					),
 	ID(					), // 18
-	ID(					), 
-	ID(					), 
 	ID(					),
-	ID(					), 
 	ID(					),
-	ID(					), 
-	ID(					), 
+	ID(					),
+	ID(					),
+	ID(					),
+	ID(					),
+	ID(					),
 
 	// 0x20 - 0x2E: IRQs
 
 	ID( I(IRQ_0),		    INTR_GATE 	), // 20
-	ID( I(IRQ_1),		    INTR_GATE 	), 
+	ID( I(IRQ_1),		    INTR_GATE 	),
 	ID( I(IRQ_2),		    INTR_GATE 	),
 	ID( I(IRQ_3),		    INTR_GATE 	),
 	ID( I(IRQ_4),		    INTR_GATE 	),
@@ -137,17 +137,17 @@ ID interrupt_table[256] =
 	ID( I(IRQ_D),		    INTR_GATE 	),
 	ID( I(IRQ_E),		    INTR_GATE 	),
 	ID( I(IRQ_F),		    INTR_GATE 	),
-	
+
 	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 30
-	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(),
 	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 40
-	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(),
 	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 50
-	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(),
 	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 60
-	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(),
 	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), // 70
-	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(), 
+	ID(), ID(), ID(), ID(), ID(), ID(), ID(), ID(),
 
 	ID( I(SYS_CALL),	    INTR_GATE, INTR_ACCESS_RING_3),
 };
@@ -163,7 +163,7 @@ static struct _idtr {
 
 void load_idt(InterruptDescriptor *_base, int num)
 {
-	int limit = num * sizeof(InterruptDescriptor) - 1;	
+	int limit = num * sizeof(InterruptDescriptor) - 1;
 	unsigned long base = (unsigned long)_base;
 
 	idtr.limit_7_0  =  limit       & 0xff;
@@ -178,7 +178,7 @@ void load_idt(InterruptDescriptor *_base, int num)
 	__asm__ __volatile__ ("lidt (%0)" : : "r" ((void *) &idtr));
 }
 
-void init_idt() 
+void init_idt()
 {
 	load_idt(interrupt_table, 256);
 }
@@ -186,7 +186,7 @@ void init_idt()
 extern Scheduler scheduler;
 
 // IRQ0 - Timer
-C_ISR(IRQ_0) 
+C_ISR(IRQ_0)
 {
 	triggerSoftIrq(1);
 	unlock_irq(0);
@@ -206,7 +206,7 @@ C_ISR(IRQ_1)
 	unlock_irq(1);
 }
 
-static inline void out_status(int code) 
+static inline void out_status(int code)
 {
 	farpokel(0x10, (void*)0xC00B8000, (unsigned)code);
 	while (1) {
@@ -214,8 +214,8 @@ static inline void out_status(int code)
 	}
 }
 
-C_ISR(divide_by_zero)  { 
-	out_status(' Z D'); 
+C_ISR(divide_by_zero)  {
+	out_status(' Z D');
 }
 
 C_ISR(debug_exception) { out_status(' D E'); }
@@ -228,16 +228,16 @@ C_ISR(fpu_not_avail)   {
     extern Scheduler scheduler;
     Task *task = scheduler.getCurrentTask();
     if (! task) {
-        out_status(' M N'); 
+        out_status(' M N');
     }
 
-    task->handleNMException();    
+    task->handleNMException();
 }
 
 // There's no way to recover from double fault, so we
-// just 
-C_ISR_W_ECODE(double_fault) { 
-	out_status(' F D'); 
+// just
+C_ISR_W_ECODE(double_fault) {
+	out_status(' F D');
 	while (1) { __asm__ __volatile__("hlt"); }
 }
 
@@ -247,7 +247,7 @@ C_ISR_W_ECODE(invalid_tss)  { out_status(' T I'); }
 C_ISR_W_ECODE(segment_not_present) { out_status(' P N'); }
 C_ISR_W_ECODE(stack_exception)     { out_status(' E S'); }
 C_ISR_W_ECODE(general_prot_fault)  { out_status(' P G'); }
-C_ISR_W_ECODE(page_fault)          { 
+C_ISR_W_ECODE(page_fault)          {
 	PageFaultInfo f;
 
 	asm("mov %%cr2, %0"
@@ -259,7 +259,7 @@ C_ISR_W_ECODE(page_fault)          {
         Task *task = scheduler.getCurrentTask();
 
 	// true: in user mode
-	f.userMode = errorcode & 0x4; 
+	f.userMode = errorcode & 0x4;
 
 	// the page was written
 	f.write    = errorcode & 0x2;

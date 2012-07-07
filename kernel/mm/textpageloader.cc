@@ -10,7 +10,7 @@ int TextPageLoader::loadPage
 
 	char *physPos     = (char*)m->getPrivPointer();
 	physPos          += offset;
-	pageaddr_t phys_a = pageaddr_t::fromLinear(physPos);		
+	uintptr_t  phys_a = frameNumberFromLinear(physPos);
 
 	if (access & MemMapArea::W) {
 		kout << "Tryint to write to text area " << phys_a << endl;
@@ -19,7 +19,7 @@ int TextPageLoader::loadPage
 
 	PageFlags flags = PageFlags::PRESENT | PageFlags::USER;
 
-        mapPage(page_directory, addr, &page_frames.getByFrame(phys_a), flags);
+        mapPage(page_directory, addr, frames.getFrameByNumber(phys_a), flags);
 	return 0;
 }
 

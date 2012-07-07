@@ -1,22 +1,23 @@
 #include <kernel/mm/pageframe.hh>
 #include <kernel/multiboot.hh>
+#include <kernel/mm/memarea.hh>
 #include <iostream>
 
-PageFrameTable page_frames;
+PageFrameTable frames;
 
 extern char _BOOT_HEAP_END;
 extern char g_code;
 
 
 void initializePageFrameTable(
-		MultibootInfo& boot_info, 
+		MultibootInfo& boot_info,
 		Allocator& alloc
 	)
 {
-	pageaddr_t last_page =
+	uintptr_t lastPageFrameNumber =
 		boot_info.get_max_ram_address() / 0x1000l + 1l;
 
-	page_frames.initialize(last_page, alloc);
+	frames.initialize(lastPageFrameNumber, alloc);
 
         int ct = boot_info.number_of_mmap_entries();
 
@@ -25,66 +26,66 @@ void initializePageFrameTable(
                 const MultibootMMapInfo& inf =
                         boot_info.mmap_entry(i);
 
-
 		// does not handle alignment...
-		pageaddr_t start = inf.get_base() / 0x1000;
+		uintptr_t start = inf.get_base() / 0x1000;
 		size_t length = inf.get_length() / 0x1000;
+		PageFrame *startFrame = frames.getFrameByNumber(start);
 
-		page_frames.setFlagsRange(
-			start, length, PageFrame::IS_RAM);
-
-		page_frames.clearFlagsRange(
-			start, length, PageFrame::LOCKED);
+		frames.setFlagsRange(startFrame, length, PageFrame::IS_RAM);
+		frames.clearFlagsRange(startFrame, length, PageFrame::LOCKED);
         }
 
-	pageaddr_t kstart  = ((uint32_t)&g_code - 0xC0000000) / 0x1000;
-	pageaddr_t kend    = ((uint32_t)&_BOOT_HEAP_END - 0xC0000000) / 0x1000;
-	pageaddr_t klength = kend - kstart + 1;
-	// kout << "Reserving " << klength << " pages at " << kstart << " for kernel." << endl;
+	uintptr_t kstart  = ((uint32_t)&g_code - 0xC0000000) / 0x1000;
+	uintptr_t kend    = ((uint32_t)&_BOOT_HEAP_END - 0xC0000000) / 0x1000;
+	uintptr_t klength = kend - kstart + 1;
 
-	page_frames.setFlagsRange(kstart, klength, PageFrame::LOCKED | PageFrame::KERNEL);
+	frames.setFlagsRange(frames.getFrameByNumber(kstart),
+		klength, PageFrame::LOCKED | PageFrame::KERNEL);
 
         int nmods = boot_info.number_of_modules();
         for (int i = 0; i < nmods; i ++) {
 		const MultibootModuleInfo& m = boot_info.get_module(i);
 
-		pageaddr_t modstart = m.get_base()             / 0x1000;
-		pageaddr_t modlen   = (m.get_length() + 0xFFF) / 0x1000;
+		uintptr_t modstart = m.get_base()             / 0x1000;
+		uintptr_t modlen   = (m.get_length() + 0xFFF) / 0x1000;
 
-                // kout << "Reserving" << modlen << " pages at " << modstart << " for module " << m.get_string() << endl;
-		page_frames.setFlagsRange(modstart, modlen, PageFrame::LOCKED | PageFrame::KERNEL);
+		frames.setFlagsRange(frames.getFrameByNumber(modstart),
+			modlen, PageFrame::LOCKED | PageFrame::KERNEL);
         }
 
+	DMAMemory.init(0, 0x1000);
+	NormalMemory.init(0x1000,   0x30000 -  0x1000);
+	HighMemory.init(0x30000,  0x100000 - 0x30000);
 }
 
-void PageFrameTable::acquireRange(pageaddr_t start, size_t length)
+void PageFrameTable::acquireRange(PageFrame* start, size_t length)
 {
-	int end = start + length;
-	for (int i = start; i < end; i ++) {
-		page_frames[i].acquire();
+	PageFrame* end = start + length;
+	for ( ; start < end; start ++) {
+		start->acquire();
 	}
 }
 
-void PageFrameTable::releaseRange(pageaddr_t start, size_t length)
+void PageFrameTable::releaseRange(PageFrame* start, size_t length)
 {
-	int end = start + length;
-	for (int i = start; i < end; i ++) {
-		page_frames[i].release();
+	PageFrame* end = start + length;
+	for ( ; start < end; start ++) {
+		start->release();
 	}
 }
 
-void PageFrameTable::setFlagsRange(pageaddr_t start, size_t length, int32_t flag)
+void PageFrameTable::setFlagsRange(PageFrame* start, size_t length, int32_t flag)
 {
-	int end = start + length;
-	for (int i = start; i < end; i ++) {
-		page_frames[i].setFlag(flag);
+	PageFrame* end = start + length;
+	for ( ; start < end; start ++) {
+		start->setFlag(flag);
 	}
 }
 
-void PageFrameTable::clearFlagsRange(pageaddr_t start, size_t length, int32_t flag)
+void PageFrameTable::clearFlagsRange(PageFrame* start, size_t length, int32_t flag)
 {
-	int end = start + length;
-	for (int i = start; i < end; i ++) {
-		page_frames[i].clearFlag(flag);
+        PageFrame* end = start + length;
+	for ( ; start < end; start ++) {
+		start->clearFlag(flag);
 	}
 }

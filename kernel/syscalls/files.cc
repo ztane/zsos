@@ -135,7 +135,7 @@ SYSCALL(close)
         SYSCALL_RETURN(-rc);
 }
 
-SYSCALL(lseek) 
+SYSCALL(lseek)
 {
 	int fdn            = r.ebx;
 	FileOffset           off((uint32_t)r.ecx);
@@ -161,7 +161,7 @@ SYSCALL(lseek)
 	}
 	else {
 		rc = fd->lseek(off, whence, new_off);
-		if (rc != NOERROR) 
+		if (rc != NOERROR)
 			goto error_exit;
 	}
 

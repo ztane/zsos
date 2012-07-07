@@ -3,13 +3,13 @@
 #include <scheduler.hh>
 
 extern Scheduler scheduler;
-SYSCALL(get_pid) 
-{       
+SYSCALL(get_pid)
+{
         Task *task = scheduler.getCurrentTask();
         SYSCALL_RETURN(task->getProcessId());
 }
 
-SYSCALL(suspend) 
+SYSCALL(suspend)
 {
 	// suspend process with handle given in %EBX
 	SYSCALL_RETURN(0xFFFFFFFF);
@@ -46,7 +46,7 @@ SYSCALL(sem_post)
 	SYSCALL_RETURN(0);
 }
 
-SYSCALL(sem_wait) 
+SYSCALL(sem_wait)
 {
 	int rv;
 	buf->get(rv);

@@ -12,7 +12,7 @@ CCMODULES=main interrupt pic multiboot printstate paging   \
 	datapageloader sysmm keyboard filelike filedescriptor \
 	consoledriver zsosrdfs ramdiskdevice path files slab \
 	kmalloc stacktrace hexdump simpleide mbr harddisk harddiskdevice \
-	block fat
+	block fat reboot
 
 ASMMODULES=intvecs
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .

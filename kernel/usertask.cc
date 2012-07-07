@@ -10,6 +10,7 @@
 #include "tss.hh"
 
 #include "kernel/arch/current/fpu.hh"
+#include "kernel/arch/current/reboot.hh"
 #include "kernel/exe/bits.hh"
 #include "kernel/paging.hh"
 
@@ -27,8 +28,8 @@
 
 TssContents tssSegment __attribute__((aligned(4096)));
 
-UserTask::UserTask(const char *name, State state, int priority) 
-	: Task(name, state, priority) 
+UserTask::UserTask(const char *name, State state, int priority)
+	: Task(name, state, priority)
 {
 	for (int i = 0; i < MAX_FILEDES; i++) {
 		fileDescriptors[i] = NULL;
@@ -38,11 +39,11 @@ UserTask::UserTask(const char *name, State state, int priority)
 void UserTask::enable_io() {
 	// set IOPL to 3...
 	unsigned int *tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
-	tmp -= 3;	
+	tmp -= 3;
 	*tmp |= 3 << 12;
 }
 
-extern "C" void ____user_task_dispatch_new_asm(); 
+extern "C" void ____user_task_dispatch_new_asm();
 
 static void initialize_stdstreams(UserTask *task) {
 	// create stdin
@@ -73,7 +74,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	char *text_address, *data_address;
 
 	header = hdr;
-	
+
 	// build kernel stack
 	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 1;
 	kstack = (unsigned int)tmp;
@@ -84,7 +85,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
         *tmp -- = 0x0202;
 
         *tmp -- = USER_CODE_DESCRIPTOR + 3;
-        *tmp -- = (unsigned int)hdr->entryPoint; 
+        *tmp -- = (unsigned int)hdr->entryPoint;
 
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // ds
         *tmp -- = USER_DATA_DESCRIPTOR + 3; // es
@@ -109,7 +110,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	MemMapArea *m;
 
 	m = new MemMapArea(
-		VirtAddr((void*)hdr->textVirt), 
+		VirtAddr((void*)hdr->textVirt),
 		VirtAddr((void*)(hdr->textVirt + hdr->textLength)));
 
         text_address = (char*)&_binary_example_zsx_start
@@ -124,7 +125,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 	}
 
 	m = new MemMapArea(
-		VirtAddr((void*)hdr->dataVirt), 
+		VirtAddr((void*)hdr->dataVirt),
 		VirtAddr((void*)(hdr->dataVirt + hdr->dataLength)));
 
         data_address = (char*)&_binary_example_zsx_start
@@ -139,7 +140,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 
         // BSS
 	m = new MemMapArea(
-		VirtAddr((void*)hdr->bssVirt), 
+		VirtAddr((void*)hdr->bssVirt),
 		VirtAddr((void*)(hdr->bssVirt + hdr->bssLength)));
 	m->setLoader(&zeroPageLoader);
 	rc = memmap->addAreaAt(m);
@@ -150,7 +151,7 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
 
         // STACK. Does not (yet) grow!
 	m = new MemMapArea(
-		VirtAddr((void*)(0xC0000000 - 0x100000)), 
+		VirtAddr((void*)(0xC0000000 - 0x100000)),
 		VirtAddr((void*)(0xC0000000)));
 	m->setLoader(&zeroPageLoader);
 	rc = memmap->addAreaAt(m);
@@ -172,7 +173,7 @@ UserTask::~UserTask() {
 
 void ____user_task_dispatch_new() {
         /* clear task switched as we are going fresh
-           and doing fninit */ 
+           and doing fninit */
         clear_TS_in_CR0();
 	__asm__ __volatile__(
 		".globl ____user_task_dispatch_new_asm\n"
@@ -190,11 +191,11 @@ void UserTask::dispatch(uint32_t *saved_esp) {
         /* change TSS ESP0 to our kernel stack base */
 	tssSegment.esp0 = kstack;
 
-        /* set task switched for our new task... this is rather complicated, 
-           but it is run before our actual context switch. This will 
+        /* set task switched for our new task... this is rather complicated,
+           but it is run before our actual context switch. This will
            fail all FPU operations... */
         set_TS_in_CR0();
-	
+
         /* Ok... change our contexts */
         Task::switchContexts(saved_esp);
 
@@ -206,12 +207,16 @@ void UserTask::terminate() {
 	extern Scheduler scheduler;
 	setCurrentState(TERMINATED);
 	scheduler.removeTask(this);
+	if (process_id == 1) {
+		kout << "Init killed, rebooting" << endl;
+		reboot();
+	}
 	scheduler.schedule();
 }
 
 bool UserTask::handlePageFault(PageFaultInfo& f) {
 	MemMapArea *m = memmap->findAreaByAddr(f.address);
-       
+
 	if (! m) {
                 kout << "-- Page fault --" << endl;
 		kout << "Invalid address: " << f.address << endl;
@@ -223,9 +228,9 @@ bool UserTask::handlePageFault(PageFaultInfo& f) {
 	else {
 		PageLoader *p = m->getLoader();
 		if (p) {
-			p->loadPage(this, 
+			p->loadPage(this,
 				m,
-				f.write ? MemMapArea::W : MemMapArea::R, 
+				f.write ? MemMapArea::W : MemMapArea::R,
 				f.address);
 
 			return true;
@@ -244,10 +249,10 @@ void TssContents::setup() {
 	memset(&tssSegment, 0, sizeof(tssSegment));
 	ss0   = KERNEL_DATA_DESCRIPTOR;
 
-        es = 
-	ss = 
-	ds = 
-	fs = 
+        es =
+	ss =
+	ds =
+	fs =
 	gs = USER_DATA_DESCRIPTOR | 3;
         cs = USER_CODE_DESCRIPTOR | 3;
 	eflags = 2;
@@ -273,7 +278,7 @@ void UserTask::handleNMException() {
        fpu_used = true;
 }
 
-void UserTask::prepareContextSwitch() { 
+void UserTask::prepareContextSwitch() {
        if (fpu_used) {
            _save_FPU_state(getFpuStatePtr());
            fpu_used = false;

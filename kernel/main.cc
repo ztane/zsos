@@ -92,7 +92,7 @@ void extract_multiboot_info(unsigned int magic, void *mbd)
 	if (multiboot_info->get_flags() & MB_FLAG_MMAP)
 		print_memmap(multiboot_info);
 
-	printk("\tMax usable ram address: 0x%08x\n", 
+	printk("\tMax usable ram address: 0x%08x\n",
 		multiboot_info->get_max_ram_address());
 
 	int nmods = multiboot_info->number_of_modules();
@@ -123,7 +123,7 @@ extern void initialize_tasking();
 
 void detectCpu() {
 	cpuIdentity.identify();
-	
+
 	kout << "\tCPU0:" << endl;
 	kout << "\t-----" << endl;
 	kout << "\tVendor:\t\t" << cpuIdentity.getVendor()   << endl;
@@ -132,7 +132,7 @@ void detectCpu() {
 	kout << "\tModel:\t\t"  << cpuIdentity.getModel()    << endl;
 	kout << "\tStepping:\t" << cpuIdentity.getStepping() << endl;
 	kout << "\tFeatures:\t";
-	
+
 	uint32_t flags = cpuIdentity.getFlags();
 	int flag_no = 0;
 	int pretty_ct = 0;
@@ -240,7 +240,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	}
 	ok();
 
-	kout << "Setting boot time dynamic memory allocator";	
+	kout << "Setting boot time dynamic memory allocator";
 	__set_default_allocator(&boot_dynmem_alloc);
 	ok();
 
@@ -256,7 +256,7 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 
 	kout << "Initializing MM: ";
 	initializePageFrameTable(*multiboot_info, boot_dynmem_alloc);
-	kout << page_frames.getLastPage() << " pages of RAM.";
+	kout << frames.getLastPageNumber() << " pages of RAM.";
 	ok();
 
 	kout << "Building kernel page table";

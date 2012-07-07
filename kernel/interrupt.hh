@@ -58,7 +58,7 @@ extern "C" {
 	typedef void (* ISR_W_ECODE_TYPE)(Registers r, unsigned int errorcode,
 		unsigned int eip, unsigned int cs, unsigned int eflags);
 
-	typedef void (* ISR_TYPE)(Registers r, unsigned int eip, unsigned int cs, 
+	typedef void (* ISR_TYPE)(Registers r, unsigned int eip, unsigned int cs,
 		unsigned int eflags);
 }
 
@@ -85,7 +85,7 @@ protected:
 	unsigned char offset_23_16;
 	unsigned char offset_31_24;
 public:
-	void set_handler(const ISRPointer pointer) 
+	void set_handler(const ISRPointer pointer)
 	{
 		unsigned int offset = (unsigned int)pointer.get_value();
 
@@ -95,22 +95,22 @@ public:
         	offset_31_24 = (offset >> 24) & 0xff;
 
 	        selector_7_0  =  get_code_selector() & 0xff;
-        	selector_15_8 = (get_code_selector() >> 8) & 0xff;		
+        	selector_15_8 = (get_code_selector() >> 8) & 0xff;
 	}
 
-	void set_present(bool present) { 
+	void set_present(bool present) {
 		access &= ~INTR_PRESENT;
-		access |= present ? INTR_PRESENT : 0; 
+		access |= present ? INTR_PRESENT : 0;
 	}
 
-	void set_access(int a) { 
+	void set_access(int a) {
 		access &= ~INTR_ACCESS_MASK;
-		access |= a & INTR_ACCESS_MASK; 
+		access |= a & INTR_ACCESS_MASK;
 	}
 
-	void set_type(int t) { 
+	void set_type(int t) {
 		access &= ~INTR_TYPE_MASK;
-		access |= t & INTR_TYPE_MASK; 
+		access |= t & INTR_TYPE_MASK;
 	}
 
 	void set_all(const ISRPointer pointer, int type,
@@ -125,23 +125,23 @@ public:
 	InterruptDescriptor()
 	{
 		null = 0x00;
-		set_all((void *)0, INTR_TYPE_386_INTR_GATE, 
+		set_all((void *)0, INTR_TYPE_386_INTR_GATE,
 			INTR_ACCESS_RING_0, false);
 	}
 
-	InterruptDescriptor(const ISRPointer handler, int type, 
+	InterruptDescriptor(const ISRPointer handler, int type,
 		int access = INTR_ACCESS_RING_0, bool present = true)
-	{ 
+	{
 		null = 0x00;
-		set_all(handler, type, access, present); 
+		set_all(handler, type, access, present);
 	}
-	
+
 	bool is_present() const { return access & INTR_PRESENT;     }
 	int get_access()  const { return access & INTR_ACCESS_MASK; }
 	int get_type()    const { return access & INTR_TYPE_MASK;   }
 };
 
-void load_idt(const InterruptDescriptor *start, int num_descs);
+void load_idt(InterruptDescriptor *start, int num_descs);
 
 // void get_id_values(interrupt_descriptor *, const interrupt_info *);
 // void set_id_values(const interrupt_info *, interrupt_descriptor *);

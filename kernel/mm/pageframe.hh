@@ -1,9 +1,10 @@
 #ifndef __PAGEFRAME_HH_INCLUDED__
 #define __PAGEFRAME_HH_INCLUDED__
 
+#include <inttypes.h>
 #include <cstdlib>
 #include <allocator>
-#include "kernel/atomic.hh"	
+#include "kernel/atomic.hh"
 #include "kernel/refcount.hh"
 #include "kernel/mm/bits.hh"
 #include "kernel/panic.hh"
@@ -16,12 +17,11 @@ class SlabCache;
 #define __KMALLOC_SIZE    (privdata)
 
 class PageFrame {
-private:
+protected:
 	Atomic     flags;
 	RefCount   refs;
 	RefCount   pte_refs;
 	Atomic     privdata;
-	pageaddr_t addr;
 
 public:
 	enum {
@@ -54,12 +54,8 @@ public:
 		flags &= ~flag;
 	}
 
-	inline int32_t get_flags() const {
+	inline int32_t getFlags() const {
 		return (int32_t)flags;
-	}
-
-	inline pageaddr_t getPageAddr() const {
-		return addr;
 	}
 
 	inline uint32_t getFirstFreeSlab() {
@@ -96,13 +92,17 @@ public:
 		__SLAB_NEXT_PAGE = (__SLAB_NEXT_PAGE & ~0xFFF) | newValue;
 	}
 
-	PageFrame *getNextPage();
+	inline uintptr_t getFrameNumber() const;
 
+	void *toLinear() const;
+
+	PageFrame *getNextPage();
 	inline void setNextPage(PageFrame *_nextPage) {
 		void *pageAddr = 0;
 
-		if (_nextPage != 0)
-			 pageAddr = _nextPage->getPageAddr().toLinear();
+		if (_nextPage != 0) {
+			 pageAddr = _nextPage->toLinear();
+		}
 
 		__SLAB_NEXT_PAGE = (__SLAB_NEXT_PAGE & 0xFFF) | ((uint32_t)pageAddr & ~0xFFF);
 	}
@@ -121,48 +121,49 @@ public:
 
 class PageFrameTable {
 private:
-	PageFrame  *page_frames;
-	pageaddr_t  max_page;
+	PageFrame  *frames;
+        uintptr_t  maxPage;
 
 public:
 	PageFrameTable() {
-		page_frames = NULL;
+		frames = NULL;
 	}
 
-	void initialize(pageaddr_t max_addr, Allocator& alloc) {
-		max_page = max_addr;
-		page_frames = new (alloc) PageFrame[max_addr + 1];
-		for (uint32_t i = 0; i < max_addr; i ++) {
-			page_frames[i].addr = i;
-		}
+	static uintptr_t getPageNumberFromLinear(void *addr) {
+                return (((intptr_t)addr - 0xC0000000UL) >> 12);
 	}
 
-	inline PageFrame& getByFrame(pageaddr_t a) const {
-		if (a <= max_page) {
-			return page_frames[a];
-		}
-
-		// a bug?
-		return page_frames[0];
+	void initialize(uintptr_t _maxPage, Allocator& alloc) {
+		maxPage = _maxPage;
+		frames = new (alloc) PageFrame[_maxPage + 1];
 	}
 
-	inline PageFrame& getByLinear(void *linear) const {
-		return getByFrame(pageaddr_t::fromLinear(linear));
+	inline uintptr_t getFrameNumber(PageFrame *frame) const {
+		return frame - frames;
 	}
 
-	inline pageaddr_t getLastPage() const {
-		return max_page;
+	inline PageFrame *getFrameByLinear(void *linear) const {
+		return getFrameByNumber(getPageNumberFromLinear(linear));
 	}
 
-	void setFlagsRange(pageaddr_t start, size_t npages, int32_t flag);
-	void clearFlagsRange(pageaddr_t start, size_t npages, int32_t flag);
-	void acquireRange(pageaddr_t start, size_t npages);
-	void releaseRange(pageaddr_t start, size_t npages);
+	inline PageFrame *getFrameByNumber(int number) const {
+		return frames + number;
+	}
+
+	inline uintptr_t getLastPageNumber() const {
+		return maxPage;
+	}
+
+	void setFlagsRange  (PageFrame *start, size_t npages, int32_t flag);
+	void clearFlagsRange(PageFrame *start, size_t npages, int32_t flag);
+	void acquireRange   (PageFrame *start, size_t npages);
+	void releaseRange   (PageFrame *start, size_t npages);
 
 	friend class MemoryArea;
+	friend class PageFrame;
 };
 
-extern PageFrameTable page_frames;
+extern PageFrameTable frames;
 
 inline PageFrame *PageFrame::getNextPage() {
 	void *addr = (void*)((uint32_t)(__SLAB_NEXT_PAGE) & ~0xFFF);
@@ -170,7 +171,17 @@ inline PageFrame *PageFrame::getNextPage() {
 	if (addr == 0)
 		return 0;
 
-	return &(page_frames.getByLinear(addr));
+	return frames.getFrameByLinear(addr);
+}
+
+inline void* PageFrame::toLinear() const {
+	uintptr_t pageNumber = this - frames.frames;
+	return (void*)(0xC0000000UL + (pageNumber << 12));
+}
+
+inline uintptr_t PageFrame::getFrameNumber() const {
+    return this - frames.frames;
 }
 
 #endif
+

@@ -24,7 +24,7 @@ protected:
             return (uint8_t*)((uint32_t)fpu_state + 15 & ~0xF);
         }
 public:
-	UserTask(const char *name, State state = READY, int priority = NORMAL_LOW);	
+	UserTask(const char *name, State state = READY, int priority = NORMAL_LOW);
 	virtual ~UserTask();
 
 	void initialize(ZsosExeHeader *hdr);
@@ -36,7 +36,7 @@ public:
 	virtual void* setBrk(void *newBrk);
         virtual void handleNMException();
         virtual void prepareContextSwitch();
- 
+
 	friend class Scheduler;
 
 private:

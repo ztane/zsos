@@ -10,12 +10,12 @@ int DataPageLoader::loadPage
 
 	char *physPos     = (char*)m->getPrivPointer();
 	physPos          += offset;
-	pageaddr_t phys_a = pageaddr_t::fromLinear(physPos);		
+	uintptr_t phys_a = frameNumberFromLinear(physPos);
 
-	PageFlags flags = PageFlags::PRESENT 
+	PageFlags flags = PageFlags::PRESENT
 		| PageFlags::USER | PageFlags::READWRITE;
 
-        mapPage(page_directory, addr, &page_frames.getByFrame(phys_a), flags);
+        mapPage(page_directory, addr, frames.getFrameByNumber(phys_a), flags);
 	return 0;
 }
 

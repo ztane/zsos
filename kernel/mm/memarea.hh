@@ -11,15 +11,16 @@
 
 class PageAllocation {
 protected:
-	pageaddr_t start;
+	PageFrame *start;
 	size_t     amt;
 
 public:
 	PageAllocation() {
-		start = amt = 0;
+		start = 0;
+		amt = 0;
 	}
 
-	inline pageaddr_t getAddress() const {
+	inline PageFrame *getAddress() const {
 		return start;
 	}
 
@@ -38,45 +39,40 @@ public:
 	friend class MemoryArea;
 
 	~PageAllocation() {
-		
 	}
 };
 
 class MemoryArea {
 protected:
-	pageaddr_t start;
+	PageFrame *start;
 	size_t     length;
-	
-	PageFrameTable& table;
 
 public:
-	MemoryArea(PageFrameTable& tb, 
-		pageaddr_t _start, size_t _length) 
-			: table(tb) 
+	MemoryArea() {}
+
+	void init(uintptr_t _start, size_t _length)
 	{
-		start  = _start;
+		start  = frames.getFrameByNumber(_start);
 		length = _length;
-		// printk("Memory area: %d %d\n", start, length);
 	}
 
-	PageAllocation& allocatePages(size_t amt, PageAllocation& alloc) 
+	PageAllocation& allocatePages(size_t amt, PageAllocation& alloc)
 	{
-		pageaddr_t s;
+		PageFrame *s = start;
 
 		bool state = disableInterrupts();
-		for (size_t i = 0; i < length; i ++) 
+		for (size_t i = 0; i < length; i ++, s++)
 		{
-			s = start + i;
-			for (size_t l = 0; i < length && l < amt; i++, l++) 
+			for (size_t l = 0; i < length && l < amt; i++, l++)
 			{
-				PageFrame& f = table.page_frames[s + l];
+				PageFrame& f = *(s + l);
 
 				if (! (f.flags & PageFrame::IS_RAM)
 						|| f.refs > 0)
 					break;
 
 				if (l == amt - 1) {
-					table.acquireRange(s, amt);
+					frames.acquireRange(s, amt);
 					alloc.start = s;
 					alloc.amt = amt;
 					enableInterruptsIf(state);
@@ -90,15 +86,16 @@ public:
 		return alloc;
 	}
 
-	PageFrame *allocatePage() 
+	PageFrame *allocatePage()
 	{
 		bool state = disableInterrupts();
-		for (size_t i = start; i < (start + length); i ++)
+		for (PageFrame *i = start; i < (start + length); i ++)
                 {
-                	PageFrame& f = table.page_frames[i];
+                	PageFrame& f = (*i);
 
-                        if (! (f.flags & PageFrame::IS_RAM) || f.refs > 0)
+                        if (! (f.flags & PageFrame::IS_RAM) || f.refs > 0) {
                                 continue;
+			}
 
 	                f.acquire();
 			enableInterruptsIf(state);
@@ -112,14 +109,14 @@ public:
 
 	void releasePages(PageAllocation& alloc) {
 		bool state = disableInterrupts();
-		table.releaseRange(alloc.start, alloc.amt);
+		frames.releaseRange(alloc.start, alloc.amt);
 		alloc.amt = 0;
 		enableInterruptsIf(state);
 	}
 
-	void releasePages(pageaddr_t start, size_t amt) {
+	void releasePages(PageFrame *start, size_t amt) {
 		bool state = disableInterrupts();
-		table.releaseRange(start, amt);
+		frames.releaseRange(start, amt);
 		enableInterruptsIf(state);
 	}
 };

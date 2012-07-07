@@ -30,7 +30,7 @@ public:
 
 	PageFlags() { flags = 0; }
 	PageFlags(unsigned long f) { flags = f; }
-	
+
 	unsigned long getFlags() {
 		return flags;
 	}
@@ -38,7 +38,7 @@ public:
 	void setFlags(unsigned long flags) {
 		this->flags = flags;
 	}
-	
+
 	void setPresent(bool present) {
 		flags &= ~ 1;
 		flags |= present ? 1 : 0;
@@ -58,7 +58,7 @@ public:
 		flags &= ~ 0x80;
 		flags |=      is ? 0x80 : 0;
 	}
-	
+
 	bool isPresent() const {
 		return flags & 1;
 	}
@@ -92,21 +92,20 @@ public:
 		data |= flags.getFlags();
 	}
 
-	inline pageaddr_t getPageAddr() {
+	inline uintptr_t getFrameNumber() {
 		return data >> 12;
 	}
 
 	inline void* getVirtAddr() {
-		return getPageAddr().toLinear();
+		return linearFromFrameNumber(getFrameNumber());
 	}
 
-	inline void setPageAddr(pageaddr_t a) {
-		data &= ~ 0xFFFFF000;
-		data |= (a << 12);
+	inline void setFrameNumber(uintptr_t number) {
+		data = (data & ~ 0xFFFFF000) | (number << 12);
 	}
 
 	inline void setVirtAddr(void *offset) {
-		setPageAddr(pageaddr_t::fromLinear(offset));
+		setFrameNumber(frameNumberFromLinear(offset));
 	}
 
 	inline void clear() {

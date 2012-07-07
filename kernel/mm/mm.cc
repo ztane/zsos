@@ -8,7 +8,7 @@ PageFrame * volatile MM::global0Page = 0;
 
 PageFrame *MM::allocateZeroPage() {
 	PageFrame *f = NormalMemory.allocatePage();
-	void *addr = f->getPageAddr().toLinear();
+	void *addr = f->toLinear();
 	memset(addr, 0, 4096);
 
 	return f;

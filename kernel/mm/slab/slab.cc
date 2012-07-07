@@ -1,6 +1,7 @@
 #include <kernel/mm/slab/slab.hh>
 #include <kernel/mm/memarea.hh>
 #include <string.h>
+#include "printk.h"
 
 SlabCache::SlabCache(uint32_t _slabSize, uint32_t _sparePages, char *_name) {
 	// round to nearest multiple of 16
@@ -17,7 +18,7 @@ SlabCache::SlabCache(uint32_t _slabSize, uint32_t _sparePages, char *_name) {
 }
 
 void SlabCache::_prepareAllocatedPage(PageFrame *f) {
-	char *ptr = (char*)f->getPageAddr().toLinear();
+	char *ptr = (char*)f->toLinear();
 	for (uint32_t cnt = 0; cnt < slabsPerPage; cnt ++) {
 		// initialize pointers...
 		*(uint32_t*)ptr = cnt + 1;
@@ -48,7 +49,7 @@ void *SlabCache::_allocateSlab(PageFrame *f) {
 		kernelPanic("first partially free slab page did not contain free slabs");
 	}
 
-	char     *address = (char*)f->getPageAddr().toLinear();
+	char     *address = (char*)f->toLinear();
 	char     *slab    = address + freeIndex * slabSize;
 	uint32_t  nextFree = *(uint32_t*)slab;
 
@@ -123,7 +124,7 @@ void *SlabCache::allocate() {
 void SlabCache::release(void *slab) {
 	bool save = disableInterrupts();
 
-	PageFrame *f = &page_frames.getByLinear(slab);
+	PageFrame *f = frames.getFrameByLinear(slab);
 	SlabCache *c = f->getSlabHead();
 	c->_releaseSlab(f, slab);
 
