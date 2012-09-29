@@ -9,7 +9,7 @@ class MemMap {
 	protected:
 		MemMapArea begin;
 		MemMapArea end;
-		
+
 		bool validBase(VirtAddr a) {
 			return a.inUserSpace();
 		}
@@ -20,8 +20,8 @@ class MemMap {
                 MemMapArea *bss;
 
 	public:
-		MemMap() : begin(), end() { 
-			end.base = VirtAddr((void*)0xFFFFFFFFUL); 
+		MemMap() : begin(), end() {
+			end.base = VirtAddr((void*)0xFFFFFFFFUL);
 			end.end = VirtAddr((void*)0xFFFFFFFFUL);
 			end.lower = &begin;
 			begin.upper = &end;
@@ -30,7 +30,7 @@ class MemMap {
 		int addAreaAt(MemMapArea *a);
 		int removeArea(MemMapArea *a);
 		void dumpMemMap() const;
-		
+
 		void *setBrk(void *newBrk) {
 			if (! bss) {
 				kernelPanic("Tried to adjust heap when no available!");
@@ -41,7 +41,7 @@ class MemMap {
 			if (VirtAddr(newBrk) < bss->base) {
 				return bss->end.to_ptr();
 			}
-			
+
 			uintptr_t tmp = (uintptr_t)newBrk;
 			// round up
 			tmp +=  0xFFF;
@@ -52,11 +52,11 @@ class MemMap {
 		}
 
                 void setBss(MemMapArea *area) {
-                        bss = area; 
+                        bss = area;
                 }
 
 		MemMapArea *findAreaByAddr(VirtAddr a) const {
-			if (! a.inUserSpace()) 
+			if (! a.inUserSpace())
 				return 0;
 
 			MemMapArea *cur = begin.upper;

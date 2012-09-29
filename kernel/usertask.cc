@@ -164,8 +164,111 @@ void UserTask::initialize(ZsosExeHeader *hdr) {
         fpu_used = true;
 	return;
 
+
 error:
 	kernelPanic("Error in UserTask::initialize");
+}
+
+void UserTask::initialize(ElfExeHeader *hdr) {
+/*	unsigned int *tmp;
+	char *text_address, *data_address;
+
+	header = hdr;
+
+	// build kernel stack
+	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 1;
+	kstack = (unsigned int)tmp;
+	tmp --;
+
+	*tmp -- = USER_DATA_DESCRIPTOR + 3;
+	*tmp -- = 0xC0000000UL - 4;
+        *tmp -- = 0x0202;
+
+        *tmp -- = USER_CODE_DESCRIPTOR + 3;
+        *tmp -- = (unsigned int)hdr->entry;
+
+        *tmp -- = USER_DATA_DESCRIPTOR + 3; // ds
+        *tmp -- = USER_DATA_DESCRIPTOR + 3; // es
+        *tmp -- = USER_DATA_DESCRIPTOR + 3; // fs
+        *tmp -- = USER_DATA_DESCRIPTOR + 3; // gs
+
+	// return here after switching stacks...
+	*tmp -- = (uint32_t)____user_task_dispatch_new_asm;
+
+        *tmp -- = 0;    // ebp
+        *tmp -- = 0;    // esp
+        *tmp -- = 0;    // edi
+        *tmp -- = 0;    // esi
+        *tmp -- = 0;    // edx
+        *tmp -- = 0;    // ecx
+        *tmp -- = 0;    // ebx
+        *tmp    = 0;    // eax
+
+	esp = (unsigned int)tmp;
+
+	memmap = new MemMap();
+	hdr->initializeMemMapAreas(memmap)
+
+	MemMapArea *m;
+
+	m = new MemMapArea(
+		VirtAddr((void*)hdr->textVirt),
+		VirtAddr((void*)(hdr->textVirt + hdr->textLength)));
+
+        text_address = (char*)&_binary_example_zsx_start
+		+ _binary_example_zsx_start.textPhys;
+
+	m->setPrivPointer((void*)text_address);
+	m->setLoader(&textPageLoader);
+
+	int rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+	m = new MemMapArea(
+		VirtAddr((void*)hdr->dataVirt),
+		VirtAddr((void*)(hdr->dataVirt + hdr->dataLength)));
+
+        data_address = (char*)&_binary_example_zsx_start
+		+ _binary_example_zsx_start.dataPhys;
+	m->setPrivPointer((void*)data_address);
+	m->setLoader(&dataPageLoader);
+
+	rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+        // BSS
+	m = new MemMapArea(
+		VirtAddr((void*)hdr->bssVirt),
+		VirtAddr((void*)(hdr->bssVirt + hdr->bssLength)));
+	m->setLoader(&zeroPageLoader);
+	rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+        memmap->setBss(m);
+
+        // STACK. Does not (yet) grow!
+	m = new MemMapArea(
+		VirtAddr((void*)(0xC0000000 - 0x100000)),
+		VirtAddr((void*)(0xC0000000)));
+	m->setLoader(&zeroPageLoader);
+	rc = memmap->addAreaAt(m);
+	if (rc != 0) {
+		goto error;
+	}
+
+	initialize_stdstreams(this);
+
+        fpu_used = true;
+	return;
+
+error:
+	kernelPanic("Error in UserTask::initialize");
+*/
 }
 
 UserTask::~UserTask() {

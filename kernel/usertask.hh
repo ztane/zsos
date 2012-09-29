@@ -28,6 +28,7 @@ public:
 	virtual ~UserTask();
 
 	void initialize(ZsosExeHeader *hdr);
+	void initialize(ElfExeHeader *hdr);
 
 	virtual void enable_io();
 	virtual void dispatch(uint32_t *saved_eip);

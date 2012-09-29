@@ -2,7 +2,7 @@
 #include "string.h"
 
 // does not honour C standard!! (mimics strlcpy)..
-char *strncpy(register char *dest, register const char *src, register size_t n) 
+char *strncpy(register char *dest, register const char *src, register size_t n)
 {
         char *origdest = dest;
 	int orig_n = --n;
@@ -11,7 +11,7 @@ char *strncpy(register char *dest, register const char *src, register size_t n)
                 *dest++ = *src++;
                 n--;
         }
-	if (n == 0) { 
+	if (n == 0) {
 		origdest[orig_n] = 0;
 	}
 	else {
@@ -48,10 +48,26 @@ char *strsplit(register char **stringp, int delim) {
 	return orig;
 }
 
+
+int memcmp(const void *p1, const void *p2, size_t n)
+{
+	register const char *s1 = (const char*)p1;
+	register const char *s2 = (const char*)p2;
+	int diff = 0;
+
+	// if either one is equal to zero, then diff fails...
+	while (n -- > 0 && ! diff) {
+		diff = *(s1++) - *(s2++);
+	}
+
+	return diff;
+}
+
+
 int strncmp(const char *s1, const char *s2, size_t n)
 {
 	int diff = 0;
-	
+
 	// if either one is equal to zero, then diff fails...
 	while (n -- > 0 && (*s1 != 0 || *s2 != 0) && ! diff) {
 		diff = *(s1++) - *(s2++);
@@ -67,19 +83,19 @@ size_t strlen(register const char *s)
         return rv;
 }
 
-void *_memsetd(void *s, unsigned int f, size_t n) 
+void *_memsetd(void *s, unsigned int f, size_t n)
 {
         if (n == 0)
                 goto end;
 
-	// avoid wraparound :D 
-	for( ; n > 0; n--) 
+	// avoid wraparound :D
+	for( ; n > 0; n--)
 		((unsigned int *)s)[n - 1] = f;
 end:
 	return s;
 }
 
-void *memset(void *s, int c, size_t n) 
+void *memset(void *s, int c, size_t n)
 {
 	while (((unsigned long)s & 3) && n) {
 		*(char *)s++ = c;
@@ -97,7 +113,7 @@ void *memset(void *s, int c, size_t n)
 		s += n & ~3;
 		n &= 3;
 	}
-		
+
 	while (n) {
 		*(char *)s++ = c;
 		n --;
