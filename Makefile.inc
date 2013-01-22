@@ -34,13 +34,13 @@ MAKEDEPS = -E $(CPPFLAGS) $(INCLUDES) $< \
     | grep -v '<' | sort | uniq > $@
 
 
-
-
-
 .dep/%.dep: %.c
 	@echo "  * DEP    $<"
+	@mkdir -p .dep
 	@$(CC) $(MAKEDEPS)
 
 .dep/%.dep: %.cc
 	@echo "  * DEP    $<"
+	@mkdir -p .dep
 	@$(CXX) $(MAKEDEPS)
+
