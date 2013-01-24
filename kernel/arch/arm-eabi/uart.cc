@@ -5,6 +5,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <kernel/arch/current/mmio.h>
 #include <kernel/arch/current/uart.h>
 
@@ -122,6 +123,20 @@ void uart_puts(const char *str) {
     while(*str) {
         uart_putc(*str++);
     }
+}
+
+/*
+ * print a string to the UART one character at a time
+ * const char *str: 0-terminated string
+ */
+size_t uart_write(const void *str, register size_t len) {
+    register size_t written = 0;
+    register const char *buf = (const char*)str;
+    for (; written < len; written ++) {
+        uart_putc(*buf++);
+    }
+
+    return written;
 }
 
 /*

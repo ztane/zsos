@@ -3,13 +3,13 @@
 
 ostream kout;
 
-ostream& ostream::operator<<(const char* parm) 
+ostream& ostream::operator<<(const char* parm)
 {
 	printk("%s", parm);
         return *this;
 }
 
-ostream& ostream::operator<<(const void* parm) 
+ostream& ostream::operator<<(const void* parm)
 {
 	printk("%p", parm);
         return *this;

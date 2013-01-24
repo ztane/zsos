@@ -25,6 +25,7 @@ SECTIONS {
        __CTOR_LIST__ = .;
        LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
        *(SORT(.ctor*))
+       *(SORT(.init_array*))
        LONG(0)
        __CTOR_END__ = .;
 

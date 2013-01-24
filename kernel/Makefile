@@ -4,7 +4,8 @@ HEADERS=
 
 ifeq ($(ARCH),arm-none-eabi)
     ARCH_CMODULES=
-    CCMODULES=armmain uart
+    CCMODULES=armmain uart kernelmessages
+    CMODULES=printk kernel
     ASMOBJS=boot
 else
     ARCH_CMODULES=initial_vga
