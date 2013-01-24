@@ -13,7 +13,7 @@ typedef struct _multiboot_mmap {
 	uint32_t size;
 	uint32_t base_addr_low;
 	uint32_t base_addr_high;
-	uint32_t length_low;	
+	uint32_t length_low;
 	uint32_t length_high;
 	uint32_t type;
 } multiboot_mmap_t;
@@ -80,13 +80,13 @@ unsigned int MultibootInfo::get_high_mem() const
 
 const char * MultibootInfo::get_cmdline() const
 {
-	return flags & MB_FLAG_CMDLINE ? 
+	return flags & MB_FLAG_CMDLINE ?
 		reinterpret_cast<const char *>(cmdline) : NULL;
 }
 
 const char * MultibootInfo::get_loader_name() const
 {
-	return flags & MB_FLAG_LOADER_NAME ? 
+	return flags & MB_FLAG_LOADER_NAME ?
 		reinterpret_cast<const char *>(boot_loader_name) : NULL;
 }
 
@@ -129,10 +129,10 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 		char *mmap_end  = mmap_old + from.mmap_length;
 
 	        for (; mmap_old < mmap_end;
-        	       mmap_old = mmap_old + ((multiboot_mmap_t*)mmap_old)->size + 
+        	       mmap_old = mmap_old + ((multiboot_mmap_t*)mmap_old)->size +
 		       sizeof(((multiboot_mmap_t*)mmap_old)->size))
 	        {
-			if (((multiboot_mmap_t*)mmap_old)->type == MB_MMAP_TYPE_AVAIL) 
+			if (((multiboot_mmap_t*)mmap_old)->type == MB_MMAP_TYPE_AVAIL)
 			{
 				mmap_length ++;
 			}
@@ -142,14 +142,14 @@ MultibootInfo::MultibootInfo(const void *construct_from, Allocator& allocator)
 
 		mmap_old = mmap_save;
 	        for (size_t i = 0; i < mmap_length;
-        	       mmap_old = mmap_old + ((multiboot_mmap_t*)mmap_old)->size + 
+        	       mmap_old = mmap_old + ((multiboot_mmap_t*)mmap_old)->size +
 		       sizeof(((multiboot_mmap_t*)mmap_old)->size))
 	        {
-			if (((multiboot_mmap_t*)mmap_old)->type == MB_MMAP_TYPE_AVAIL) 
+			if (((multiboot_mmap_t*)mmap_old)->type == MB_MMAP_TYPE_AVAIL)
 			{
 				mmap[i].start  = ((multiboot_mmap_t*)mmap_old)->base_addr_low;
 				mmap[i].length = ((multiboot_mmap_t*)mmap_old)->length_low;
-				
+
 				// avoid overflow when 4GB RAM :)
 				uint32_t new_max = mmap[i].start + (mmap[i].length - 1);
 				if (max_ram_address < new_max)

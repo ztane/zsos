@@ -3,7 +3,7 @@
 #include <string.h>
 #include "printk.h"
 
-SlabCache::SlabCache(uint32_t _slabSize, uint32_t _sparePages, char *_name) {
+SlabCache::SlabCache(uint32_t _slabSize, uint32_t _sparePages, const char *_name) {
 	// round to nearest multiple of 16
 
 	strncpy(name, _name, 32);

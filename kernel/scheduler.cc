@@ -16,13 +16,13 @@ Scheduler::Scheduler()
 		tasks[i].first = NULL;
 		tasks[i].last = NULL;
 	}
-	
+
 	nTicks = 0;
 }
 
 // used from asm - do not change the width!
 int32_t __needs_scheduling_flag;
-static void schedulingNeeded(bool is) 
+static void schedulingNeeded(bool is)
 {
 	__needs_scheduling_flag = is;
 }
@@ -30,7 +30,7 @@ static void schedulingNeeded(bool is)
 void Scheduler::schedule()
 {
 	int i;
-	
+
 	// unconditionally they MUST be disabled here...
 	bool fl = disableInterrupts();
 	for (i = 0; i < PRIV_LEVELS; i++)
@@ -39,33 +39,33 @@ void Scheduler::schedule()
 			Task *p = tasks[i].first;
 			Task *old = current;
 			removeTask(p);
-			addTask(p);	
+			addTask(p);
 			current = p;
 			p->current_state = Task::RUNNING;
 
 			schedulingNeeded(false);
 			dispatchNew(old, p);
 			enableInterruptsIf(fl);
-			return;		
+			return;
 		}
 	}
 
-	kernelPanic("NO TASKS TO SCHEDULE!");	
+	kernelPanic("NO TASKS TO SCHEDULE!");
 }
 
 void Scheduler::removeTask(Task *p) {
 	bool fl = disableInterrupts();
-	
+
 	task_dir *entry = &tasks[p->getCurrentPriority()];
-	
+
 	if (p->next) {
 		p->next->previous = p->previous;
-	} 
+	}
 	else {
 		entry->last = p->previous;
 	}
-	
-	if (p->previous) {	
+
+	if (p->previous) {
 		p->previous->next = p->next;
 	}
 	else {
@@ -78,13 +78,13 @@ void Scheduler::removeTask(Task *p) {
 
 void Scheduler::incTicks() {
 	bool fl = disableInterrupts();
-	
+
 	nTicks ++;
 	current->timeslice ++;
 	if (current->timeslice > 0) {
 		current->timeslice = 0;
 		if (current->current_state == Task::RUNNING) {
-			removeTask(current); 
+			removeTask(current);
 			addTask(current);
 		}
 	}
@@ -96,7 +96,7 @@ void Scheduler::incTicks() {
 void Scheduler::addTask(Task *p)
 {
 	bool fl = disableInterrupts();
-	
+
 	int prio;
 	Task *secondlast;
 	prio = p->getCurrentPriority();
@@ -111,7 +111,7 @@ void Scheduler::addTask(Task *p)
 	}
 	tasks[prio].last = p;
 	p->current_state = Task::READY;
-	
+
 	schedulingNeeded(true);
 	enableInterruptsIf(fl);
 }
@@ -121,7 +121,7 @@ void Scheduler::dispatchNew(Task *old, Task *nu) {
 	uint32_t dummy;
 
 	if (old == nu) {
-		return;	
+		return;
 	}
 
 	if (old == NULL) {

@@ -6,7 +6,7 @@
 static Allocator *default_allocator = 0;
 
 // overload the operator "new"
-void *operator new(unsigned long int size)
+void *operator new(size_t size)
 {
 	if (default_allocator == 0)
 		kernelPanic("Default allocator not set");
@@ -15,7 +15,7 @@ void *operator new(unsigned long int size)
 }
 
 // overload the operator "new[]"
-void *operator new[](unsigned long int size)
+void *operator new[](size_t size)
 {
 	if (default_allocator == 0)
 		kernelPanic("Default allocator not set");
@@ -35,7 +35,7 @@ void operator delete[](void *p)
 	return default_allocator->release(p);
 }
 
-void __set_default_allocator(Allocator *new_def) 
+void __set_default_allocator(Allocator *new_def)
 {
 	default_allocator = new_def;
 }

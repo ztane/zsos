@@ -21,7 +21,7 @@ CpuIdentity::CpuIdentity() {
 	_vendor_id_vals._ebx = 0;
 	vendor = 0;
 	flags = 0;
-	max_cpuid_func = 0;	
+	max_cpuid_func = 0;
 	*processor_name = 0;
 }
 
@@ -51,7 +51,7 @@ static int is386() {
 	return ! rv;
 }
 
-static int hasCpuid() 
+static int hasCpuid()
 {
 	int rv;
 	__asm__ __volatile__ (
@@ -84,7 +84,7 @@ void __get_cpuid(CpuIdentity& ident)
 
 	ident.max_cpuid_func = _eax;
 	ident._vendor_id_vals._ebx = _ebx;
-	ident._vendor_id_vals._edx = _edx;	
+	ident._vendor_id_vals._edx = _edx;
 	ident._vendor_id_vals._ecx = _ecx;
 	ident._vendor_id_vals.terminator = 0;
 
@@ -94,19 +94,19 @@ void __get_cpuid(CpuIdentity& ident)
 	{
 		ident.vendor = 2;
 	}
-	else if (strncmp(ident.vendor_string, "GenuineIntel", 13) == 0) 
+	else if (strncmp(ident.vendor_string, "GenuineIntel", 13) == 0)
 	{
 		ident.vendor = 1;
 	}
 
 	kout << ident.vendor_string << endl;
-		
+
 	if (ident.max_cpuid_func >= 1) {
 		__asm__ __volatile__ (
 			"mov $1, %0;"
 			"cpuid;"
 			:"=a"(_eax),"=b"(_ebx),"=c"(_ecx),"=d"(_edx));
-		
+
 		ident.family = (_eax & 0xF00) >> 8;
 
 		if (ident.family == 0 || ident.family == 0xF) {
@@ -116,7 +116,7 @@ void __get_cpuid(CpuIdentity& ident)
 
 		// 13..12
 		ident.type = (_eax & 0x3000) >> 12;
-		
+
 		// 7..4
 		ident.model = (_eax & 0xF0) >> 4;
 		if (ident.model == 0xF) {
@@ -141,11 +141,11 @@ void __get_cpuid(CpuIdentity& ident)
 		"mov $0x80000000, %0;"
                 "cpuid;"
                 :"=a"(tmp.a),"=b"(tmp.b),"=c"(tmp.c),"=d"(tmp.d));
-	
+
 	// dummy check...
-	if (tmp.b == ident._vendor_id_vals._ebx) 
+	if (tmp.b == ident._vendor_id_vals._ebx)
 	{
-		if (tmp.a >= 0x80000004) 
+		if (tmp.a >= 0x80000004)
 		{
 			uint32_t *proc_name = (uint32_t*)ident.processor_name;
 			for (uint32_t i = 0x80000002; i >= 0x80000004; i--)

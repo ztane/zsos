@@ -1,6 +1,7 @@
 #include <syscall.hh>
 #include <iostream>
 #include <scheduler.hh>
+#include <kernel/arch/current/halt.hh>
 
 extern Scheduler scheduler;
 SYSCALL(get_pid)
@@ -19,7 +20,9 @@ SYSCALL(exit)
 {
         Task *task = scheduler.getCurrentTask();
 	task->terminate();
-	__asm__ __volatile__ ("cli; hlt;");
+        while (true) {
+            halt();
+        }
 	SYSCALL_RETURN(0xFFFFFFFF);
 }
 
@@ -36,13 +39,13 @@ SYSCALL(set_thread_priority)
 
 #include "semaphore.hh"
 #include "ringbuffer.hh"
-static Semaphore<int32_t> testSem;
 
+static Semaphore<int32_t> testSem;
 extern RingBuffer<int>* buf;
 
 SYSCALL(sem_post)
 {
-	buf->put(r.ebx);
+	buf->put(r.arg0);
 	SYSCALL_RETURN(0);
 }
 

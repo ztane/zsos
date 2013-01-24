@@ -13,20 +13,20 @@ static volatile Semaphore<int> 	softIrqSem;
 
 
 bool registerSoftIrq(int vector, SOFTIRQ_ROUTINE routine) {
-	if (vector < 0 || vector >= numSoftIrqVectors 
+	if (vector < 0 || vector >= numSoftIrqVectors
 		|| vectors[vector] != 0)
 			return false;
-	
+
 	activationCount[vector] = 0;
 	vectors[vector] = routine;
 	return true;
 }
 
 bool unregisterSoftIrq(int vector) {
-	if (vector < 0 || vector >= numSoftIrqVectors 
+	if (vector < 0 || vector >= numSoftIrqVectors
 		|| vectors[vector] == 0)
 			return false;
-	
+
 	vectors[vector] = 0;
 	activationCount[vector] = 0;
 	return true;
@@ -38,7 +38,7 @@ bool triggerSoftIrq(int vector) {
 
 	activationCount[vector] ++;
 	softIrqSem.post();
-	return true; 
+	return true;
 }
 
 void softIrqTaskRoutine(void *param) {
@@ -49,11 +49,11 @@ void softIrqTaskRoutine(void *param) {
 				activationCount[i] --;
 
 				volatile SOFTIRQ_ROUTINE r = vectors[i];
-				if (r) 
+				if (r)
 					r(i);
 
 				break;
-			} 
+			}
 		}
 	}
 }

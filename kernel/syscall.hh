@@ -53,7 +53,7 @@ inline pid_t get_process_id() {
 
 #define SYSCALL_RETURN(value)						\
 	do { 								\
-		r.eax = value;						\
+		r.syscallRetval = value;				\
 		return; 						\
 	} while(0)
 

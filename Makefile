@@ -28,9 +28,14 @@ always :
 	$(MAKE) -C libutil
 	@echo "================================="
 
-kernel.bin: kernel/boot.o exe/*.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/kernel.ld
-	$(LD) --accept-unknown-input-arch -T kernel/kernel.ld -e _start -N -dn kernel/boot.o exe/*.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a --oformat=elf32-i386 -o kernel.bin
+# remember to link exe/*.o for i386
+
+kernel.bin: kernel/obj/boot.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/arch/current/kernel.ld
+	$(LD) --accept-unknown-input-arch -T kernel/arch/current/kernel.ld -e _start -N -dn kernel/obj/boot.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a -o kernel.elf
 #	$(STRIP) kernel.bin
+
+kernel/obj/boot.o: kernel/arch/current/boot.S
+	$(CC) -o $@ -c $< -O2 -fno-builtin -nostdinc $(INCLUDES) $(CFLAGS)
 
 clean:
 	$(MAKE) -C boot clean

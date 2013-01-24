@@ -21,7 +21,7 @@ protected:
 
         inline uint8_t *getFpuStatePtr() const {
             // ensure it is aligned at 16
-            return (uint8_t*)((uint32_t)fpu_state + 15 & ~0xF);
+            return (uint8_t*)(((uint32_t)fpu_state + 15) & ~0xF);
         }
 public:
 	UserTask(const char *name, State state = READY, int priority = NORMAL_LOW);
