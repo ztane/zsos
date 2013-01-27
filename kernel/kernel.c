@@ -20,17 +20,15 @@ static void call_ctors()
 	printk(" done\n");
 }
 
-extern void kernel_main(unsigned long, void *);
 
 #ifdef __arm__
 
-void kmain() {
-        unsigned int magic = 0;
-        void *addr = 0;
+extern void kernel_main(uint32_t, uint32_t, uint32_t);
+void kmain(uint32_t r0, uint32_t r1, uint32_t r2) {
 
 #else
-
-void kmain(unsigned int magic, void *addr) {
+extern void kernel_main(unsigned long, void *);
+void kmain(uint32_t magic, void *addr) {
 
 #endif
 	/* should be done in driver initialization */
@@ -40,7 +38,11 @@ void kmain(unsigned int magic, void *addr) {
 
 	call_ctors();
 	printk("Entering C++ kernel_main...\n");
-	kernel_main(magic, addr);
+#ifdef __arm__
 
+	kernel_main(r0, r1, r2);
+#else
+        kernel_main(magic, addr);
+#endif
 	return;
 }

@@ -23,21 +23,53 @@
 	.globl  _END_OF_BOOTLOADER
 
 _start:
-        /* set access for domain 0 to not managed */
-        mov r0, #0x3
-        mcr p15, 0, r0, c3, c0, 0
+        /* make page table */
+        ldr r3, =(LOG_TO_PHYS(__page_directory))
+        /* move the base address to temp register */
+        mov r4, r3
+        /* value for first */
+        ldr r5, =(0xC02)
+        /* increment */
+        ldr r6, =(0x100000)
+        /* num iterations */
+        ldr r7, =(3072)
+_map_0_3G:
+        /* store the entry */
+        stmia r4!, {r5}
+        /* add page increment */
+        add r5, r5, r6
+        /* decrement the counter */
+        subs r7, r7, #1
+	/* and loop if not zero */
+	bne _map_0_3G
 
-        /* load page table start address */
-        ldr r0, =(LOG_TO_PHYS(__page_directory))
-        mcr p15, 0, r0, c2, c0, 0
+	ldr r5, =(0xC02)
+	ldr r7, =(1024)
+
+_map_3_4G:
+        /* store the entry */
+        stmia r4!, {r5}
+        /* add page increment */
+        add r5, r5, r6
+        /* decrement the counter */
+        subs r7, r7, #1
+	/* and loop if not zero */
+	bne _map_3_4G
+
+        /* set access for domain 0 to not managed */
+        mov r4, #0x3
+        mcr p15, 0, r4, c3, c0, 0
+
+        /* load page table start address, still in r3 */
+        mcr p15, 0, r3, c2, c0, 0
 
         /* enable MMU. bit 0: MMU enable, bit 23: ARMv6 tables */
-        mrc p15, 0, r0, c1, c0, 0
+        mrc p15, 0, r3, c1, c0, 0
 
-	ldr r1, =0x800001
-        orr r0, r0, r1
+	ldr r4, =0x800001
+        orr r3, r3, r4
 
-        mcr p15, 0, r0, c1, c0, 0
+        mcr p15, 0, r3, c1, c0, 0
 
 	/* prepare entry. lr = 0, fp = 0, set up stack */
 	mov lr, #0
@@ -52,9 +84,6 @@ loop:
 	/* dump literals here */
 	.ltorg
 
-__INIT_STACK_END:
-	.long stack + STACK_SIZE - 4
-
 _END_OF_BOOTLOADER:
 
 	.data
@@ -62,22 +91,6 @@ _END_OF_BOOTLOADER:
 
 	.data
 	.comm __page_directory, 16384, 16384
-
-	.align 14
-__page_directory:
-	/* identity map first 3G. 1M section size */
-	.equ   PDT_ENTRY, 0xC02
-	.rept  3072
-	.long  PDT_ENTRY
-	.set   PDT_ENTRY, PDT_ENTRY + 0x100000
-	.endr
-
-	/* map first 1G to higher half. 1M section size */
-	.equ   PDT_ENTRY, 0xC02
-	.rept  1024
-	.long  PDT_ENTRY
-	.set   PDT_ENTRY, PDT_ENTRY + 0x100000
-	.endr
 
 	.globl  _boot_heap_bytes_consumed
 _boot_heap_bytes_consumed: .long 0
