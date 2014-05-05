@@ -11,12 +11,12 @@ private:
 	uint64_t inode;
 	char     dname[PATH_MAX + 1];
 public:
-	DirEntry(char *name, uint32_t inode) { setName(name); this->inode = inode; };
+	DirEntry(const char *name, uint32_t inode) { setName(name); this->inode = inode; };
 	DirEntry() { dname[0] = 0; inode = 0xFFFFFFFF; };
 
-	char *getName()          { return dname; }
+	const char *getName()          { return dname; }
 	uint64_t getInode()         { return inode; }
-	void setName(char *name) { strncpy(dname, name, sizeof(dname)); }
+	void setName(const char *name) { strncpy(dname, name, sizeof(dname)); }
 	void setInode(uint64_t inode) { this->inode = inode; }
 	bool empty() 		 { return ! dname[0]; }
 };

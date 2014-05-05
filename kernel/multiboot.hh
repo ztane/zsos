@@ -45,11 +45,11 @@ class MultibootModuleInfo {
 	unsigned long reserved;
 
 public:
-	const unsigned long get_base() const {
+	unsigned long get_base() const {
 		return start;
 	}
 
-	const unsigned long get_length() const {
+	unsigned long get_length() const {
 		return end - start;
 	}
 
@@ -65,11 +65,11 @@ class MultibootMMapInfo {
 	unsigned long length;
 
 public:
-	const unsigned long get_base() const {
+	unsigned long get_base() const {
 		return start;
 	}
 
-	const unsigned long get_length() const {
+	unsigned long get_length() const {
 		return length;
 	}
 
@@ -98,7 +98,7 @@ private:
 	unsigned long drives_length;
 	unsigned long drives_addr;
 	unsigned long config_table;
-	char *boot_loader_name;
+	const char *boot_loader_name;
 	unsigned long apm_table;
 	unsigned long vbe_control_info;
 	unsigned long vbe_mode_info;

@@ -7,6 +7,6 @@
 
 SYSCALL(BAD)
 {
-	kout << "OOPS... illegal syscall #" << r.eax << endl;
+	kout << "OOPS... illegal syscall #" << r.syscallNumber << endl;
 	SYSCALL_RETURN(0xFFFFFFFF);
 }

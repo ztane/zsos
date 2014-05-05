@@ -11,15 +11,15 @@ extern Scheduler scheduler;
 
 SYSCALL(write_character)
 {
-	kout << (char)r.ebx;
+	kout << (char)r.arg0;
         SYSCALL_RETURN(0);
 }
 
 SYSCALL(write)
 {
-	int fdn = r.ebx;
-	void *ptr = (void*)r.ecx;
-	size_t count = (size_t)r.edx;
+	int fdn = r.arg0;
+	void *ptr = (void*)r.arg1;
+	size_t count = (size_t)r.arg2;
 
 	Task *current = scheduler.getCurrentTask();
 	FileDescriptor *fd = current->getFileDescriptor(fdn);
@@ -45,9 +45,9 @@ SYSCALL(write)
 
 SYSCALL(read)
 {
-	int fdn = r.ebx;
-	void *ptr = (void*)r.ecx;
-	size_t count = (size_t)r.edx;
+	int fdn = r.arg0;
+	void *ptr = (void*)r.arg1;
+	size_t count = (size_t)r.arg2;
 
 	Task *current = scheduler.getCurrentTask();
 	FileDescriptor *fd = current->getFileDescriptor(fdn);

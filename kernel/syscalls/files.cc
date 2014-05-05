@@ -36,8 +36,8 @@ void fillStatStruct(struct stat *st, FileLike* from) {
 SYSCALL(stat)
 {
 	// todo: check pointerS
-	char           *name = (char*)r.ebx;
-	struct stat    *st   = (struct stat*)r.ecx;
+	char           *name = (char*)r.arg0;
+	struct stat    *st   = (struct stat*)r.arg1;
 	ErrnoCode       rc = NOERROR;
 	FileLike       *file;
 
@@ -55,8 +55,8 @@ SYSCALL(fstat)
 //	SYSCALL_RETURN(-EACCES);
 
 	// todo: check pointer
-	int             fdn  = (int)r.ebx;
-	struct stat    *st   = (struct stat*)r.ecx;
+	int             fdn  = (int)r.arg0;
+	struct stat    *st   = (struct stat*)r.arg1;
 
 	ErrnoCode       rc = NOERROR;
 	FileLike       *file;
@@ -78,8 +78,8 @@ SYSCALL(fstat)
 SYSCALL(open)
 {
 	// todo: check pointer
-	char           *name = (char*)r.ebx;
-	int             mode = r.ecx;
+	char           *name = (char*)r.arg0;
+	int             mode = r.arg1;
         Task           *current = scheduler.getCurrentTask();
 	ErrnoCode       rc = NOERROR;
 	FileLike       *file;
@@ -113,9 +113,9 @@ exit:
 	SYSCALL_RETURN(-rc);
 }
 
-SYSCALL(close) 
+SYSCALL(close)
 {
-	int fdn = r.ebx;
+	int fdn = r.arg0;
 
 	Task *current = scheduler.getCurrentTask();
 	FileDescriptor *fd = current->getFileDescriptor(fdn);
@@ -137,9 +137,9 @@ SYSCALL(close)
 
 SYSCALL(lseek)
 {
-	int fdn            = r.ebx;
-	FileOffset           off((uint32_t)r.ecx);
-	uint32_t whence    = r.edx;
+	int fdn            = r.arg0;
+	FileOffset           off((uint32_t)r.arg1);
+	uint32_t whence    = r.arg2;
 	FileOffset new_off(0);
 	Task *current;
 	FileDescriptor *fd;

@@ -30,12 +30,24 @@
 #include "usertask.hh"
 #include "kerneltask.hh"
 #include "init_vga.hh"
-#include "ide.hh"
+
+
 #include "simpleide.hh"
 #include "scheduler.hh"
 #include "timer.hh"
 #include "panic.hh"
-#include "pci.hh"
+
+#ifndef __arm__
+#define HAS_PCI
+#include "arch/current/pci.hh"
+#include "arch/current/ide.hh"
+
+#else
+void initPic() {
+}
+
+#endif
+
 #include "mutex.hh"
 #include "init.hh"
 #include "hexdump.hh"
@@ -290,9 +302,11 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	initialize_timer();
 	ok();
 
+#ifdef HAS_PCI
 	kout << "Detecting PCI devices" << endl;
 	PCI::initialize();
 	ok();
+#endif
 
         kout << "Enabling SoftIRQs";
 	initSoftIrq();

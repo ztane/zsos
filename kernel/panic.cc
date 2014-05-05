@@ -1,12 +1,15 @@
 #include <printk.h>
 #include <iostream>
+#include <kernel/arch/current/halt.hh>
+#include <kernel/arch/current/interrupt.hh>
 
-extern "C" void kernelPanic(const char *message) 
+extern "C" void kernelPanic(const char *message)
 {
 	kout << "KERNEL PANIC!!!" << endl;
 	kout << message;
 
         while(1) {
-                __asm__ __volatile__("cli;\n\thlt");
+		disableInterrupts();
+		halt();
         }
 }

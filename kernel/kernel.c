@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "mm/kmalloc.h"
-#include "initial_vga.h"
+#include "kernelmessages.hh"
 #include "printk.h"
 
 extern void (*__CTOR_LIST__)();
 
-static void call_ctors() 
+static void call_ctors()
 {
 	void (**fptr)() = (&__CTOR_LIST__) + 1;
 	int count = ((int *)(&__CTOR_LIST__))[0];
@@ -20,17 +20,29 @@ static void call_ctors()
 	printk(" done\n");
 }
 
-extern void kernel_main(unsigned long, void *);
 
-void kmain(unsigned int magic, void *addr) {
+#ifdef __arm__
+
+extern void kernel_main(uint32_t, uint32_t, uint32_t);
+void kmain(uint32_t r0, uint32_t r1, uint32_t r2) {
+
+#else
+extern void kernel_main(unsigned long, void *);
+void kmain(uint32_t magic, void *addr) {
+
+#endif
 	/* should be done in driver initialization */
-	init_vga_buffer();
+	initConsoleDriver();
 	printk("ZS OS 1.0 Initializing\n");
 	printk("----------------------\n");
 
 	call_ctors();
 	printk("Entering C++ kernel_main...\n");
-	kernel_main(magic, addr);
+#ifdef __arm__
 
+	kernel_main(r0, r1, r2);
+#else
+        kernel_main(magic, addr);
+#endif
 	return;
 }

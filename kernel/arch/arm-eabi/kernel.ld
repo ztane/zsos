@@ -1,0 +1,47 @@
+OUTPUT_FORMAT("elf32-littlearm")
+ENTRY(_start)
+
+virt = 0xC0008000;
+phys =     0x8000;
+
+SECTIONS {
+     .text virt : AT(phys) {
+       g_code = .;                    /* symbols to mark start of section */
+       *(.text*)                      /* wildcard for "gcc -ffunction-sections" */
+       *(.gnu.linkonce.t.*)           /* C++ templates and non-inlined inlines */
+       *(.rodata*)                    /* read-only data */
+       *(.gnu.linkonce.r.*)
+       . = ALIGN(4096);
+       *(.zsosinitexe*)
+       . = ALIGN(4096);
+     }
+
+     .data : AT(phys + (g_data - g_code)) {
+       g_data = .;
+       *(.data*)                      /* wildcard for "gcc -fdata-sections" */
+       *(.gnu.linkonce.d.*)
+
+       /* contructors */
+       __CTOR_LIST__ = .;
+       LONG((__CTOR_END__ - __CTOR_LIST__) / 4 - 2)
+       *(SORT(.ctor*))
+       *(SORT(.init_array*))
+       LONG(0)
+       __CTOR_END__ = .;
+
+       . = ALIGN(4096);
+     }
+
+     .bss : AT(phys + (g_bss - g_code)) {
+       g_bss = .;
+       *(.bss*)                       /* wildcard for "gcc -fdata-sections" */
+       *(.gnu.linkonce.b.*)
+       *(COMMON)                      /* "common" variables */
+       . = ALIGN(4096);
+       _BOOT_HEAP_START = .;
+       . = . + 1048576;
+       _BOOT_HEAP_END   = .;
+     }
+     g_end = .;
+     _END_OF_KERNEL = .;
+}

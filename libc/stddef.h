@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdarg.h>
+#include_next <stddef.h>
 
 #ifdef __cplusplus
 
@@ -15,8 +16,13 @@
 
 #endif
 
+#ifdef __arm__
+typedef unsigned int size_t;
+typedef          int ssize_t;
+#else
 typedef unsigned long int size_t;
 typedef          long int ssize_t;
+#endif
 typedef  int32_t ptrdiff_t;
 typedef uint32_t wint_t;
 

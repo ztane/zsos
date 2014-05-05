@@ -1,4 +1,6 @@
-ARCH=i586-pc-zsos
+# ARCH=i586-pc-zsos
+ARCH=arm-none-eabi
+
 BOCHS=/opt/zsos-bochs/bin/bochs
 
 ifeq ($(DEBUG),1) 
@@ -25,7 +27,7 @@ CFLAGS  = -Wall -Werror -Wno-unused -Wextra -Wno-conversion -fno-builtin \
 CCFLAGS = -fno-rtti -fno-exceptions -nostdlib
 ARFLAGS = rcs
 
-GCCINCLUDEDIRS := $(shell $(ARCH_PREFIX)/bin/gcc-config -L)/include
+GCCINCLUDEDIRS := $(shell dirname $$($(ARCH)-gcc -print-libgcc-file-name))/include
 
 DEPS = $(CMODULES:%=.dep/%.dep) $(CCMODULES:%=.dep/%.dep) $(ASMMODULES:%=.dep/%.dep)
 
@@ -43,4 +45,3 @@ MAKEDEPS = -E $(CPPFLAGS) $(INCLUDES) $< \
 	@echo "  * DEP    $<"
 	@mkdir -p .dep
 	@$(CXX) $(MAKEDEPS)
-

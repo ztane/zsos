@@ -4,7 +4,6 @@
 #include <cstddef>
 #include "kernel/ide-ports.hh"
 #include "kernel/ide-request.hh"
-#include "kernel/arch/current/port.h"
 
 // TODO: rename everything "IDE" as "ATA" since the former is electrical spec and
 // latter software spec!
@@ -45,13 +44,14 @@ protected:
 	void __pio_write_block(const void *src);
 	void __device_conf_identify();
 	void __identify_drive();
-	
+
 	bool __has_lba28() {
 		// Words 60 & 61 as DWORD contain max lba28 addressable sectors, if supported, else 0
-		uint32_t maxlba28 = *((uint32_t *) &identdata[120]);
+		uint32_t maxlba28;
+                memcpy(&maxlba28, &identdata[120], sizeof(maxlba28));
 		return maxlba28 != 0;
 	}
-	
+
 	bool __has_lba48() {
 		// Word 83 of identify data has bit 10 set if drive supports LBA48
 		return identdata[167] & 0x04;

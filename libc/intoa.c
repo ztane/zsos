@@ -13,7 +13,7 @@ static char *digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 int itostr(char *buf, size_t n, int radix, int i)
 {
 	char tmp[MAX_STR_SIZE];
-	unsigned int l;	
+	unsigned int l;
 	int pos = 0;
 
 	if (n <= 0)
@@ -24,15 +24,15 @@ int itostr(char *buf, size_t n, int radix, int i)
 		return -1;
 	}
 
-	if (radix < 2 || radix > 36) 
+	if (radix < 2 || radix > 36)
 	{
 		return 0;
 	}
 
 	l = i;
-	
-	// negative: prepend - to output buffer, 
-	// negate to unsigned int and decrease max 
+
+	// negative: prepend - to output buffer,
+	// negate to unsigned int and decrease max
 	// chars...
 	if (i < 0)
 	{
@@ -47,10 +47,10 @@ int itostr(char *buf, size_t n, int radix, int i)
 		pos ++;
 		l /= radix;
 	} while (l);
-	
+
 	// pos is off by one
 	pos --;
-	
+
 	// fill in reverse order:
 	while (n > 1 && pos >= 0) {
 		*(buf++) = tmp[pos--];
@@ -77,7 +77,7 @@ int uitostr(char *buf, size_t n, int radix, unsigned int l)
 		return -1;
 	}
 
-	if (radix < 2 || radix > 36) 
+	if (radix < 2 || radix > 36)
 	{
 		return 0;
 	}
@@ -88,10 +88,10 @@ int uitostr(char *buf, size_t n, int radix, unsigned int l)
 		pos ++;
 		l /= radix;
 	} while (l);
-	
+
 	// pos is off by one
 	pos --;
-	
+
 	// fill in reverse order:
 	while (n > 1 && pos >= 0) {
 		*(buf++) = tmp[pos--];
@@ -110,15 +110,16 @@ int itowstr(wchar_t *buf, size_t n, int radix, int i)
 	// notice: default char can be signed!
 	// for proper conversions these must be unsigned!
 	unsigned char tmp[MAX_STR_SIZE];
-	unsigned char *ptr = tmp;
 	int rv;
 
 	if (n <= 0) {
 		return 0;
 	}
 
+        tmp[0] = 0;
 	rv = itostr((char *)tmp, n, radix, i);
-	
+
+	unsigned char *ptr = tmp;
 	while (*ptr) {
 		*buf ++ = *ptr ++;
 	}
@@ -138,8 +139,9 @@ int uitowstr(wchar_t *buf, size_t n, int radix, unsigned int i)
 		return 0;
 	}
 
+        tmp[0] = 0;
 	rv = uitostr((char *)tmp, n, radix, i);
-	
+
 	while (*ptr) {
 		*buf ++ = *ptr ++;
 	}
@@ -161,12 +163,12 @@ int uintoa(char *buf, size_t n, int i)
 	return uitostr(buf, n, 10, i);
 }
 
-int intoxa(char *buf, size_t n, unsigned int i) 
+int intoxa(char *buf, size_t n, unsigned int i)
 {
 	return itostr(buf, n, 16, i);
 }
 
-int uintoxa(char *buf, size_t n, unsigned int i) 
+int uintoxa(char *buf, size_t n, unsigned int i)
 {
 	return uitostr(buf, n, 16, i);
 }
@@ -184,12 +186,12 @@ int uintowcs(wchar_t *buf, size_t n, int i)
 	return uitowstr(buf, n, 10, i);
 }
 
-int intoxwcs(wchar_t *buf, size_t n, unsigned int i) 
+int intoxwcs(wchar_t *buf, size_t n, unsigned int i)
 {
 	return itowstr(buf, n, 16, i);
 }
 
-int uintoxwcs(wchar_t *buf, size_t n, unsigned int i) 
+int uintoxwcs(wchar_t *buf, size_t n, unsigned int i)
 {
 	return uitowstr(buf, n, 16, i);
 }

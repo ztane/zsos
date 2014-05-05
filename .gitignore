@@ -1,5 +1,7 @@
 *.o
 .dep
 kernel.bin
+kernel.elf
+*.bz2
 *.a
 

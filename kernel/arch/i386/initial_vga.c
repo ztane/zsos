@@ -48,7 +48,6 @@ void init_vga_buffer()
 	outb(0x3d4, 15);
 	cursor_offset |= inb(0x3d5);
        	charmem = VGA_TEXT_BASE + cursor_offset * 2;
-		
 }
 
 void update_cursor_position(int cursor_offset) {
@@ -394,7 +393,7 @@ static void scroll_buffer()
 	for every character in buffer except first row:
 		move back 1 position with color data
 	*/
-	
+
 	memmove(VGA_TEXT_BASE, VGA_TEXT_BASE + VGA_TEXT_WIDTH * 2, VGA_TEXT_LENGTH - VGA_TEXT_WIDTH * 2);
 	_memsetd((VGA_TEXT_BASE + VGA_TEXT_LENGTH - VGA_TEXT_WIDTH * 2), 0x07200720, VGA_TEXT_WIDTH / 2);
 }

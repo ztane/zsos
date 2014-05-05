@@ -10,8 +10,8 @@
 #include "kernel/scheduler.hh"
 #include "kernel/task.hh"
 
-KernelTask::KernelTask(const char *name, State state, int priority) 
-	: Task(name, state, priority) 
+KernelTask::KernelTask(const char *name, State state, int priority)
+	: Task(name, state, priority)
 {
 	kernelStackSize = 4096;
 }
@@ -32,7 +32,7 @@ void KernelTask::initialize(void (*entry)(void *), void *param) {
 
 	// dummy placeholder for function return address...
 	*tmp -- = (uint32_t)0xdeadbeef;
-	
+
 	// ugly hack: return to function entry point ... ;)
 	*tmp -- = (uint32_t)do_dispatch_kernel_task;
 
@@ -50,7 +50,7 @@ KernelTask::~KernelTask() {
 static void do_dispatch_kernel_task(void (*entry)(void *), void *param) {
 	extern Scheduler scheduler;
 
-	__asm__ __volatile__ ("sti");
+	__enableInterrupts();
 
 	entry(param);
 	scheduler.getCurrentTask()->terminate();
@@ -61,7 +61,7 @@ static void do_dispatch_kernel_task(void (*entry)(void *), void *param) {
 void KernelTask::terminate() {
 	extern Scheduler scheduler;
 
-	// no need to save.. 
+	// no need to save..
 	disableInterrupts();
 	scheduler.removeTask(this);
 	setCurrentState(TERMINATED);
@@ -72,7 +72,7 @@ void KernelTask::terminate() {
 	// will never return
 
 	scheduler.schedule();
-	kernelPanic("Returned to a terminated task!!");	
+	kernelPanic("Returned to a terminated task!!");
 }
 
 void KernelTask::dispatch(uint32_t *saved_esp) {

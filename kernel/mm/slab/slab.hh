@@ -27,7 +27,7 @@ private:
 	SlabCache(const SlabCache& another);
 
 public:
-	SlabCache(uint32_t slabSize, uint32_t freePages = 1, char *name = "<unnamed>");
+	SlabCache(uint32_t slabSize, uint32_t freePages = 1, const char *name = "<unnamed>");
 
 	void *allocate();
 	static void release(void *);

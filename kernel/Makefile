@@ -1,20 +1,32 @@
 include ../Makefile.inc
 
 HEADERS=
-CMODULES=kernel initial_vga printk 
 
-CCMODULES=main interrupt pic multiboot printstate paging   \
-	memory task usertask syscall init_vga ide ide-drive ide-disk \
-	scheduler timer freepagelist bootdynmem panic abi  \
-	cpuid pageframe memarea pci kerneltask softirq     \
+ifeq ($(ARCH),arm-none-eabi)
+    ARCH_CMODULES=
+    CCMODULES=armmain uart kernelmessages atags
+    CMODULES=printk kernel
+    ASMOBJS=boot
+else
+    ARCH_CMODULES=initial_vga
+    ARCH_CCMODULES=interrupt pci pic gdt ide ide-drive ide-disk timer cpuid keyboard simpleide
+
+    CMODULES=kernel printk $(ARCH_CMODULES)
+
+    CCMODULES=main multiboot printstate paging   \
+        task usertask syscall \
+	scheduler freepagelist bootdynmem panic abi  \
+	pageframe memarea kerneltask softirq     \
 	become_io_task console processes init idletask	   \
 	mm memmap zeropageloader textpageloader 	   \
-	datapageloader sysmm keyboard filelike filedescriptor \
+	datapageloader sysmm filelike filedescriptor \
 	consoledriver zsosrdfs ramdiskdevice path files slab \
-	kmalloc stacktrace hexdump simpleide mbr harddisk harddiskdevice \
-	block fat reboot
+	kmalloc stacktrace hexdump mbr harddisk harddiskdevice \
+	block fat reboot $(ARCH_CCMODULES)
+    ASMMODULES=intvecs
+endif
 
-ASMMODULES=intvecs
+
 INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 DEPDIR=dep

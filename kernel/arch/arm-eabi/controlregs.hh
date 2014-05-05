@@ -1,0 +1,4 @@
+#ifndef CONTROLREGS_HH_INCLUDED
+#define CONTROLREGS_HH_INCLUDED
+
+#endif
