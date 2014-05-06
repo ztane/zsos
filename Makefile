@@ -52,9 +52,10 @@ depclean:
 	@# $(MAKE) -C libc++ depclean
 	@# $(MAKE) -C libutil depclean
 
-diskimage: 
-	@sudo tools/createloop img/disk.img 100
-	@sudo chown `id -nu`:`id -ng` img/disk.img
+diskimage:
+        @echo "Creating disk image, sudo needed for createloop"
+	sudo tools/createloop img/disk.img 100
+	sudo chown `id -nu`:`id -ng` img/disk.img
 
 userlandimage:
 	@env python tools/img.py # Creates img/userland.img from userland/ directory
@@ -66,13 +67,16 @@ img/userland.img:
 	env python tools/img.py
 
 mount:
-	@$(MOUNTCMD)
+	@echo "Mounting (sudo needed)"
+	$(MOUNTCMD)
 
 umount:
-	@$(UMOUNTCMD)
+	@echo "Umounting (sudo needed)"
+	$(UMOUNTCMD)
 
 mount-grub: img/grubfloppy.img
-	@$(GRUBMOUNT)
+	@echo "Mounting grub floppy (sudo needed)"
+	$(GRUBMOUNT)
 
 img/grubfloppy.img: img/grubfloppy.img.bz2
 	@bzcat img/grubfloppy.img.bz2 > img/grubfloppy.img
