@@ -52,7 +52,46 @@
                 unsigned int eip, unsigned int cs, unsigned int eflags)
 
 
-typedef struct Registers { volatile uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax, gs, fs, es, ds; } REGS;
+typedef struct Registers {
+    union {
+        volatile uint32_t edi;
+        volatile uint32_t arg4;
+    };
+
+    union {
+        volatile uint32_t esi;
+        volatile uint32_t arg3;
+    };
+
+    union {
+        volatile uint32_t ebp;
+        volatile uint32_t arg5;
+    };
+
+    volatile uint32_t esp;
+
+    union {
+        volatile uint32_t ebx;
+        volatile uint32_t arg0;
+    };
+
+    union {
+        volatile uint32_t edx;
+        volatile uint32_t arg2;
+    };
+
+    union {
+        volatile uint32_t ecx;
+        volatile uint32_t arg1;
+    };
+
+    union {
+        uint32_t syscallNumber;
+        uint32_t syscallRetval;
+        uint32_t eax;
+    };
+    volatile uint32_t gs, fs, es, ds;
+} REGS;
 
 extern "C" {
 	typedef void (* ISR_W_ECODE_TYPE)(Registers r, unsigned int errorcode,
@@ -162,9 +201,13 @@ static __inline__ bool disableInterrupts() {
 	return false;
 }
 
+static __inline__ void __enableInterrupts() {
+	asm volatile ("sti");
+}
+
 static __inline__ void enableInterruptsIf(bool enable) {
 	if (enable) {
-		asm volatile ("sti");
+		__enableInterrupts();
 	}
 }
 

@@ -1,6 +1,7 @@
 #include <printk.h>
 #include <iostream>
-#include "kernel/ide-drive.hh"
+#include <kernel/arch/current/port.h>
+#include "kernel/arch/current/ide-drive.hh"
 
 namespace ide {
 

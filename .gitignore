@@ -4,4 +4,6 @@ kernel.bin
 kernel.elf
 *.bz2
 *.a
-
+img
+xcompiler/src
+xcompiler/build

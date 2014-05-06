@@ -10,7 +10,7 @@
 
 #include "kernel/config.h"
 #include "kernel/interrupt.hh"
-#include "kernel/initial_vga.h"
+// #include "kernel/initial_vga.h"
 #include "kernel/paging.hh"
 #include "kernel/printk.h"
 #include "kernel/printstate.hh"

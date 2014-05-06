@@ -1,5 +1,5 @@
 #include "kernel/drivers/harddisk/harddiskdevice.hh"
-#include "kernel/simpleide.hh"
+#include "kernel/arch/current/simpleide.hh"
 #include <string.h>
 #include <iostream>
 

@@ -27,6 +27,7 @@ extern void kernel_main(uint32_t, uint32_t, uint32_t);
 void kmain(uint32_t r0, uint32_t r1, uint32_t r2) {
 
 #else
+
 extern void kernel_main(unsigned long, void *);
 void kmain(uint32_t magic, void *addr) {
 
@@ -38,11 +39,12 @@ void kmain(uint32_t magic, void *addr) {
 
 	call_ctors();
 	printk("Entering C++ kernel_main...\n");
-#ifdef __arm__
 
+#ifdef __arm__
 	kernel_main(r0, r1, r2);
 #else
         kernel_main(magic, addr);
 #endif
+
 	return;
 }

@@ -2,8 +2,9 @@
 #define _IDE_DRIVE_ 1
 
 #include <cstddef>
-#include "kernel/ide-ports.hh"
-#include "kernel/ide-request.hh"
+#include <cstring>
+#include "ide-ports.hh"
+#include "ide-request.hh"
 
 // TODO: rename everything "IDE" as "ATA" since the former is electrical spec and
 // latter software spec!

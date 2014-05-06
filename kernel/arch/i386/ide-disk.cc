@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdint.h>
-#include "kernel/ide-disk.hh"
+#include "ide-disk.hh"
 #include "kernel/arch/current/port.h"
 
 namespace ide {

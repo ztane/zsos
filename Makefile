@@ -31,7 +31,7 @@ always :
 # remember to link exe/*.o for i386
 
 kernel.bin: kernel/obj/boot.o lib/libc.a lib/libc++.a lib/libutil.a kernel/kernel.a kernel/arch/current/kernel.ld
-	$(LD) --accept-unknown-input-arch -T kernel/arch/current/kernel.ld -e _start -N -dn kernel/obj/boot.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a /opt/arm-gcc/lib/gcc/arm-none-eabi/4.7.2/libgcc.a -o kernel.bin
+	$(LD) --accept-unknown-input-arch -T kernel/arch/current/kernel.ld -e _start -N -dn kernel/obj/boot.o --whole-archive kernel/kernel.a --no-whole-archive lib/libc.a lib/libc++.a lib/libutil.a exe/example.zsx.tmp.o -o kernel.bin  # /opt/arm-gcc/lib/gcc/arm-none-eabi/4.7.2/libgcc.a -o kernel.bin
 #	$(STRIP) kernel.bin
 
 kernel/obj/boot.o: kernel/arch/current/boot.S

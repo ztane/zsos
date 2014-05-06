@@ -5,9 +5,11 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <string.h>
 #include "kernel/init.hh"
-#include "kernel/ide-drive.hh"
-#include "kernel/ide-disk.hh"
+#include "ide-drive.hh"
+#include "ide-disk.hh"
+#include "port.h"
 #include "kernel/ringbuffer.hh"
 #include "kernel/waitqueue.hh"
 

@@ -4,9 +4,9 @@
 #define IDE_DISK_INC 1
 
 #include <cstddef>
-#include "kernel/ide-request.hh"
-#include "kernel/ide-drive.hh"
-#include "kernel/ide-ports.hh"
+#include "ide-request.hh"
+#include "ide-drive.hh"
+#include "ide-ports.hh"
 #include "kernel/ringbuffer.hh"
 
 namespace ide {

@@ -1,5 +1,4 @@
 #include "kernel/syscall.hh"
-#include "kernel/initial_vga.h"
 #include "kernel/printk.h"
 #include "kernel/errnocode.hh"
 #include "kernel/fs/filedescriptor.hh"

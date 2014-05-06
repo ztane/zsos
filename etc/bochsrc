@@ -1,12 +1,11 @@
-vgaromimage: file=/opt/zsos-bochs/share/bochs/VGABIOS-elpin-2.40
-# vgaromimage: $BXSHARE/VGABIOS-elpin-2.40
-romimage: file=/opt/zsos-bochs/share/bochs/BIOS-bochs-latest
+vgaromimage: file=$BXSHARE/VGABIOS-elpin-2.40
+romimage: file=$BXSHARE/BIOS-bochs-latest
 ata0-master: type=disk, path="img/disk.img", mode=flat, cylinders=100, heads=16, spt=63
 floppya: 1_44=img/grub2floppy.img, status=inserted
 boot: floppy
 megs: 128
 clock: sync=realtime, time0=local
-i440fxsupport: enabled=1, slot1=pcivga
+pci: enabled=1, chipset=i440fx, slot1=pcivga
 debug: action=ignore
 panic: action=fatal
 error: action=report

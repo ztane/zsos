@@ -38,9 +38,18 @@ UserTask::UserTask(const char *name, State state, int priority)
 
 void UserTask::enable_io() {
 	// set IOPL to 3...
-	unsigned int *tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
-	tmp -= 3;
+	unsigned int *tmp = (uint32_t*)kstack - 3;
 	*tmp |= 3 << 12;
+}
+
+void UserTask::setUserStackPointer(uint32_t sp) {
+	uint32_t *tmp = (uint32_t*)kstack - 2;
+	*tmp = sp;
+}
+
+void UserTask::setEntryPointer(uint32_t entry) {
+	uint32_t *tmp = (uint32_t*)kstack - 5;
+	*tmp = entry;
 }
 
 extern "C" void ____user_task_dispatch_new_asm();
@@ -69,146 +78,89 @@ static void initialize_stdstreams(UserTask *task) {
 	task->fileDescriptors[2] = fd;
 }
 
-void UserTask::initialize(ZsosExeHeader *hdr) {
-	unsigned int *tmp;
-	char *text_address, *data_address;
-
-	header = hdr;
-
-	// build kernel stack
-	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 1;
-	kstack = (unsigned int)tmp;
-	tmp --;
-
-	*tmp -- = USER_DATA_DESCRIPTOR + 3;
-	*tmp -- = 0xC0000000UL - 4;
-        *tmp -- = 0x0202;
-
-        *tmp -- = USER_CODE_DESCRIPTOR + 3;
-        *tmp -- = (unsigned int)hdr->entryPoint;
-
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // ds
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // es
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // fs
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // gs
-
-	// return here after switching stacks...
-	*tmp -- = (uint32_t)____user_task_dispatch_new_asm;
-
-        *tmp -- = 0;    // ebp
-        *tmp -- = 0;    // esp
-        *tmp -- = 0;    // edi
-        *tmp -- = 0;    // esi
-        *tmp -- = 0;    // edx
-        *tmp -- = 0;    // ecx
-        *tmp -- = 0;    // ebx
-        *tmp    = 0;    // eax
-
-	esp = (unsigned int)tmp;
-
-	memmap = new MemMap();
-	MemMapArea *m;
-
-	m = new MemMapArea(
-		VirtAddr((void*)hdr->textVirt),
-		VirtAddr((void*)(hdr->textVirt + hdr->textLength)));
-
-        text_address = (char*)&_binary_example_zsx_start
-		+ _binary_example_zsx_start.textPhys;
-
-	m->setPrivPointer((void*)text_address);
-	m->setLoader(&textPageLoader);
-
-	int rc = memmap->addAreaAt(m);
-	if (rc != 0) {
-		goto error;
-	}
-
-	m = new MemMapArea(
-		VirtAddr((void*)hdr->dataVirt),
-		VirtAddr((void*)(hdr->dataVirt + hdr->dataLength)));
-
-        data_address = (char*)&_binary_example_zsx_start
-		+ _binary_example_zsx_start.dataPhys;
-	m->setPrivPointer((void*)data_address);
-	m->setLoader(&dataPageLoader);
-
-	rc = memmap->addAreaAt(m);
-	if (rc != 0) {
-		goto error;
-	}
-
-        // BSS
-	m = new MemMapArea(
-		VirtAddr((void*)hdr->bssVirt),
-		VirtAddr((void*)(hdr->bssVirt + hdr->bssLength)));
-	m->setLoader(&zeroPageLoader);
-	rc = memmap->addAreaAt(m);
-	if (rc != 0) {
-		goto error;
-	}
-        memmap->setBss(m);
-
-        // STACK. Does not (yet) grow!
-	m = new MemMapArea(
-		VirtAddr((void*)(0xC0000000 - 0x100000)),
-		VirtAddr((void*)(0xC0000000)));
-	m->setLoader(&zeroPageLoader);
-	rc = memmap->addAreaAt(m);
-	if (rc != 0) {
-		goto error;
-	}
-
-	initialize_stdstreams(this);
-
-        fpu_used = true;
-	return;
-
-
-error:
-	kernelPanic("Error in UserTask::initialize");
+static char *copyStackStr(char *stack, char *str) {
+        uint32_t len = strlen(str);
+        stack -= len;
+        memcpy(stack, str, len);
+        return stack;
 }
 
-void UserTask::initialize(ElfExeHeader *hdr) {
-/*	unsigned int *tmp;
-	char *text_address, *data_address;
+static char *alignStackPtr(char *stack, int align) {
+        uint32_t mask = (uint32_t)align - 1;
+        mask = ~mask;
+        stack = (char *)((uint32_t)stack & mask);
+        return stack;
+}
 
-	header = hdr;
+static char *storeStackValue(char *stack, uint32_t value) {
+        stack -= sizeof(uint32_t);
+        *(uint32_t*)stack = value;
+        return stack;
+}
 
-	// build kernel stack
-	tmp = (unsigned int *)(kernel_stack + sizeof(kernel_stack)) - 1;
-	kstack = (unsigned int)tmp;
-	tmp --;
+void UserTask::buildInitialKernelStack() {
+	unsigned int *stack;
 
-	*tmp -- = USER_DATA_DESCRIPTOR + 3;
-	*tmp -- = 0xC0000000UL - 4;
-        *tmp -- = 0x0202;
+ 	// build kernel stack
+	stack    = (unsigned int *)(kernel_stack + sizeof(kernel_stack));
+	kstack   = (unsigned int)stack;
 
-        *tmp -- = USER_CODE_DESCRIPTOR + 3;
-        *tmp -- = (unsigned int)hdr->entry;
+	*--stack = USER_DATA_DESCRIPTOR + 3;
+	*--stack = 0;      // esp;
+        *--stack = 0x0202; // flags
 
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // ds
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // es
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // fs
-        *tmp -- = USER_DATA_DESCRIPTOR + 3; // gs
+        *--stack = USER_CODE_DESCRIPTOR + 3;
+        *--stack = 0;      // entry point
+
+        *--stack = USER_DATA_DESCRIPTOR + 3; // ds
+        *--stack = USER_DATA_DESCRIPTOR + 3; // es
+        *--stack = USER_DATA_DESCRIPTOR + 3; // fs
+        *--stack = USER_DATA_DESCRIPTOR + 3; // gs
 
 	// return here after switching stacks...
-	*tmp -- = (uint32_t)____user_task_dispatch_new_asm;
+	*--stack = (uint32_t)____user_task_dispatch_new_asm;
 
-        *tmp -- = 0;    // ebp
-        *tmp -- = 0;    // esp
-        *tmp -- = 0;    // edi
-        *tmp -- = 0;    // esi
-        *tmp -- = 0;    // edx
-        *tmp -- = 0;    // ecx
-        *tmp -- = 0;    // ebx
-        *tmp    = 0;    // eax
+        *--stack = 0;    // EAX
+        *--stack = 0;    // ECX
+        *--stack = 0;    // EDX
+        *--stack = 0;    // EBX
+        *--stack = 0;    // ESP
+        *--stack = 0;    // EBP
+        *--stack = 0;    // ESI
+        *--stack    = (uint32_t)this;    // EDI, for use in init routine store this here.
 
-	esp = (unsigned int)tmp;
+	esp = (unsigned int)stack;
+}
+
+void UserTask::initialize(ZsosExeHeader *hdr) {
+	header = hdr;
+        buildInitialKernelStack();
+}
+
+void UserTask::initializeUserStack() {
+	char *stack = (char *)0xC0000000;
+        char *argv0 = stack = copyStackStr(stack, "/lib/ld-linux.so.2");
+
+        // TODO: auxv map!
+        stack = alignStackPtr(stack, 16);
+        stack = storeStackValue(stack, 0);
+        stack = storeStackValue(stack, 0);
+
+	// envp
+        stack = storeStackValue(stack, 0);
+
+	// argv end
+        stack = storeStackValue(stack, 0);
+        stack = storeStackValue(stack, (uint32_t)argv0);
+        stack = storeStackValue(stack, 1);
+        setUserStackPointer((uint32_t)stack);
+}
+
+void UserTask::buildMaps() {
+        ZsosExeHeader *hdr = header;
+	char *text_address, *data_address;
 
 	memmap = new MemMap();
-	hdr->initializeMemMapAreas(memmap)
-
 	MemMapArea *m;
 
 	m = new MemMapArea(
@@ -261,18 +213,27 @@ void UserTask::initialize(ElfExeHeader *hdr) {
 		goto error;
 	}
 
-	initialize_stdstreams(this);
+        setEntryPointer(hdr->entryPoint);
 
+	initialize_stdstreams(this);
         fpu_used = true;
+
+        initializeUserStack();
+
 	return;
 
 error:
 	kernelPanic("Error in UserTask::initialize");
-*/
 }
 
 UserTask::~UserTask() {
 }
+
+// called from ASM in the task context
+extern "C" void _finalizeUserTaskInit(UserTask *task) {
+        task->buildMaps();
+}
+
 
 void ____user_task_dispatch_new() {
         /* clear task switched as we are going fresh
@@ -280,13 +241,18 @@ void ____user_task_dispatch_new() {
         clear_TS_in_CR0();
 	__asm__ __volatile__(
 		".globl ____user_task_dispatch_new_asm\n"
-		"____user_task_dispatch_new_asm:\n\t"
-		"popl %%gs\n\t"
-        	"popl %%fs\n\t"
-        	"popl %%es\n\t"
-        	"popl %%ds\n\t"
-                "fninit\n\t"
-	        "iret\n\t"
+		"____user_task_dispatch_new_asm:\n"
+                "        pushal\n"
+                // EDI (the last pushed) contains the Task pointer
+                "        call _finalizeUserTaskInit\n"
+                "        popal\n"
+                "        xor %%edi, %%edi\n"
+		"        popl %%gs\n"
+        	"        popl %%fs\n"
+        	"        popl %%es\n"
+        	"        popl %%ds\n"
+                "        fninit\n"
+	        "        iret\n"
 	: : );
 }
 
@@ -387,4 +353,3 @@ void UserTask::prepareContextSwitch() {
            fpu_used = false;
        }
 }
-

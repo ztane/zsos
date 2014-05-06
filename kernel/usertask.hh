@@ -23,7 +23,13 @@ protected:
             // ensure it is aligned at 16
             return (uint8_t*)(((uint32_t)fpu_state + 15) & ~0xF);
         }
+
+        void buildInitialKernelStack();
+	void setUserStackPointer(uint32_t);
+	void setEntryPointer(uint32_t);
+        void initializeUserStack();
 public:
+	void buildMaps();
 	UserTask(const char *name, State state = READY, int priority = NORMAL_LOW);
 	virtual ~UserTask();
 

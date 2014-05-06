@@ -1,4 +1,4 @@
-#include <pci.hh>
+#include <kernel/arch/current/pci.hh>
 #include <kernel/arch/current/port.h>
 #include <inttypes.h>
 #include <printk.h>

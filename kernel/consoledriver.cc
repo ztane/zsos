@@ -1,8 +1,8 @@
 #include "consoledriver.hh"
 #include "kernel/fs/filedescriptor.hh"
 #include "kernel/panic.hh"
-#include "initial_vga.h"
-#include "keyboard.hh"
+#include "arch/current/initial_vga.h"
+#include "arch/current/keyboard.hh"
 
 ErrnoCode ConsoleDriver::open(int mode, FileDescriptor*& fd) {
 	FileDescriptor::open(*this, mode, fd);

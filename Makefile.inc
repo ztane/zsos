@@ -1,5 +1,5 @@
-# ARCH=i586-pc-zsos
-ARCH=arm-none-eabi
+ARCH=i586-pc-zsos
+# ARCH=arm-none-eabi
 
 BOCHS=/opt/zsos-bochs/bin/bochs
 

@@ -5,7 +5,7 @@
 #include <new>
 
 #include "kernel/mm/kmalloc.h"
-#include "kernel/cpuid.hh"
+#include "kernel/arch/current/cpuid.hh"
 #include "kernel/atomic.hh"
 #include "kernel/refcount.hh"
 #include "kernel/mm/memarea.hh"
@@ -19,7 +19,7 @@
 #include "kernel/arch/current/halt.hh"
 #include "kernel/arch/current/fpu.hh"
 #include "kernel/arch/current/stacktrace.hh"
-#include "kernel/keyboard.hh"
+#include "kernel/arch/current/keyboard.hh"
 
 
 #include "kernel/syscall.hh"
@@ -32,7 +32,7 @@
 #include "init_vga.hh"
 
 
-#include "simpleide.hh"
+#include "kernel/arch/current/simpleide.hh"
 #include "scheduler.hh"
 #include "timer.hh"
 #include "panic.hh"

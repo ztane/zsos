@@ -1,5 +1,5 @@
 #include <iostream>
-#include "kernel/ide.hh"
+#include "kernel/arch/current/ide.hh"
 #include "kernel/ktasks/softirq.hh"
 #include <kernel/interrupt.hh>
 

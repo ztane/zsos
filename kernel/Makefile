@@ -14,7 +14,7 @@ else
     CMODULES=kernel printk $(ARCH_CMODULES)
 
     CCMODULES=main multiboot printstate paging   \
-        task usertask syscall \
+        task usertask syscall kernelmessages \
 	scheduler freepagelist bootdynmem panic abi  \
 	pageframe memarea kerneltask softirq     \
 	become_io_task console processes init idletask	   \
