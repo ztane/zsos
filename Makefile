@@ -53,7 +53,7 @@ depclean:
 	@# $(MAKE) -C libutil depclean
 
 diskimage:
-        @echo "Creating disk image, sudo needed for createloop"
+	@echo "Creating disk image, sudo needed for createloop"
 	sudo tools/createloop img/disk.img 100
 	sudo chown `id -nu`:`id -ng` img/disk.img
 
