@@ -1,5 +1,7 @@
 include ../Makefile.inc
 
+$(shell mkdir -p obj)
+
 HEADERS=
 CCMODULES=dynmem iostream
 INCLUDE=../libc include .. $(GCCINCLUDEDIRS)

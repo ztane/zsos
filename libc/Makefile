@@ -1,5 +1,7 @@
 include ../Makefile.inc
 
+$(shell mkdir -p obj)
+
 HEADERS=stdio.h stdlib.h
 OBJFILES=snprintf.o string.o intoa.o
 OBJDIR=obj

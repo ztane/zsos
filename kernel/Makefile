@@ -2,6 +2,8 @@ include ../Makefile.inc
 
 HEADERS=
 
+$(shell mkdir -p obj)
+
 ifeq ($(ARCH),arm-none-eabi)
     ARCH_CMODULES=
     CCMODULES=armmain uart kernelmessages atags
