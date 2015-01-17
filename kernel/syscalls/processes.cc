@@ -4,7 +4,7 @@
 #include <kernel/arch/current/halt.hh>
 
 extern Scheduler scheduler;
-SYSCALL(get_pid)
+SYSCALL(getpid)
 {
         Task *task = scheduler.getCurrentTask();
         SYSCALL_RETURN(task->getProcessId());
@@ -17,6 +17,16 @@ SYSCALL(suspend)
 }
 
 SYSCALL(exit)
+{
+        Task *task = scheduler.getCurrentTask();
+	task->terminate();
+        while (true) {
+            halt();
+        }
+	SYSCALL_RETURN(0xFFFFFFFF);
+}
+
+SYSCALL(exit_group)
 {
         Task *task = scheduler.getCurrentTask();
 	task->terminate();

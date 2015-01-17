@@ -11,27 +11,38 @@
 #define DATA_ACCESS	       DSC_ACCESS_PRESENT    | \
 	DSC_ACCESS_WRITABLE  | DSC_ACCESS_DATA_CODE
 
-#define FLAGS DSC_FLAG_PAGE_GRAN | DSC_FLAG_DEFAULT_32 
+#define FLAGS DSC_FLAG_PAGE_GRAN | DSC_FLAG_DEFAULT_32
 
 extern class TssContents tssSegment;
 
 SegmentDescriptor GDT[] = {
 	SegmentDescriptor(),
 
-	SegmentDescriptor(0x00000000, 0xFFFFFFFF, 
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		CODE_ACCESS, FLAGS),
 
 	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		DATA_ACCESS, FLAGS),
 
-	SegmentDescriptor(0x00000000, 0xFFFFFFFF, 
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		CODE_ACCESS | DSC_ACCESS_RING_3, FLAGS),
 
 	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
 		DATA_ACCESS | DSC_ACCESS_RING_3, FLAGS),
 
 	SegmentDescriptor((unsigned long)&tssSegment, 103,
-		DSC_ACCESS_PRESENT | DSC_ACCESS_IS_TSS, 0)
+		DSC_ACCESS_PRESENT | DSC_ACCESS_IS_TSS, 0),
+
+	// TLS segments
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
+		DATA_ACCESS, FLAGS),
+
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
+		DATA_ACCESS, FLAGS),
+
+	SegmentDescriptor(0x00000000, 0xFFFFFFFF,
+		DATA_ACCESS, FLAGS),
+
 };
 
 void get_gdt_location(void* & location, int& limit)
@@ -65,3 +76,14 @@ void init_gdt()
         /* load global descriptor table to GDTR */
         __asm__ __volatile__ ("lgdt (%0)" : : "r" ((void *) &gdtr));
 }
+
+ostream& operator<<(ostream& os, SegmentDescriptor& desc) {
+	ios_base::fmtflags f = os.setf(ios_base::hex);
+	os << "Base: " << desc.get_base();
+	os << ", limit " << desc.get_limit();
+	os << ", flags " << desc.get_flags();
+	os << ". access" << desc.get_access() << endl;
+	os.setf(f);
+	return os;
+}
+

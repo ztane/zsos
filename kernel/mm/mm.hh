@@ -7,6 +7,7 @@ class MM {
 private:
 	static PageFrame * volatile global0Page;
 public:
+	static PageFrame *allocatePage();
 	static PageFrame *allocateZeroPage();
 	static PageFrame *getGlobalZeroPage();
 };

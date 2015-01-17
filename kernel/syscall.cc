@@ -4,9 +4,10 @@
 #include "printk.h"
 #include "scheduler.hh"
 #include "syscall.hh"
+#include "errnocode.hh"
 
 SYSCALL(BAD)
 {
 	kout << "OOPS... illegal syscall #" << r.syscallNumber << endl;
-	SYSCALL_RETURN(0xFFFFFFFF);
+	SYSCALL_RETURN(-(ErrnoCode)ENOSYS);
 }

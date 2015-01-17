@@ -17,6 +17,11 @@ Task::Task(const char *_name, State state, int priority) {
 	setCurrentPriority(priority);
 	timeslice = 0;
 	memmap = 0;
+	uid = gid = euid = egid = 0;
+	for (int i = 0; i < N_TLS_ENTRY; i ++) {
+	        tlsDescriptors[i] = SegmentDescriptor();
+		tlsUserDescriptors[i].setEntryNumber(-1);
+	}
 }
 
 bool Task::handlePageFault(PageFaultInfo& f) {
@@ -29,6 +34,7 @@ void *Task::setBrk(void *newBrk) {
 }
 
 void Task::switchContexts(uint32_t *saved_esp) {
+	swapGDT();
         doContextSwitch(esp, saved_esp);
 }
 

@@ -10,12 +10,12 @@ public:
 	virtual int loadPage
 		(UserTask *t, MemMapArea *m, MemMapArea::Prot access, VirtAddr addr) = 0;
 
-	virtual int swapIn      
+	virtual int swapIn
 		(UserTask *t, MemMapArea *m, MemMapArea::Prot access, VirtAddr addr) = 0;
 
-	virtual int doCow       
+	virtual int doCow
 		(UserTask *t, MemMapArea *m, VirtAddr addr) = 0;
-	
+
 	virtual ~PageLoader() { }
 };
 

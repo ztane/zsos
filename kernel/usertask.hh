@@ -14,8 +14,11 @@ class UserTask : public Task {
 protected:
        	uint32_t ustack; //stacktop of user stack
         uint32_t cr3;
+	uint32_t entryPointer;
         bool     fpu_used;
 	ZsosExeHeader *header;
+        ElfExeHeader *elfHeader;
+	VirtAddr baseAddress;
         uint8_t  fpu_state[512+16];
 	uint8_t  kernel_stack[4096];
 
@@ -37,7 +40,7 @@ public:
 	void initialize(ElfExeHeader *hdr);
 
 	virtual void enable_io();
-	virtual void dispatch(uint32_t *saved_eip);
+	virtual void dispatch(uint32_t *savedEip);
 	virtual void terminate();
 	virtual bool handlePageFault(PageFaultInfo& f);
 	virtual void* setBrk(void *newBrk);

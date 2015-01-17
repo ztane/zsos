@@ -23,9 +23,10 @@ protected:
 	uint32_t flags;
 public:
 	enum {
-		PRESENT = 1,
-		READWRITE = 2,
-		USER = 4,
+		PRESENT = 0x1,
+		READWRITE = 0x2,
+		USER = 0x4,
+		HUGE = 0x80
 	};
 
 	PageFlags() { flags = 0; }
@@ -44,9 +45,9 @@ public:
 		flags |= present ? 1 : 0;
 	}
 
-	void setRW(bool present) {
+	void setRW(bool is) {
 		flags &= ~ 2;
-		flags |= present ? 2 : 0;
+		flags |= is ? 2 : 0;
 	}
 
 	void setUser(bool is) {
@@ -55,8 +56,8 @@ public:
 	}
 
 	void setHuge(bool is) {
-		flags &= ~ 0x80;
-		flags |=      is ? 0x80 : 0;
+		flags &= ~ HUGE;
+		flags |= is ? HUGE : 0;
 	}
 
 	bool isPresent() const {
@@ -72,7 +73,7 @@ public:
 	}
 
 	bool isHuge() const {
-		return flags & 0x80;
+		return flags & HUGE;
 	}
 };
 
@@ -151,7 +152,7 @@ public:
 	}
 
 	inline PageTableEntry *getPTE(VirtAddr a) {
-		uint32_t t = (a >> 12) & 0x3FF;
+		uint32_t t = (a.toInteger() >> 12) & 0x3FF;
 		return entries + t;
 	}
 };
@@ -165,7 +166,7 @@ public:
 	}
 
 	inline PageDirectoryEntry *getPDE(VirtAddr a) {
-		uint32_t t = a >> 22;
+		uint32_t t = a.toInteger() >> 22;
 		return entries + t;
 	}
 

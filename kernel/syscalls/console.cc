@@ -9,14 +9,7 @@
 
 extern Scheduler scheduler;
 
-SYSCALL(write_character)
-{
-	kout << (char)r.arg0;
-        SYSCALL_RETURN(0);
-}
-
-SYSCALL(write)
-{
+SYSCALL(write) {
 	int fdn = r.arg0;
 	void *ptr = (void*)r.arg1;
 	size_t count = (size_t)r.arg2;
@@ -43,8 +36,50 @@ SYSCALL(write)
 	SYSCALL_RETURN(rc);
 }
 
-SYSCALL(read)
-{
+struct iovec {
+        void  *iov_base;    /* Starting address */
+        size_t iov_len;     /* Number of bytes to transfer */
+};
+
+SYSCALL(writev) {
+	int fdn = r.arg0;
+	iovec *iovecs = (iovec*)r.arg1;
+	int count = (int)r.arg2;
+
+	Task *current = scheduler.getCurrentTask();
+	FileDescriptor *fd = current->getFileDescriptor(fdn);
+
+	int rc = 0;
+
+	// FIXME: check for buffer for reading!
+
+	// Not open?
+	if (! fd) {
+		rc = EBADF;
+	}
+	else if (count < 0 || count > 1024) {
+		// also fail on total bytes > size_t max
+		rc = EINVAL;
+	}
+	else {
+		size_t written;
+		ssize_t total = 0;
+		for (int i = 0; i < count; i++) {
+			rc = -fd->write(iovecs[i].iov_base, iovecs[i].iov_len, written);
+			if (rc == 0) {
+				total += written;
+				rc = total;
+			}
+			else {
+				break;
+			}
+		}
+	}
+
+	SYSCALL_RETURN(rc);
+}
+
+SYSCALL(read) {
 	int fdn = r.arg0;
 	void *ptr = (void*)r.arg1;
 	size_t count = (size_t)r.arg2;

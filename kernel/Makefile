@@ -19,12 +19,12 @@ else
         task usertask syscall kernelmessages \
 	scheduler freepagelist bootdynmem panic abi  \
 	pageframe memarea kerneltask softirq     \
-	become_io_task console processes init idletask	   \
-	mm memmap zeropageloader textpageloader 	   \
-	datapageloader sysmm filelike filedescriptor \
+	console processes init idletask	   \
+	mm memmap zeropageloader textpageloader filepageloader \
+	datapageloader sysmm misc filelike filedescriptor \
 	consoledriver zsosrdfs ramdiskdevice path files slab \
 	kmalloc stacktrace hexdump mbr harddisk harddiskdevice \
-	block fat reboot $(ARCH_CCMODULES)
+	block fat reboot elf $(ARCH_CCMODULES)
     ASMMODULES=intvecs
 endif
 
@@ -33,7 +33,7 @@ INCLUDE=../libc ../libc++/include ../libutil/include $(GCCINCLUDEDIRS) .. .
 OBJDIR=obj
 DEPDIR=dep
 LIBDIR=.
-VPATH=.:mm:syscalls:ktasks:fs:fs/zsosrdfs:fs/fatfs:drivers:drivers/ramdisk:drivers/harddisk:mm/slab:arch/current
+VPATH=.:mm:syscalls:ktasks:fs:fs/zsosrdfs:fs/fatfs:drivers:drivers/ramdisk:drivers/harddisk:mm/slab:arch/current:exe
 TESTDIR=t
 
 ACTUAL_CCMODULES=$(CCMODULES) $(SYSCALLS)
@@ -77,6 +77,8 @@ $(CCASMS): $(OBJDIR)/%.s: %.cc
 
 $(ASMOBJS): $(OBJDIR)/%.o: %.S
 	$(CC) -o $@ -c $< -O2 $(INCLUDES)
+
+$(OBJDIR)/intvecs.o: syscall_table.S
 
 .PHONY: clean
 

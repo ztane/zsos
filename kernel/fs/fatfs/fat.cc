@@ -98,7 +98,7 @@ ErrnoCode FatInfo::initialize(BlockDevice& dev)
 	total_reserved_sectors = U16(ONRESERVED);
 
 	num_fats = U8(ONFATS);
-	num_root_entries = U16(ONROOTENT);	
+	num_root_entries = U16(ONROOTENT);
 
 	total_sectors = U16(ONTOTSECS);
 	if (total_sectors == 0) {

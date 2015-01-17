@@ -14,6 +14,8 @@ SECTIONS {
        . = ALIGN(4096);
        *(.zsosinitexe*)
        . = ALIGN(4096);
+       *(.ldsoexe*)
+       . = ALIGN(4096);
      }
 
      .data : AT(phys + (g_data - g_code)) {

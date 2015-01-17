@@ -26,6 +26,8 @@ class MemMap {
 			end.lower = &begin;
 			begin.upper = &end;
 		}
+		VirtAddr findSlot(size_t size);
+
 		int addArea(MemMapArea *a);
 		int addAreaAt(MemMapArea *a);
 		int removeArea(MemMapArea *a);
@@ -39,7 +41,7 @@ class MemMap {
                         // shrink beyond beginning?
                         // linux returns the beginning of area, so do we!
 			if (VirtAddr(newBrk) < bss->base) {
-				return bss->end.to_ptr();
+				return bss->end.toPointer();
 			}
 
 			uintptr_t tmp = (uintptr_t)newBrk;

@@ -246,7 +246,13 @@ C_ISR(cop_segment_overrun)  { out_status(' O C'); }
 C_ISR_W_ECODE(invalid_tss)  { out_status(' T I'); }
 C_ISR_W_ECODE(segment_not_present) { out_status(' P N'); }
 C_ISR_W_ECODE(stack_exception)     { out_status(' E S'); }
-C_ISR_W_ECODE(general_prot_fault)  { out_status(' P G'); }
+C_ISR_W_ECODE(general_prot_fault)  {
+	kout << "\nGeneral protection fault\n";
+	kout << "At eip" << eip << "\n";
+	printk("Error code: %08x", errorcode);
+        print_kernel_state(*const_cast<Registers*>(&r));
+	out_status(' P G');
+}
 C_ISR_W_ECODE(page_fault)          {
 	PageFaultInfo f;
 
@@ -275,7 +281,8 @@ C_ISR_W_ECODE(page_fault)          {
 		return;
 	}
 	else {
-		kout << "\nIllegal page fault at " << f.address << ".\n";
+		kout << "\nIllegal page fault at " << f.address.toPointer() << ".\n";
+		kout << "UM: " << f.userMode << endl;
 		kout << "Present: " << f.present << "\n";
 		kout << "Write:   " << f.write << "\n";
                 kout << "At EIP:  " << f.eip << "\n";

@@ -3,6 +3,7 @@
 #ifndef TASKING_H
 #define TASKING_H
 
+#include "kernel/memory.hh"
 #include <stdint.h>
 #include <ostypes>
 #include "kernel/paging.hh"
@@ -43,6 +44,7 @@ protected:
 	int current_priority;
 	int timeslice;
 	pid_t process_id;
+	uint32_t uid, gid, euid, egid;
 
 	State current_state;
 
@@ -63,7 +65,7 @@ public:
 	}
 
 	void setCurrentState(State new_state) {
-		current_state = new_state;	
+		current_state = new_state;
 	}
 
 	int getCurrentPriority() const {
@@ -104,6 +106,8 @@ public:
 		previous = p;
 	}
 
+	virtual MemMap *getMemMap() { return memmap; }
+
 	void switchContexts(uint32_t*);
 
 	virtual bool handlePageFault(PageFaultInfo& f);
@@ -120,6 +124,15 @@ public:
 	FileDescriptor *getFileDescriptor(int number);
         bool setFileDescriptor(int number, FileDescriptor* value);
 	int  findFreeFdSlot(FileDescriptor* value);
+
+	SegmentDescriptor tlsDescriptors[N_TLS_ENTRY];
+	UserDesc tlsUserDescriptors[N_TLS_ENTRY];
+
+	inline void swapGDT() {
+		for (int i = 0; i < N_TLS_ENTRY; i ++) {
+			GDT[i + TLS_ENTRY_MIN] = tlsDescriptors[i];
+		}
+	}
 };
 
 #endif

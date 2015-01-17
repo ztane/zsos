@@ -20,14 +20,14 @@ endif
 
 ARCH_PREFIX=/opt/zsos-gcc
 
-PATH := $(ARCH_PREFIX)/bin:$(PATH)
+PATH:=$(ARCH_PREFIX)/bin:$(PATH)
 
 CFLAGS  = -Wall -Werror -Wno-unused -Wextra -Wno-conversion -fno-builtin \
 	-nostdinc -Wno-multichar -O3 -fno-stack-protector -fno-stack-check
 CCFLAGS = -fno-rtti -fno-exceptions -nostdlib
 ARFLAGS = rcs
 
-GCCINCLUDEDIRS := $(shell dirname $$($(ARCH)-gcc -print-libgcc-file-name))/include
+GCCINCLUDEDIRS := $(shell dirname $$($(ARCH_PREFIX)/bin/$(ARCH)-gcc -print-libgcc-file-name))/include
 
 DEPS = $(CMODULES:%=.dep/%.dep) $(CCMODULES:%=.dep/%.dep) $(ASMMODULES:%=.dep/%.dep)
 

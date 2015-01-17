@@ -5,7 +5,7 @@
 #endif
 
 #define ASMISR(name) __ISR_ ## name ## _asm
-#define ISR(name)    __ISR_ ## name 
+#define ISR(name)    __ISR_ ## name
 
 // return w/ skip error code ;)
 #define POP_IRETE			 	 \
@@ -16,7 +16,7 @@
         pop %ds                                 ;\
 	add $4, %esp;				;\
         iret                              	;\
-      
+
 #define POP_IRET			 	 \
         popal                                   ;\
         pop %gs                                 ;\
@@ -24,7 +24,7 @@
         pop %es                                 ;\
         pop %ds                                 ;\
         iret                              	;\
-      
+
 
 #define NEEDS_SCHEDULING			      \
 	testl $0xFFFFFFFF, (__needs_scheduling_flag) ;
@@ -65,7 +65,7 @@ ASMISR(name):					;\
 	POP_IRETE				;\
 1:						;\
 	call __EXECUTE_SCHEDULER	  	;\
-	POP_IRETE				
+	POP_IRETE
 
 
 /*********************************************************
@@ -102,7 +102,7 @@ DEFINE_INTR_GATE(bound_exception)
 DEFINE_INTR_GATE(invalid_opcode)
 DEFINE_INTR_GATE(fpu_not_avail)
 DEFINE_INTRE_GATE(double_fault)		// w/ error
-DEFINE_INTR_GATE(cop_segment_overrun)	
+DEFINE_INTR_GATE(cop_segment_overrun)
 DEFINE_INTRE_GATE(invalid_tss)		// w/ error
 DEFINE_INTRE_GATE(segment_not_present)   // w/ error
 DEFINE_INTRE_GATE(stack_exception)       // w/ error
@@ -137,12 +137,12 @@ DEFINE_INTR_GATE(IRQ_F)
 	.globl __ISR_SYS_CALL_asm
 
 __ISR_SYS_CALL_asm:
-        push %ds                
-        push %es                
-        push %fs                
-        push %gs                
+        push %ds
+        push %es
+        push %fs
+        push %gs
         pushal
-	
+
 	cmpl  $(N_SYSCALLS), %eax
         jae  __BAD_SYSCALL
 	call *SYSCALL_VECTORS(, %eax, 4)

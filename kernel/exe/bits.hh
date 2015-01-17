@@ -2,6 +2,8 @@
 #define __EXE_BITS_HH__
 
 #include <string.h>
+#include <iostream>
+#include "kernel/panic.hh"
 
 struct ZsosExeHeader {
 	uint32_t magic1;
@@ -29,10 +31,28 @@ extern uint8_t elfMagic[16];
 
 class MemMap;
 
+class Elf32ProgramHeader {
+	enum SegmentType {
+		LOAD = 1,
+	};
+public:
+	uint32_t p_type;
+	uint32_t p_offset;
+	uint32_t p_vaddr;
+	uint32_t p_paddr;
+	uint32_t p_filesz;
+	uint32_t p_memsz;
+	uint32_t p_flags;
+	uint32_t p_align;
+
+	bool isLoadable() const {
+		return p_type == LOAD;
+	}
+};
+
 class ElfExeHeader {
 public:
 	static const int EI_NIDENT = 16;
-protected:
 	uint8_t  ident[EI_NIDENT];
 	uint16_t type;
 	uint16_t machine;
@@ -49,13 +69,13 @@ protected:
 	uint16_t shStrNdx;
 
 public:
-	bool isRunnable() {
+	bool isRunnable() const {
 		if (memcmp(ident, elfMagic, EI_NIDENT) != 0) {
 			return false;
 		}
 
 		// executable
-		if (type != 0x2) {
+		if (type != 0x2 && type != 0x3) {
 			return false;
 		}
 
@@ -77,7 +97,25 @@ public:
 		if (! phOff) {
 			return false;
 		}
+
+
+                if (! phNum) {
+                       return false;
+                }
+
+                if (phEntSize != 32) {
+                       return false;
+                }
+                return true;
 	}
+
+        const Elf32ProgramHeader& programHeader(unsigned int number) const {
+		if (number >= phNum) {
+			kernelPanic("Requested nonexistent program header");
+                }
+
+		return *((Elf32ProgramHeader *)((char *)this + phOff) + number);
+        }
 
 	bool initializeMemMapAreas(MemMap *m);
         friend class UserTask;
@@ -85,5 +123,8 @@ public:
 
 extern ZsosExeHeader _binary_example_zsx_start;
 extern char _binary_example_zsx_end;
+
+extern ElfExeHeader _binary_ld_linux_so_2_start;
+extern char         _binary_ld_linux_so_2_end;
 
 #endif

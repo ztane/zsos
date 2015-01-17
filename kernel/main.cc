@@ -342,7 +342,14 @@ extern "C" void kernel_main(unsigned int magic, void *mbd)
 	initializeHardDisk();
 
 	kout << "Preparing init process, pid 1";
-	tesmi.initialize(&_binary_example_zsx_start);
+//	kernelPanic("Fell out from scheduling loop!\n");
+//	halt();
+
+//        kout << "Are we runnable" << _binary_ld_linux_so_2_start.isRunnable();
+//       ok();
+
+//	tesmi.initialize(&_binary_example_zsx_start);
+	tesmi.initialize(&_binary_ld_linux_so_2_start);
 	tesmi.setProcessId(1);
 	scheduler.addTask(&tesmi);
 	ok();

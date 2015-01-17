@@ -14,6 +14,10 @@ PageFrame *MM::allocateZeroPage() {
 	return f;
 }
 
+PageFrame *MM::allocatePage() {
+	return NormalMemory.allocatePage();
+};
+
 PageFrame *MM::getGlobalZeroPage() {
 	if (global0Page != 0) {
 		global0Page->acquire();
